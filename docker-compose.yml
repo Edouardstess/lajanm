@@ -1,0 +1,46 @@
+# Local development only. This file must never be reused for staging or
+# production — those environments provision Postgres/Redis independently
+# with their own credentials (NF-24: no shared secrets between environments).
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lajanm
+      POSTGRES_PASSWORD: lajanm_dev_only
+      POSTGRES_DB: lajanm_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./infra/docker/data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U lajanm -d lajanm_dev']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    env_file:
+      - services/api/.env
+    environment:
+      DATABASE_URL: postgres://lajanm:lajanm_dev_only@postgres:5432/lajanm_dev
+      REDIS_URL: redis://redis:6379
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy

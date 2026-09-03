@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    env:
+      # Test-only credentials for a throwaway CI database — never used
+      # outside this job, and structurally distinct from dev/staging/prod
+      # (NF-24: environments never share credentials).
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgres://lajanm:lajanm_ci_only@localhost:5432/lajanm_ci
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-only-secret
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: lajanm
+          POSTGRES_PASSWORD: lajanm_ci_only
+          POSTGRES_DB: lajanm_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lajanm -d lajanm_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run database migrations
+        run: npm run migration:run -w @lajanm/api
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
