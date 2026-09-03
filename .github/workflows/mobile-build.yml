@@ -1,0 +1,84 @@
+name: Build mobile (EAS)
+
+# Lancement manuel : onglet Actions → "Build mobile (EAS)" → "Run workflow".
+#
+# Pourquoi passer par CI plutôt que par une machine locale : la build EAS
+# a besoin d'un compte Expo, et faire circuler un jeton d'accès à la main
+# (chat, e-mail, Slack) le laisse dans un historique que personne ne purge.
+# Ici il vit comme secret de dépôt, révocable en un clic.
+#
+# Prérequis, une seule fois :
+#   1. https://expo.dev/settings/access-tokens → créer un token
+#   2. Settings → Secrets and variables → Actions → New repository secret
+#      Nom : EXPO_TOKEN
+#
+# L'URL de l'API n'est PAS réglable ici : la build tourne sur les serveurs
+# d'Expo, qui lisent le bloc "env" du profil dans apps/mobile/eas.json.
+# C'est là qu'il faut mettre le vrai domaine — sinon le binaire produit
+# embarque une URL qui ne répond pas.
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "Profil de build (voir apps/mobile/eas.json)"
+        type: choice
+        default: staging
+        options: [staging, production]
+      platform:
+        description: "Plateforme"
+        type: choice
+        default: android
+        options: [android, ios, all]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Échoue tôt et clairement si le secret manque, plutôt que de laisser
+      # eas-cli répondre un "Forbidden" difficile à diagnostiquer.
+      - name: Vérifier le secret EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "::error::Le secret EXPO_TOKEN est absent. Voir l'en-tête de ce workflow."
+            exit 1
+          fi
+
+      - name: Installer les dépendances
+        run: npm ci
+        working-directory: .
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # Les mêmes garde-fous qu'en local : app.config.ts refuse une URL
+      # absente ou non-https, donc une erreur de profil se voit ici et non
+      # après vingt minutes de build.
+      - name: Valider la configuration du profil
+        run: |
+          URL=$(node -e "
+            const j = require('./eas.json');
+            process.stdout.write(j.build['${{ inputs.profile }}'].env.LAJANM_API_URL);
+          ")
+          echo "LAJANM_API_URL du profil ${{ inputs.profile }} : $URL"
+          case "$URL" in
+            *.example) echo "::warning::L'URL est un domaine d'exemple — le binaire ne joindra aucune API." ;;
+          esac
+          LAJANM_API_URL="$URL" npx expo config --type public > /dev/null
+          echo "Configuration valide."
+
+      - name: Lancer la build EAS
+        run: eas build --profile ${{ inputs.profile }} --platform ${{ inputs.platform }} --non-interactive
