@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { PaginationQueryDto, toFindPaging } from '../../common/dto/pagination-query.dto';
 import { AuditService } from '../audit/audit.service';
 import { EntryDirection } from '../ledger/entities/ledger-entry.entity';
 import { LedgerService } from '../ledger/ledger.service';
@@ -60,8 +61,12 @@ export class FraudService {
     }
   }
 
-  async listOpenFlags(): Promise<FraudFlag[]> {
-    return this.flags.find({ where: { status: FraudFlagStatus.OPEN }, order: { createdAt: 'DESC' } });
+  async listOpenFlags(paging?: PaginationQueryDto): Promise<FraudFlag[]> {
+    return this.flags.find({
+      where: { status: FraudFlagStatus.OPEN },
+      order: { createdAt: 'DESC' },
+      ...toFindPaging(paging),
+    });
   }
 
   async resolve(flagId: string, resolverId: string, dto: ResolveFlagDto): Promise<FraudFlag> {

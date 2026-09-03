@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Headers, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import type { Request } from 'express';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { InitiateTopupDto } from './dto/initiate-topup.dto';
@@ -18,8 +19,8 @@ export class TopupController {
 
   @UseGuards(JwtAuthGuard)
   @Get('history')
-  history(@CurrentUser() user: { id: string }) {
-    return this.topupService.history(user.id);
+  history(@CurrentUser() user: { id: string }, @Query() paging: PaginationQueryDto) {
+    return this.topupService.history(user.id, paging);
   }
 
   @UseGuards(JwtAuthGuard)

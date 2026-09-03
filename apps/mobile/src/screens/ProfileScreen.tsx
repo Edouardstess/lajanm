@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { useAuth } from '../context/AuthContext';
-import { useTranslation } from '../i18n';
+import { SUPPORTED_LOCALES, useTranslation } from '../i18n';
 import { isBiometricLockEnabled, setBiometricLockEnabled } from '../security/biometricPreference';
 import { colors, spacing, touchTarget, typography } from '../theme';
 
+// Endonyms, deliberately untranslated: someone looking for their own
+// language finds it faster by its own name than by its name in a language
+// they may not read.
+const LOCALE_LABELS: Record<string, string> = {
+  ht: 'Kreyòl',
+  fr: 'Français',
+  en: 'English',
+};
+
 export function ProfileScreen({ navigation }: { navigation: { navigate: (screen: string) => void } }) {
-  const { t } = useTranslation();
+  const { t, locale, setLocale } = useTranslation();
   const { user, refreshProfile, logout } = useAuth();
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
@@ -67,6 +76,23 @@ export function ProfileScreen({ navigation }: { navigation: { navigate: (screen:
         <Switch value={biometricEnabled} onValueChange={onToggleBiometric} />
       </View>
 
+      <Text style={styles.label}>{t('profile.language_label')}</Text>
+      <View style={styles.localeRow}>
+        {SUPPORTED_LOCALES.map((option) => (
+          <Pressable
+            key={option}
+            accessibilityRole="button"
+            accessibilityState={{ selected: locale === option }}
+            style={[styles.localeChip, locale === option && styles.localeChipSelected]}
+            onPress={() => setLocale(option)}
+          >
+            <Text style={[styles.localeLabel, locale === option && styles.localeLabelSelected]}>
+              {LOCALE_LABELS[option] ?? option}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
       <PrimaryButton
         label={t('profile.devices_title')}
         variant="secondary"
@@ -100,4 +126,18 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   toggleLabel: { fontSize: typography.body, color: colors.text, flex: 1, marginRight: spacing.md },
+  localeRow: { flexDirection: 'row', flexWrap: 'wrap' },
+  localeChip: {
+    minHeight: touchTarget.minHeight,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    marginRight: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  localeChipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  localeLabel: { fontSize: typography.body, color: colors.text },
+  localeLabelSelected: { color: colors.primaryText, fontWeight: '600' },
 });

@@ -27,10 +27,33 @@ export async function setToken(token: string | null): Promise<void> {
   }
 }
 
+/**
+ * Hard ceiling on how long a request may hang. The target network is 2G/
+ * EDGE, where fetch without a timeout can wait effectively forever: the
+ * user is left on a spinner with no way to tell a slow request from a dead
+ * one. 20s is generous for a slow-but-working connection while still
+ * failing in a timeframe a person will wait through.
+ */
+const REQUEST_TIMEOUT_MS = 20_000;
+
+/**
+ * Thrown when a request never got an answer — timed out, or the device is
+ * offline. Deliberately NOT an ApiError: the distinction is what lets a
+ * screen say "not confirmed, try again" instead of claiming a definite
+ * outcome. For a write, this is the genuinely ambiguous case — the request
+ * may or may not have reached the server.
+ */
+export class NetworkError extends Error {
+  constructor(public readonly timedOut: boolean) {
+    super(timedOut ? 'Request timed out' : 'Network unavailable');
+  }
+}
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
   authenticated?: boolean;
+  timeoutMs?: number;
 }
 
 /**
@@ -47,17 +70,42 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method ?? 'GET',
-    headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
+  const controller = new AbortController();
+  const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method ?? 'GET',
+      headers,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    // An abort here is our own timer firing; anything else is the device
+    // being unable to reach the server at all. Both mean "no answer".
+    throw new NetworkError((error as Error)?.name === 'AbortError');
+  } finally {
+    clearTimeout(timer);
+  }
 
   const text = await response.text();
-  const data = text ? JSON.parse(text) : undefined;
+
+  // A gateway or captive portal can answer with HTML rather than JSON. That
+  // is still a real HTTP response, so it must surface as an ApiError with
+  // its status — not as a JSON.parse crash that screens would misread as a
+  // connectivity problem.
+  let data: { message?: string | string[] } | undefined;
+  try {
+    data = text ? JSON.parse(text) : undefined;
+  } catch {
+    if (!response.ok) throw new ApiError(response.status, `Request failed with status ${response.status}`);
+    throw new ApiError(response.status, 'Unexpected response from the server');
+  }
 
   if (!response.ok) {
-    const message = (data?.message as string) ?? `Request failed with status ${response.status}`;
+    const message = data?.message ?? `Request failed with status ${response.status}`;
     throw new ApiError(response.status, Array.isArray(message) ? message.join(', ') : message);
   }
 

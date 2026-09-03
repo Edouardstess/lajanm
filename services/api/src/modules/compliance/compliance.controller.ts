@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { CurrentAdmin } from '../admin/decorators/current-admin.decorator';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -22,8 +23,8 @@ export class ComplianceController {
 
   @UseGuards(AdminJwtAuthGuard)
   @Get('disputes')
-  listAllDisputes() {
-    return this.complianceService.listAllDisputes();
+  listAllDisputes(@Query() paging: PaginationQueryDto) {
+    return this.complianceService.listAllDisputes(paging);
   }
 
   @UseGuards(AdminJwtAuthGuard)
@@ -44,8 +45,8 @@ export class ComplianceController {
 
   @UseGuards(AdminJwtAuthGuard)
   @Get('sar')
-  listSars() {
-    return this.complianceService.listSars();
+  listSars(@Query() paging: PaginationQueryDto) {
+    return this.complianceService.listSars(paging);
   }
 
   // --- Customer-facing endpoints ---
@@ -58,7 +59,7 @@ export class ComplianceController {
 
   @UseGuards(JwtAuthGuard)
   @Get('disputes/me')
-  listMyDisputes(@CurrentUser() user: { id: string }) {
-    return this.complianceService.listMyDisputes(user.id);
+  listMyDisputes(@CurrentUser() user: { id: string }, @Query() paging: PaginationQueryDto) {
+    return this.complianceService.listMyDisputes(user.id, paging);
   }
 }

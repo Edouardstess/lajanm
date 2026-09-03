@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { CurrentAdmin } from '../admin/decorators/current-admin.decorator';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -19,14 +20,14 @@ export class KycController {
 
   @UseGuards(JwtAuthGuard)
   @Get('submissions/me')
-  findMine(@CurrentUser() user: { id: string }) {
-    return this.kycService.findMine(user.id);
+  findMine(@CurrentUser() user: { id: string }, @Query() paging: PaginationQueryDto) {
+    return this.kycService.findMine(user.id, paging);
   }
 
   @UseGuards(AdminJwtAuthGuard)
   @Get('submissions/queue')
-  listQueue() {
-    return this.kycService.listQueue();
+  listQueue(@Query() paging: PaginationQueryDto) {
+    return this.kycService.listQueue(paging);
   }
 
   @UseGuards(AdminJwtAuthGuard)

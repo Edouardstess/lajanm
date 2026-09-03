@@ -3,6 +3,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { Repository } from 'typeorm';
+import { PaginationQueryDto, toFindPaging } from '../../common/dto/pagination-query.dto';
 import { AuditService } from '../audit/audit.service';
 import { EntryDirection } from '../ledger/entities/ledger-entry.entity';
 import { OperationType } from '../ledger/entities/operation.entity';
@@ -148,8 +149,12 @@ export class TopupService {
     });
   }
 
-  async history(userId: string): Promise<TopupTransaction[]> {
-    return this.transactions.find({ where: { userId }, order: { createdAt: 'DESC' } });
+  async history(userId: string, paging?: PaginationQueryDto): Promise<TopupTransaction[]> {
+    return this.transactions.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      ...toFindPaging(paging),
+    });
   }
 
   async getStatus(userId: string, transactionId: string): Promise<TopupTransaction> {

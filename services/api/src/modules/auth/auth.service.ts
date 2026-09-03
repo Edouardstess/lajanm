@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { Repository } from 'typeorm';
+import { PaginationQueryDto, toFindPaging } from '../../common/dto/pagination-query.dto';
 import { AuditService } from '../audit/audit.service';
 import { ChangePinDto } from './dto/change-pin.dto';
 import { LoginDto } from './dto/login.dto';
@@ -122,8 +123,12 @@ export class AuthService {
     return { id: saved.id, phone: saved.phone, tier: saved.tier, fullName: saved.fullName, email: saved.email };
   }
 
-  async listDevices(userId: string): Promise<DeviceSession[]> {
-    return this.devices.find({ where: { userId }, order: { lastSeenAt: 'DESC' } });
+  async listDevices(userId: string, paging?: PaginationQueryDto): Promise<DeviceSession[]> {
+    return this.devices.find({
+      where: { userId },
+      order: { lastSeenAt: 'DESC' },
+      ...toFindPaging(paging),
+    });
   }
 
   async revokeDevice(userId: string, deviceSessionId: string): Promise<void> {

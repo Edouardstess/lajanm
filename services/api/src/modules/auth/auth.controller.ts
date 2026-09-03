@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { AuthService } from './auth.service';
 import { ChangePinDto } from './dto/change-pin.dto';
 import { LoginDto } from './dto/login.dto';
@@ -35,8 +36,8 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('devices')
-  listDevices(@CurrentUser() user: { id: string }) {
-    return this.authService.listDevices(user.id);
+  listDevices(@CurrentUser() user: { id: string }, @Query() paging: PaginationQueryDto) {
+    return this.authService.listDevices(user.id, paging);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { CurrentAdmin } from '../admin/decorators/current-admin.decorator';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { ResolveFlagDto } from './dto/resolve-flag.dto';
@@ -10,8 +11,8 @@ export class FraudController {
   constructor(private readonly fraudService: FraudService) {}
 
   @Get('flags')
-  listOpenFlags() {
-    return this.fraudService.listOpenFlags();
+  listOpenFlags(@Query() paging: PaginationQueryDto) {
+    return this.fraudService.listOpenFlags(paging);
   }
 
   @Patch('flags/:id')

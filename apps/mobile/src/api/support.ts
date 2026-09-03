@@ -33,12 +33,16 @@ export interface FaqEntry {
   sortOrder: number;
 }
 
+// Explicit limits rather than relying on the API default (20): the help
+// section should show the whole FAQ, and a customer should see their full
+// ticket history, without either list silently stopping at a page boundary
+// the UI gives no hint about. 100 is the API's hard cap.
 export function listFaq() {
-  return apiRequest<FaqEntry[]>('/support/faq', { authenticated: true });
+  return apiRequest<FaqEntry[]>('/support/faq?limit=100', { authenticated: true });
 }
 
 export function listMyTickets() {
-  return apiRequest<SupportTicket[]>('/support/tickets/me', { authenticated: true });
+  return apiRequest<SupportTicket[]>('/support/tickets/me?limit=100', { authenticated: true });
 }
 
 export function getTicket(ticketId: string) {

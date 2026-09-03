@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PaginationQueryDto, toFindPaging } from '../../common/dto/pagination-query.dto';
 import { AuditService } from '../audit/audit.service';
 import { User } from '../auth/entities/user.entity';
 import { FraudService } from '../fraud/fraud.service';
@@ -194,7 +195,11 @@ export class PayoutService {
     }
   }
 
-  async history(userId: string): Promise<PayoutTransaction[]> {
-    return this.transactions.find({ where: { userId }, order: { createdAt: 'DESC' } });
+  async history(userId: string, paging?: PaginationQueryDto): Promise<PayoutTransaction[]> {
+    return this.transactions.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      ...toFindPaging(paging),
+    });
   }
 }

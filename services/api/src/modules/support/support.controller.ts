@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { CurrentAdmin } from '../admin/decorators/current-admin.decorator';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -7,9 +8,9 @@ import { AddMessageDto } from './dto/add-message.dto';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
+import { TicketQueueQueryDto } from './dto/ticket-queue-query.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { SupportSenderType } from './entities/support-message.entity';
-import { TicketStatus } from './entities/support-ticket.entity';
 import { SupportService } from './support.service';
 
 /**
@@ -26,16 +27,16 @@ export class SupportController {
 
   @UseGuards(JwtAuthGuard)
   @Get('faq')
-  listFaq() {
-    return this.supportService.listPublishedFaqs();
+  listFaq(@Query() paging: PaginationQueryDto) {
+    return this.supportService.listPublishedFaqs(paging);
   }
 
   // --- FAQ (admin) ---
 
   @UseGuards(AdminJwtAuthGuard)
   @Get('faq/all')
-  listAllFaq() {
-    return this.supportService.listAllFaqs();
+  listAllFaq(@Query() paging: PaginationQueryDto) {
+    return this.supportService.listAllFaqs(paging);
   }
 
   @UseGuards(AdminJwtAuthGuard)
@@ -66,16 +67,16 @@ export class SupportController {
 
   @UseGuards(JwtAuthGuard)
   @Get('tickets/me')
-  listMyTickets(@CurrentUser() user: { id: string }) {
-    return this.supportService.listMyTickets(user.id);
+  listMyTickets(@CurrentUser() user: { id: string }, @Query() paging: PaginationQueryDto) {
+    return this.supportService.listMyTickets(user.id, paging);
   }
 
   // --- Tickets (admin) ---
 
   @UseGuards(AdminJwtAuthGuard)
   @Get('tickets/queue')
-  listQueue(@Query('status') status?: TicketStatus) {
-    return this.supportService.listAllTickets(status);
+  listQueue(@Query() paging: TicketQueueQueryDto) {
+    return this.supportService.listAllTickets(paging.status, paging);
   }
 
   /**

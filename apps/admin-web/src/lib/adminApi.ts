@@ -156,9 +156,30 @@ export interface SupportMessage {
   createdAt: string;
 }
 
-export function getTicketQueue(status?: TicketStatus) {
-  const query = status ? `?status=${status}` : '';
-  return apiRequest<SupportTicket[]>(`/support/tickets/queue${query}`, { authenticated: true });
+export const TICKET_PAGE_SIZE = 25;
+
+/**
+ * Fetches one page, asking for one row more than it shows. The extra row is
+ * never rendered — its mere existence is what makes `hasMore` exact, with
+ * no count query. Comparing `page.length === PAGE_SIZE` instead would show
+ * a "Load more" button that fetches nothing whenever the total happens to
+ * be an exact multiple of the page size.
+ */
+export async function getTicketQueue(
+  status?: TicketStatus,
+  offset = 0,
+): Promise<{ items: SupportTicket[]; hasMore: boolean }> {
+  const params = new URLSearchParams({
+    limit: String(TICKET_PAGE_SIZE + 1),
+    offset: String(offset),
+  });
+  if (status) params.set('status', status);
+
+  const rows = await apiRequest<SupportTicket[]>(`/support/tickets/queue?${params}`, {
+    authenticated: true,
+  });
+
+  return { items: rows.slice(0, TICKET_PAGE_SIZE), hasMore: rows.length > TICKET_PAGE_SIZE };
 }
 
 export function getTicket(id: string) {
@@ -195,8 +216,11 @@ export interface FaqEntry {
   isPublished: boolean;
 }
 
+// FAQ content is operator-authored and small; one page at the API's cap is
+// the whole set in practice. The ticket queue, which grows with business
+// volume, pages properly instead.
 export function getAllFaqs() {
-  return apiRequest<FaqEntry[]>('/support/faq/all', { authenticated: true });
+  return apiRequest<FaqEntry[]>('/support/faq/all?limit=100', { authenticated: true });
 }
 
 export function createFaq(fields: {

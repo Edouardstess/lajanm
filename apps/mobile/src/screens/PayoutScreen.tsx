@@ -8,7 +8,7 @@ import { useOtpStep } from '../hooks/useOtpStep';
 import { useTranslation } from '../i18n';
 import { colors, spacing, touchTarget, typography } from '../theme';
 
-type ScreenState = 'form' | 'completed' | 'failed';
+type ScreenState = 'form' | 'completed' | 'failed' | 'unconfirmed';
 
 export function PayoutScreen() {
   const { t } = useTranslation();
@@ -42,9 +42,16 @@ export function PayoutScreen() {
     } catch (err) {
       if (err instanceof ApiError && !otp.needsOtp && otp.isOtpRequiredError(err)) {
         await otp.beginOtpFlow();
-      } else {
-        setMessage(err instanceof ApiError ? err.message : t('common.error_generic'));
+      } else if (err instanceof ApiError) {
+        // The server answered and rejected the payout, so no money moved.
+        setMessage(err.message);
         setState('failed');
+      } else {
+        // No answer at all (timeout/offline). The payout may well have been
+        // accepted and be in flight — claiming it failed, let alone that the
+        // money was refunded, would be a lie the user acts on. Say only what
+        // we know: unconfirmed, check your history.
+        setState('unconfirmed');
       }
     } finally {
       setSubmitting(false);
@@ -55,6 +62,15 @@ export function PayoutScreen() {
     return (
       <View style={styles.container}>
         <Text style={[styles.title, styles.success]}>{t('payout.status_completed')}</Text>
+      </View>
+    );
+  }
+
+  if (state === 'unconfirmed') {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>{t('payout.status_unconfirmed')}</Text>
+        <PrimaryButton label={t('common.retry')} onPress={() => setState('form')} />
       </View>
     );
   }

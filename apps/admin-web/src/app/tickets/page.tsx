@@ -24,14 +24,33 @@ export default function TicketsPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  // A short page means the server had nothing more to give, so the button
+  // disappears instead of offering a click that returns nothing.
+  const [hasMore, setHasMore] = useState(false);
 
   const load = (status: TicketStatus | 'all' = filter) => {
     setLoading(true);
     setError(null);
     getTicketQueue(status === 'all' ? undefined : status)
-      .then(setTickets)
+      .then((page) => {
+        setTickets(page.items);
+        setHasMore(page.hasMore);
+      })
       .catch((err) => setError(err instanceof ApiError ? err.message : 'Failed to load'))
       .finally(() => setLoading(false));
+  };
+
+  const loadMore = async () => {
+    setBusy(true);
+    try {
+      const page = await getTicketQueue(filter === 'all' ? undefined : filter, tickets.length);
+      setTickets((prev) => [...prev, ...page.items]);
+      setHasMore(page.hasMore);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to load more');
+    } finally {
+      setBusy(false);
+    }
   };
 
   // queueMicrotask: load() sets state synchronously, which the
@@ -175,6 +194,12 @@ export default function TicketsPage() {
           )}
         </div>
       ))}
+
+      {hasMore && (
+        <button className="button button-secondary" disabled={busy} onClick={loadMore}>
+          Load more
+        </button>
+      )}
     </RequireAuth>
   );
 }

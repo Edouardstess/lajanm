@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { InitiatePayoutDto } from './dto/initiate-payout.dto';
@@ -20,7 +21,7 @@ export class PayoutController {
   }
 
   @Get('history')
-  history(@CurrentUser() user: { id: string }) {
-    return this.payoutService.history(user.id);
+  history(@CurrentUser() user: { id: string }, @Query() paging: PaginationQueryDto) {
+    return this.payoutService.history(user.id, paging);
   }
 }

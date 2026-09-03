@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PaginationQueryDto, toFindPaging } from '../../common/dto/pagination-query.dto';
 import { AuditService } from '../audit/audit.service';
 import { AddMessageDto } from './dto/add-message.dto';
 import { CreateFaqDto } from './dto/create-faq.dto';
@@ -10,6 +11,9 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { FaqEntry } from './entities/faq-entry.entity';
 import { SupportMessage, SupportSenderType } from './entities/support-message.entity';
 import { SupportTicket, TicketCategory, TicketStatus } from './entities/support-ticket.entity';
+
+/** See getTicket: a safety bound on a thread, not a paging window. */
+const MAX_THREAD_MESSAGES = 500;
 
 export interface TicketWithThread {
   ticket: SupportTicket;
@@ -62,8 +66,12 @@ export class SupportService {
     return { ticket, messages: [message] };
   }
 
-  async listMyTickets(userId: string): Promise<SupportTicket[]> {
-    return this.tickets.find({ where: { userId }, order: { updatedAt: 'DESC' } });
+  async listMyTickets(userId: string, paging?: PaginationQueryDto): Promise<SupportTicket[]> {
+    return this.tickets.find({
+      where: { userId },
+      order: { updatedAt: 'DESC' },
+      ...toFindPaging(paging),
+    });
   }
 
   /**
@@ -77,12 +85,18 @@ export class SupportService {
     if (!ticket) throw new NotFoundException('Ticket not found');
     if (userId !== null && ticket.userId !== userId) throw new NotFoundException('Ticket not found');
 
-    const messages = await this.messages.find({
+    // Bounded like every other list, but capped high and read newest-first
+    // before being flipped back into reading order: a naive ASC + take
+    // would truncate the *newest* messages, which is exactly the part of a
+    // support thread nobody can afford to lose. No real thread approaches
+    // this cap; it exists to stop a pathological one from being unbounded.
+    const newestFirst = await this.messages.find({
       where: { ticketId },
-      order: { createdAt: 'ASC' },
+      order: { createdAt: 'DESC' },
+      take: MAX_THREAD_MESSAGES,
     });
 
-    return { ticket, messages };
+    return { ticket, messages: newestFirst.reverse() };
   }
 
   /**
@@ -140,10 +154,11 @@ export class SupportService {
 
   // --- Tickets: admin side ---
 
-  async listAllTickets(status?: TicketStatus): Promise<SupportTicket[]> {
+  async listAllTickets(status?: TicketStatus, paging?: PaginationQueryDto): Promise<SupportTicket[]> {
     return this.tickets.find({
       where: status ? { status } : {},
       order: { updatedAt: 'DESC' },
+      ...toFindPaging(paging),
     });
   }
 
@@ -169,16 +184,20 @@ export class SupportService {
   // --- FAQ ---
 
   /** What the mobile app's help section shows: published entries only. */
-  async listPublishedFaqs(): Promise<FaqEntry[]> {
+  async listPublishedFaqs(paging?: PaginationQueryDto): Promise<FaqEntry[]> {
     return this.faqs.find({
       where: { isPublished: true },
       order: { category: 'ASC', sortOrder: 'ASC' },
+      ...toFindPaging(paging),
     });
   }
 
   /** The back-office view: drafts included, so an operator can stage content. */
-  async listAllFaqs(): Promise<FaqEntry[]> {
-    return this.faqs.find({ order: { category: 'ASC', sortOrder: 'ASC' } });
+  async listAllFaqs(paging?: PaginationQueryDto): Promise<FaqEntry[]> {
+    return this.faqs.find({
+      order: { category: 'ASC', sortOrder: 'ASC' },
+      ...toFindPaging(paging),
+    });
   }
 
   async createFaq(adminId: string, dto: CreateFaqDto): Promise<FaqEntry> {

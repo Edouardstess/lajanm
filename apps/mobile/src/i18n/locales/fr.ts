@@ -35,6 +35,7 @@ export default {
     email_label: 'E-mail',
     tier_basic: 'Compte basique',
     tier_verified: 'Compte vérifié',
+    language_label: 'Langue',
     devices_title: 'Appareils connectés',
     revoke_device: 'Déconnecter cet appareil',
     change_pin: 'Changer le code PIN',
@@ -106,6 +107,7 @@ export default {
     submit_button: 'Retirer',
     status_completed: 'Le retrait est terminé. L’argent est sur votre compte MonCash.',
     status_failed: 'Le retrait a échoué',
+    status_unconfirmed: 'Nous ne pouvons pas confirmer ce retrait pour le moment. Vérifiez votre historique avant de réessayer.',
     status_failed_refunded: "Le retrait a échoué. L'argent a été remis sur votre compte Lajan’m.",
   },
 };

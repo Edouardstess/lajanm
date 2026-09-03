@@ -59,8 +59,30 @@ function createMessagesRepo() {
       rows.push(entity);
       return entity;
     }),
-    find: jest.fn(async (options?: { where?: Partial<SupportMessage> }) =>
-      rows.filter((r) => r.ticketId === options?.where?.ticketId),
+    // Honours `order` and `take` rather than always returning insertion
+    // order: getTicket reads the thread newest-first and flips it back, so
+    // a fake that ignored `order` would happily pass while production
+    // returned the thread reversed. Insertion index breaks ties, since
+    // several messages in one test can share a millisecond timestamp.
+    find: jest.fn(
+      async (options?: {
+        where?: Partial<SupportMessage>;
+        order?: { createdAt?: 'ASC' | 'DESC' };
+        take?: number;
+      }) => {
+        const matching = rows
+          .map((row, index) => ({ row, index }))
+          .filter(({ row }) => row.ticketId === options?.where?.ticketId);
+
+        const direction = options?.order?.createdAt === 'DESC' ? -1 : 1;
+        matching.sort(
+          (a, b) =>
+            direction * (a.row.createdAt.getTime() - b.row.createdAt.getTime() || a.index - b.index),
+        );
+
+        const ordered = matching.map(({ row }) => row);
+        return options?.take === undefined ? ordered : ordered.slice(0, options.take);
+      },
     ),
   };
 }

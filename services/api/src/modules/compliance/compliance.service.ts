@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { PaginationQueryDto, toFindPaging } from '../../common/dto/pagination-query.dto';
 import { AuditService } from '../audit/audit.service';
 import { AccountsService } from '../ledger/services/accounts.service';
 import { LedgerService } from '../ledger/ledger.service';
@@ -83,12 +84,16 @@ export class ComplianceService {
     return dispute;
   }
 
-  async listMyDisputes(userId: string): Promise<Dispute[]> {
-    return this.disputes.find({ where: { userId }, order: { createdAt: 'DESC' } });
+  async listMyDisputes(userId: string, paging?: PaginationQueryDto): Promise<Dispute[]> {
+    return this.disputes.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      ...toFindPaging(paging),
+    });
   }
 
-  async listAllDisputes(): Promise<Dispute[]> {
-    return this.disputes.find({ order: { createdAt: 'DESC' } });
+  async listAllDisputes(paging?: PaginationQueryDto): Promise<Dispute[]> {
+    return this.disputes.find({ order: { createdAt: 'DESC' }, ...toFindPaging(paging) });
   }
 
   async updateDispute(disputeId: string, adminId: string, dto: UpdateDisputeDto): Promise<Dispute> {
@@ -132,7 +137,7 @@ export class ComplianceService {
     return sar;
   }
 
-  async listSars(): Promise<SuspiciousActivityReport[]> {
-    return this.sars.find({ order: { createdAt: 'DESC' } });
+  async listSars(paging?: PaginationQueryDto): Promise<SuspiciousActivityReport[]> {
+    return this.sars.find({ order: { createdAt: 'DESC' }, ...toFindPaging(paging) });
   }
 }

@@ -34,6 +34,7 @@ export default {
     email_label: 'Email',
     tier_basic: 'Basic account',
     tier_verified: 'Verified account',
+    language_label: 'Language',
     devices_title: 'Connected devices',
     revoke_device: 'Disconnect this device',
     change_pin: 'Change PIN code',
@@ -105,6 +106,7 @@ export default {
     submit_button: 'Withdraw',
     status_completed: 'The withdrawal is complete. The money is on your MonCash account.',
     status_failed: 'The withdrawal failed',
+    status_unconfirmed: 'We cannot confirm this withdrawal right now. Check your history before trying again.',
     status_failed_refunded: 'The withdrawal failed. The money was returned to your Lajan’m account.',
   },
 };

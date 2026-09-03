@@ -39,6 +39,7 @@ export default {
     email_label: 'Imèl',
     tier_basic: 'Kont debaz',
     tier_verified: 'Kont verifye',
+    language_label: 'Lang',
     devices_title: 'Aparèy konekte',
     revoke_device: 'Dekonekte aparèy sa a',
     change_pin: 'Chanje kòd PIN',
@@ -110,6 +111,7 @@ export default {
     submit_button: 'Retire',
     status_completed: 'Retrè a fèt. Lajan an nan kont MonCash ou.',
     status_failed: 'Retrè a echwe',
+    status_unconfirmed: 'Nou pa ka konfime retrè a kounye a. Tanpri gade istorik ou anvan ou eseye ankò.',
     status_failed_refunded: 'Retrè a pa mache. Lajan ou retounen nan kont Lajan’m ou.',
   },
 };

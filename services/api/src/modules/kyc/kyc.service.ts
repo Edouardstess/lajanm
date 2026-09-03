@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PaginationQueryDto, toFindPaging } from '../../common/dto/pagination-query.dto';
 import { AuditService } from '../audit/audit.service';
 import { User, UserTier } from '../auth/entities/user.entity';
 import { DecideKycDto, KycDecision } from './dto/decide-kyc.dto';
@@ -40,8 +41,12 @@ export class KycService {
     return submission;
   }
 
-  async findMine(userId: string): Promise<KycSubmission[]> {
-    return this.submissions.find({ where: { userId }, order: { createdAt: 'DESC' } });
+  async findMine(userId: string, paging?: PaginationQueryDto): Promise<KycSubmission[]> {
+    return this.submissions.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      ...toFindPaging(paging),
+    });
   }
 
   /**
@@ -49,10 +54,11 @@ export class KycService {
    * (compliance/admin auth) adds operator/admin RBAC around this endpoint;
    * for now it only requires a valid user session.
    */
-  async listQueue(): Promise<KycSubmission[]> {
+  async listQueue(paging?: PaginationQueryDto): Promise<KycSubmission[]> {
     return this.submissions.find({
       where: { status: KycStatus.PENDING },
       order: { createdAt: 'ASC' },
+      ...toFindPaging(paging),
     });
   }
 

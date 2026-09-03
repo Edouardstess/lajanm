@@ -60,6 +60,7 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "testPathIgnorePatterns": ["\\.integration\\.spec\\.ts$"],
+    "setupFiles": ["reflect-metadata"],
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },

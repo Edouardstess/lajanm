@@ -14,6 +14,9 @@ module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: 'src',
   testRegex: '\\.integration\\.spec\\.ts$',
+  // Decorated DTOs/entities need the metadata polyfill loaded before any
+  // spec that imports them without pulling in @nestjs/common first.
+  setupFiles: ['reflect-metadata'],
   transform: { '^.+\\.(t|j)s$': 'ts-jest' },
   testEnvironment: 'node',
 };
