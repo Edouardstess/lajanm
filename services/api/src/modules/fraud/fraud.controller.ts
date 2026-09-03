@@ -1,15 +1,10 @@
 import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentAdmin } from '../admin/decorators/current-admin.decorator';
+import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { ResolveFlagDto } from './dto/resolve-flag.dto';
 import { FraudService } from './fraud.service';
 
-/**
- * No role check yet — same pattern as KycController's review queue:
- * authenticated only, until the back-office module adds operator/admin
- * RBAC in front of endpoints like this one.
- */
-@UseGuards(JwtAuthGuard)
+@UseGuards(AdminJwtAuthGuard)
 @Controller('fraud')
 export class FraudController {
   constructor(private readonly fraudService: FraudService) {}
@@ -21,10 +16,10 @@ export class FraudController {
 
   @Patch('flags/:id')
   resolve(
-    @CurrentUser() user: { id: string },
+    @CurrentAdmin() admin: { id: string },
     @Param('id') flagId: string,
     @Body() dto: ResolveFlagDto,
   ) {
-    return this.fraudService.resolve(flagId, user.id, dto);
+    return this.fraudService.resolve(flagId, admin.id, dto);
   }
 }

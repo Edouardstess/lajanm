@@ -18,7 +18,18 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync<{ sub: string; phone: string }>(token);
+      const payload = await this.jwtService.verifyAsync<{ sub: string; phone: string; type?: string }>(
+        token,
+      );
+      // Both token spaces are signed with the same JWT_SECRET, so a valid
+      // signature alone doesn't prove this is a customer token — an admin
+      // token (see AdminAuthService.login) verifies just as validly here
+      // otherwise, and would silently be treated as some user's session
+      // (payload.sub would resolve to an admin_users id, not a users id).
+      // The `type: 'admin'` claim is what tells the two apart.
+      if (payload.type === 'admin') {
+        throw new UnauthorizedException('Admin tokens cannot be used on customer routes');
+      }
       request.user = { id: payload.sub, phone: payload.phone };
       return true;
     } catch {

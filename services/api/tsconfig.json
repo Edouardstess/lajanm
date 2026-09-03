@@ -10,7 +10,12 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true,
+    // Deliberately NOT incremental: nest-cli.json's deleteOutDir wipes
+    // dist on every build, but incremental's .tsbuildinfo cache doesn't
+    // know that happened and can skip re-emitting files it thinks are
+    // already there — producing a dist/ missing most of the app with no
+    // error. Reproduced and confirmed while debugging this. The project
+    // is small enough that a full rebuild every time costs nothing.
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,

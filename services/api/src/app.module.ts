@@ -4,6 +4,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { validate } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { AppController } from './app.controller';
+import { AdminModule } from './modules/admin/admin.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { KycModule } from './modules/kyc/kyc.module';
@@ -37,6 +38,7 @@ import { SupportModule } from './modules/support/support.module';
     DatabaseModule,
     AuditModule,
     AuthModule,
+    AdminModule,
     KycModule,
     LedgerModule,
     TopupModule,
