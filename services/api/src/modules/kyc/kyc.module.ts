@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuditModule } from '../audit/audit.module';
+import { AuthModule } from '../auth/auth.module';
+import { KycSubmission } from './entities/kyc-submission.entity';
 import { KycController } from './kyc.controller';
 import { KycService } from './kyc.service';
 
-/**
- * Placeholder module — wired into AppModule so the module boundary exists
- * from the start (see docs/architecture.md), but the actual business logic
- * for this domain has not been implemented yet.
- */
 @Module({
+  imports: [TypeOrmModule.forFeature([KycSubmission]), AuthModule, AuditModule],
   controllers: [KycController],
   providers: [KycService],
   exports: [KycService],

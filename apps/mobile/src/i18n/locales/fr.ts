@@ -1,0 +1,43 @@
+export default {
+  common: {
+    continue: 'Continuer',
+    cancel: 'Annuler',
+    save: 'Enregistrer',
+    retry: 'Réessayer',
+    loading: 'Chargement...',
+    error_generic: "Une erreur s'est produite. Veuillez réessayer.",
+  },
+  auth: {
+    register_title: 'Créer votre compte',
+    phone_label: 'Numéro de téléphone',
+    pin_label: 'Code PIN (4-6 chiffres)',
+    register_button: 'Créer le compte',
+    login_title: 'Connexion',
+    login_button: 'Se connecter',
+    login_error: 'Numéro de téléphone ou PIN incorrect',
+    already_have_account: 'Vous avez déjà un compte ? Connectez-vous',
+    need_account: "Pas de compte ? Créez-en un",
+  },
+  kyc: {
+    title: 'Vérifier votre identité',
+    explanation:
+      "Prenez une photo de votre pièce d'identité (CIN) et un selfie pour augmenter les limites de votre compte.",
+    id_document_button: "Photographier la pièce d'identité",
+    selfie_button: 'Prendre un selfie',
+    submit_button: 'Envoyer pour vérification',
+    status_pending: 'Vérification en attente',
+    status_approved: 'Identité vérifiée',
+    status_rejected: 'Vérification refusée',
+  },
+  profile: {
+    title: 'Mon profil',
+    full_name_label: 'Nom complet',
+    email_label: 'E-mail',
+    tier_basic: 'Compte basique',
+    tier_verified: 'Compte vérifié',
+    devices_title: 'Appareils connectés',
+    revoke_device: 'Déconnecter cet appareil',
+    change_pin: 'Changer le code PIN',
+    logout: 'Se déconnecter',
+  },
+};

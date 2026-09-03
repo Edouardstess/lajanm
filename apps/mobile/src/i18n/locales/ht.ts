@@ -1,0 +1,47 @@
+// Kreyòl ayisyen — default language (see docs/architecture.md: NF-17/18/19).
+// Wording here should be reviewed by a native speaker before shipping;
+// these are functional placeholders so every screen goes through the
+// translation system from day one instead of hardcoded strings.
+export default {
+  common: {
+    continue: 'Kontinye',
+    cancel: 'Anile',
+    save: 'Anrejistre',
+    retry: 'Eseye ankò',
+    loading: 'Ap chaje...',
+    error_generic: 'Gen yon pwoblèm ki pase. Tanpri eseye ankò.',
+  },
+  auth: {
+    register_title: 'Kreye kont ou',
+    phone_label: 'Nimewo telefòn',
+    pin_label: 'Kòd PIN (4-6 chif)',
+    register_button: 'Kreye kont',
+    login_title: 'Konekte',
+    login_button: 'Konekte',
+    login_error: 'Nimewo telefòn oswa PIN pa kòrèk',
+    already_have_account: 'Ou gen yon kont deja? Konekte',
+    need_account: 'Ou pa gen kont? Kreye youn',
+  },
+  kyc: {
+    title: 'Verifye idantite ou',
+    explanation:
+      'Pran yon foto pyès idantite ou (CIN) epi yon selfi pou ogmante limit kont ou.',
+    id_document_button: 'Pran foto pyès idantite',
+    selfie_button: 'Pran yon selfi',
+    submit_button: 'Voye pou verifikasyon',
+    status_pending: 'N ap tann verifikasyon',
+    status_approved: 'Idantite verifye',
+    status_rejected: 'Verifikasyon refize',
+  },
+  profile: {
+    title: 'Pwofil mwen',
+    full_name_label: 'Non konplè',
+    email_label: 'Imèl',
+    tier_basic: 'Kont debaz',
+    tier_verified: 'Kont verifye',
+    devices_title: 'Aparèy konekte',
+    revoke_device: 'Dekonekte aparèy sa a',
+    change_pin: 'Chanje kòd PIN',
+    logout: 'Dekonekte',
+  },
+};
