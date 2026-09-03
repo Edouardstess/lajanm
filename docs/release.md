@@ -210,6 +210,31 @@ Android refuse de mettre à jour une application dont la signature a changé.
 Pour une clé stable, ajoutez les secrets `ANDROID_KEYSTORE_BASE64`,
 `ANDROID_KEYSTORE_PASSWORD` et `ANDROID_KEY_ALIAS`.
 
+### Installer l'APK sur un téléphone Android
+
+L'APK n'est pas distribué par le Play Store : Android le refuse par défaut,
+il faut l'autoriser explicitement. La marche à suivre, pour une personne
+qui n'est pas développeuse :
+
+1. Télécharger l'APK depuis la section **Artifacts** du run GitHub. Le
+   fichier arrive en `.zip` — le décompresser pour obtenir le `.apk`.
+2. Le transférer sur le téléphone (câble, e-mail à soi-même, Drive…).
+3. L'ouvrir depuis le gestionnaire de fichiers. Android propose alors
+   « Autoriser cette source » : accepter, puis relancer l'installation.
+4. Un avertissement « application non vérifiée » s'affiche : c'est normal
+   pour un APK signé hors Play Store, ce n'est pas un problème de sécurité
+   de l'application elle-même.
+
+Deux limites à connaître avant de le diffuser autour de vous :
+
+- Tant qu'aucune API n'est déployée, l'application **s'installe et affiche
+  l'interface, mais aucune connexion ni consultation de solde ne
+  fonctionne**. C'est une démonstration visuelle, pas le produit.
+- Signé par une clé éphémère, il **ne peut pas être mis à jour** par un
+  build ultérieur : Android refuse d'installer par-dessus une application
+  dont la signature a changé. Il faut désinstaller puis réinstaller. Pour
+  éviter cela, configurez un keystore stable (secrets `ANDROID_KEYSTORE_*`).
+
 En local, la même chose demande le SDK Android (≈ 3 Go) :
 
 ```bash
