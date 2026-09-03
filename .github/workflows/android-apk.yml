@@ -59,12 +59,16 @@ jobs:
             *.example) echo "::warning::URL d'exemple : l'APK s'installera et l'interface s'affichera, mais aucune connexion ni solde ne fonctionnera." ;;
           esac
           echo "url=$URL" >> "$GITHUB_OUTPUT"
+          # Exportée pour TOUTES les étapes suivantes, pas seulement le
+          # prebuild : Gradle réévalue app.config.ts pendant la compilation
+          # (tâche expo-constants:createExpoConfig). Sans la variable à ce
+          # moment-là, le garde-fou d'app.config.ts fait échouer la build —
+          # ce qu'il a effectivement fait au premier run.
+          echo "LAJANM_API_URL=$URL" >> "$GITHUB_ENV"
           echo "URL retenue : $URL"
 
       - name: Générer le projet natif Android
         working-directory: apps/mobile
-        env:
-          LAJANM_API_URL: ${{ steps.api.outputs.url }}
         run: npx expo prebuild --platform android --no-install
 
       # Un APK non signé ne s'installe pas. Si le dépôt fournit un
