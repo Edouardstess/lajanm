@@ -18,6 +18,21 @@ async function bootstrap() {
   );
 
   const config = app.get(ConfigService);
+
+  // admin-web runs on its own origin (a different port even in local dev),
+  // and the mobile app's WebView-based flows (MonCash redirect) may too —
+  // without this, every browser-based caller is silently blocked by CORS
+  // before a request ever reaches a controller. CORS_ORIGINS is a
+  // comma-separated allowlist; unset means "reflect the request origin"
+  // (open, for frictionless local dev) rather than silently defaulting to
+  // a hardcoded origin that would break in every other environment —
+  // tighten this to an explicit allowlist before any real deployment.
+  const corsOrigins = config.get<string>('CORS_ORIGINS');
+  app.enableCors({
+    origin: corsOrigins ? corsOrigins.split(',').map((o) => o.trim()) : true,
+    credentials: true,
+  });
+
   const port = config.get<number>('PORT') ?? 3000;
   await app.listen(port);
 }

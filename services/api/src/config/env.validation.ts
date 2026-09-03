@@ -70,6 +70,14 @@ class EnvironmentVariables {
   @Min(1)
   OTP_THRESHOLD_HTG?: number;
 
+  // Comma-separated allowlist of browser origins permitted by CORS (see
+  // main.ts). Unset means "reflect the request origin" — fine for local
+  // dev across admin-web/mobile-webview ports, but must be set to an
+  // explicit allowlist before any real deployment.
+  @IsOptional()
+  @IsString()
+  CORS_ORIGINS?: string;
+
   // Tier-based daily/monthly caps, layered on top of the per-transaction
   // payout cap. Each is independently configurable and defaults to a
   // conservative value — see SecurityService.getTierLimits.
