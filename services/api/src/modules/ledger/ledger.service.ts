@@ -116,6 +116,20 @@ export class LedgerService {
     });
   }
 
+  /**
+   * Confirms a reserved (PENDING) operation as final, with no change to
+   * its entries — used when an external rail (e.g. MonCash payout)
+   * confirms success for money that was already optimistically debited.
+   * The conditional WHERE means confirming an operation that isn't
+   * currently PENDING (already confirmed, or already reversed) is a
+   * silent no-op rather than corrupting a decision that was already made.
+   */
+  async confirmOperation(operationId: string): Promise<void> {
+    await this.dataSource
+      .getRepository(Operation)
+      .update({ id: operationId, status: OperationStatus.PENDING }, { status: OperationStatus.COMPLETED });
+  }
+
   /** Balance = sum(credits) - sum(debits), always derived, never stored. */
   async getBalance(accountId: string, currency = 'HTG'): Promise<bigint> {
     const row = await this.dataSource

@@ -1,12 +1,12 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, randomUUID } from 'crypto';
-import { DataSource, QueryFailedError } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { AuditService } from '../audit/audit.service';
 import { Account, AccountOwnerType } from '../ledger/entities/account.entity';
-import { Operation } from '../ledger/entities/operation.entity';
 import { LedgerService } from '../ledger/ledger.service';
 import { AccountsService } from '../ledger/services/accounts.service';
+import { FakeLedgerDataSource } from '../../testing/fake-ledger-data-source';
 import { TopupStatus, TopupTransaction } from './entities/topup-transaction.entity';
 import { MonCashClient, MonCashUnavailableError } from './moncash-client.service';
 import { TopupService } from './topup.service';
@@ -15,73 +15,6 @@ const WEBHOOK_SECRET = 'test-webhook-secret';
 
 function sign(body: string): string {
   return createHmac('sha256', WEBHOOK_SECRET).update(body).digest('hex');
-}
-
-/**
- * Same shape as the FakeDataSource in ledger.service.spec.ts: transaction()
- * rolls back only what it itself inserted, and a duplicate idempotencyKey
- * throws a real QueryFailedError with code 23505. Reused here (rather than
- * mocking LedgerService outright) so this test proves the actual
- * idempotency guarantee the webhook handler depends on, not a stub.
- */
-class FakeLedgerDataSource {
-  operations: Array<Record<string, unknown>> = [];
-  entries: Array<Record<string, unknown>> = [];
-
-  async transaction<T>(cb: (manager: unknown) => Promise<T>): Promise<T> {
-    const insertedOperations: Array<Record<string, unknown>> = [];
-    const insertedEntries: Array<Record<string, unknown>> = [];
-    try {
-      return await cb(this.manager(insertedOperations, insertedEntries));
-    } catch (error) {
-      this.operations = this.operations.filter((o) => !insertedOperations.includes(o));
-      this.entries = this.entries.filter((e) => !insertedEntries.includes(e));
-      throw error;
-    }
-  }
-
-  getRepository(entityClass: unknown) {
-    return this.manager([], []).getRepository(entityClass);
-  }
-
-  private manager(
-    insertedOperations: Array<Record<string, unknown>>,
-    insertedEntries: Array<Record<string, unknown>>,
-  ) {
-    return {
-      getRepository: (entityClass: unknown) => {
-        if (entityClass === Operation) {
-          return {
-            create: (data: Record<string, unknown>) => ({ id: randomUUID(), ...data }),
-            save: async (data: Record<string, unknown>) => {
-              if (this.operations.some((o) => o.idempotencyKey === data.idempotencyKey)) {
-                const driverError = Object.assign(new Error('duplicate key'), { code: '23505' });
-                throw new QueryFailedError('INSERT INTO operations ...', [], driverError);
-              }
-              this.operations.push(data);
-              insertedOperations.push(data);
-              return data;
-            },
-            findOneByOrFail: async (where: Record<string, unknown>) => {
-              const found = this.operations.find((o) => o.idempotencyKey === where.idempotencyKey);
-              if (!found) throw new Error('not found');
-              return found;
-            },
-          };
-        }
-        return {
-          create: (data: Record<string, unknown>) => ({ id: randomUUID(), ...data }),
-          save: async (data: Array<Record<string, unknown>>) => {
-            this.entries.push(...data);
-            insertedEntries.push(...data);
-            return data;
-          },
-          findBy: async (where: Record<string, unknown>) =>
-            this.entries.filter((e) => e.operationId === where.operationId),
-        };
-      },
-    };
-  }
 }
 
 function createTransactionsRepo() {

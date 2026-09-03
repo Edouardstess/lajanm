@@ -51,6 +51,17 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   MONCASH_WEBHOOK_SECRET?: string;
+
+  // Regulatory per-transaction payout cap (BRH Circular n°121: 100,000
+  // HTG). Configurable rather than hardcoded so it can be adjusted if the
+  // regulation changes, but ACTIVE BY DEFAULT from the MVP — see
+  // PayoutService and README's governance note. Defaults to 100000 when
+  // unset (falsy check below, not ?? on the raw string, since env vars
+  // arrive as strings and an empty string is falsy too).
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  PAYOUT_MAX_AMOUNT_HTG?: number;
 }
 
 export function validate(config: Record<string, unknown>) {

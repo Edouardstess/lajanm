@@ -66,4 +66,13 @@ export default {
     type_transfer: 'Transfert',
     type_adjustment: 'Ajustement',
   },
+  payout: {
+    title: 'Retirer de l’argent',
+    limit_label: 'Limite par transaction',
+    amount_label: 'Montant (HTG)',
+    submit_button: 'Retirer',
+    status_completed: 'Le retrait est terminé. L’argent est sur votre compte MonCash.',
+    status_failed: 'Le retrait a échoué',
+    status_failed_refunded: "Le retrait a échoué. L'argent a été remis sur votre compte Lajan’m.",
+  },
 };

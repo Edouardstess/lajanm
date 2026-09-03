@@ -21,6 +21,8 @@ import { TopupService } from './topup.service';
   ],
   controllers: [TopupController],
   providers: [TopupService, MonCashClient, TopupInitiationProcessor],
-  exports: [TopupService],
+  // MonCashClient is exported so PayoutModule can reuse the same client
+  // rather than a second instance with its own config wiring.
+  exports: [TopupService, MonCashClient],
 })
 export class TopupModule {}

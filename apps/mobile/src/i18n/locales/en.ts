@@ -65,4 +65,13 @@ export default {
     type_transfer: 'Transfer',
     type_adjustment: 'Adjustment',
   },
+  payout: {
+    title: 'Withdraw money',
+    limit_label: 'Per-transaction limit',
+    amount_label: 'Amount (HTG)',
+    submit_button: 'Withdraw',
+    status_completed: 'The withdrawal is complete. The money is on your MonCash account.',
+    status_failed: 'The withdrawal failed',
+    status_failed_refunded: 'The withdrawal failed. The money was returned to your Lajan’m account.',
+  },
 };

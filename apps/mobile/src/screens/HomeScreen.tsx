@@ -35,6 +35,7 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
 
       <PrimaryButton label={t('wallet.transfer_title')} onPress={() => navigation.navigate('Transfer')} />
       <PrimaryButton label={t('topup.title')} variant="secondary" onPress={() => navigation.navigate('Topup')} />
+      <PrimaryButton label={t('payout.title')} variant="secondary" onPress={() => navigation.navigate('Payout')} />
       <PrimaryButton
         label={t('wallet.history_title')}
         variant="secondary"

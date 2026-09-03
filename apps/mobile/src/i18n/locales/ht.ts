@@ -70,4 +70,13 @@ export default {
     type_transfer: 'Transfè',
     type_adjustment: 'Ajisteman',
   },
+  payout: {
+    title: 'Retire lajan',
+    limit_label: 'Limit pou yon sèl tranzaksyon',
+    amount_label: 'Montan an (HTG)',
+    submit_button: 'Retire',
+    status_completed: 'Retrè a fèt. Lajan an nan kont MonCash ou.',
+    status_failed: 'Retrè a echwe',
+    status_failed_refunded: 'Retrè a pa mache. Lajan ou retounen nan kont Lajan’m ou.',
+  },
 };
