@@ -1,0 +1,100 @@
+# Infrastructure Lajan'm sur Render, décrite dans le dépôt.
+#
+# Déploiement : Render → New → Blueprint → sélectionner ce dépôt.
+# Tout ce qui suit est créé d'un coup ; seuls les secrets marqués
+# `sync: false` restent à saisir dans l'interface.
+#
+# Pourquoi Render plutôt qu'un hébergeur serverless : l'API fait tourner un
+# worker BullMQ (TopupInitiationProcessor) qui rejoue les dépôts MonCash
+# échoués. Il lui faut un processus permanent — sans quoi un client paie
+# chez MonCash et n'est jamais crédité. Voir docs/release.md.
+
+databases:
+  - name: lajanm-postgres
+    databaseName: lajanm
+    user: lajanm
+    # Virginie : la région la plus proche d'Haïti chez Render.
+    region: virginia
+    # Le registre comptable ne tolère pas la perte de données. Le plan
+    # gratuit n'offre aucune sauvegarde et expire au bout de 90 jours : il
+    # ne convient pas, même pour du staging contenant de vraies écritures.
+    plan: basic-256mb
+    ipAllowList: []   # accès via le réseau privé Render uniquement
+
+services:
+  # ---------------------------------------------------------------- API
+  - type: web
+    name: lajanm-api
+    runtime: docker
+    region: virginia
+    plan: starter
+    # Le Dockerfile copie package.json et package-lock.json depuis la
+    # racine du monorepo : le contexte de build doit donc être la racine,
+    # pas services/api.
+    dockerfilePath: ./services/api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+
+    # Applique les migrations AVANT que la nouvelle version ne prenne le
+    # trafic. Sans cela, l'API démarre contre un schéma absent ou périmé
+    # et chaque requête échoue. La variante `:prod` vise le data-source
+    # compilé — `migration:run` dépend de ts-node, absent de l'image.
+    preDeployCommand: npm run migration:run:prod
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lajanm-postgres
+          property: connectionString
+
+      - key: REDIS_URL
+        fromService:
+          name: lajanm-redis
+          type: redis
+          property: connectionString
+
+      # Généré par Render : personne ne le choisit, personne ne le voit
+      # passer, et il ne peut pas être recopié depuis un autre
+      # environnement (NF-24).
+      - key: JWT_SECRET
+        generateValue: true
+
+      # Origine du back-office Vercel. À renseigner après son premier
+      # déploiement : laissée vide, l'API reflète l'origine appelante, ce
+      # qui n'est acceptable qu'en développement local.
+      - key: CORS_ORIGINS
+        sync: false
+
+      # Note de gouvernance (docs/audit-readiness.md) : garder l'URL
+      # sandbox tant que le statut FSP (Circulaire BRH n°121) n'est pas
+      # clarifié. Ne pas basculer sur l'API MonCash de production avant.
+      - key: MONCASH_BASE_URL
+        value: https://sandbox.moncashbutton.digicelgroup.com/Api
+      - key: MONCASH_CLIENT_ID
+        sync: false
+      - key: MONCASH_CLIENT_SECRET
+        sync: false
+      - key: MONCASH_WEBHOOK_SECRET
+        sync: false
+
+      # Plafond réglementaire par transaction (BRH Circulaire n°121),
+      # actif par défaut et non codé en dur.
+      - key: PAYOUT_MAX_AMOUNT_HTG
+        value: 100000
+
+  # -------------------------------------------------------------- Redis
+  - type: redis
+    name: lajanm-redis
+    region: virginia
+    plan: starter
+    # Files BullMQ uniquement : accessible seulement depuis le réseau
+    # privé Render, jamais exposé publiquement.
+    ipAllowList: []
+    # Les files ne doivent pas être vidées sous pression mémoire : un job
+    # de rejeu supprimé, c'est un dépôt client jamais crédité.
+    maxmemoryPolicy: noeviction

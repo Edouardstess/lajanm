@@ -28,7 +28,7 @@ va sur Vercel.
 | Composant | Hébergeur | Pourquoi |
 |---|---|---|
 | `apps/admin-web` (Next.js) | **Vercel** | C'est précisément son usage. `vercel.json` est prêt. |
-| `services/api` (NestJS) | **Pas Vercel** — Railway, Render, Fly.io, ou un VPS | Voir ci-dessous |
+| `services/api` (NestJS) | **Render** — `render.yaml` est prêt | Voir ci-dessous |
 
 ### Pourquoi l'API ne peut pas aller sur Vercel
 
@@ -47,8 +47,49 @@ instance ouvre son propre pool TypeORM, ce qui épuise les connexions
 Postgres sans pooler dédié, et les migrations n'ont aucun moment naturel
 pour s'exécuter.
 
-Tout hébergeur exécutant un conteneur en processus long convient — le
-`Dockerfile` est prêt et testé.
+### Pourquoi Render plutôt que Railway ou Fly.io
+
+- **Fly.io** : son Postgres n'est pas managé — les sauvegardes sont à la
+  charge de l'utilisateur. Inacceptable pour un registre comptable.
+- **Railway** : très bon, mais sa configuration-as-code est limitée ; le
+  déploiement se décrit alors en suite de clics plutôt qu'en fichier
+  versionné.
+- **Render** : `render.yaml` décrit toute l'infrastructure dans le dépôt,
+  son Postgres managé sauvegarde automatiquement, et son
+  `preDeployCommand` applique les migrations **avant** que la nouvelle
+  version ne prenne le trafic — exactement le problème que pose une image
+  qui démarrerait contre un schéma absent.
+
+### Déployer l'API sur Render
+
+Render → **New → Blueprint** → sélectionner ce dépôt. `render.yaml` crée
+d'un coup l'API, PostgreSQL et Redis, en région Virginie (la plus proche
+d'Haïti).
+
+Rien n'est à saisir pour que le premier déploiement réussisse : les cinq
+variables obligatoires (`NODE_ENV`, `PORT`, `DATABASE_URL`, `REDIS_URL`,
+`JWT_SECRET`) sont fournies automatiquement — `JWT_SECRET` est généré par
+Render, donc jamais choisi par un humain ni recopié d'un autre
+environnement. Séquence vérifiée en local à l'identique : 11 migrations
+appliquées par le `preDeployCommand`, API démarrée sans erreur, `/health`
+à 200, inscription/connexion/solde fonctionnels.
+
+À renseigner ensuite dans l'interface Render (tous optionnels au
+démarrage) :
+
+- `CORS_ORIGINS` — l'origine du back-office Vercel, une fois celui-ci
+  déployé. Tant qu'elle est vide, l'API reflète l'origine appelante, ce
+  qui ne convient qu'en développement.
+- `MONCASH_CLIENT_ID`, `MONCASH_CLIENT_SECRET`, `MONCASH_WEBHOOK_SECRET` —
+  identifiants **sandbox** tant que le statut FSP n'est pas clarifié.
+  `MONCASH_BASE_URL` pointe déjà sur le sandbox.
+
+Le plan Postgres retenu est `basic-256mb`, pas le plan gratuit : ce
+dernier n'offre aucune sauvegarde et expire après 90 jours, ce qui exclut
+d'y placer de vraies écritures comptables, même en staging.
+
+Redis est configuré en `noeviction` : une file BullMQ purgée sous pression
+mémoire, c'est un dépôt client jamais rejoué, donc jamais crédité.
 
 ### Déployer le back-office sur Vercel
 
