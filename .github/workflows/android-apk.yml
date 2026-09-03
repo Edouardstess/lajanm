@@ -1,0 +1,128 @@
+name: APK Android (build locale, sans Expo)
+
+# Produit un APK installable et le dépose en artefact du run.
+#
+# Contrairement au workflow EAS, celui-ci ne demande AUCUN compte : les
+# runners GitHub embarquent déjà le SDK Android, donc la compilation se
+# fait sur place avec Gradle. Pas de compte Expo, pas de jeton, pas de
+# compte Apple (Android uniquement — un .ipa exige macOS et un compte
+# Apple Developer, il n'y a pas de contournement).
+#
+# Récupérer l'APK : Actions → ce run → section "Artifacts" en bas.
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: "URL HTTPS de l'API (compilée dans le binaire). Laisser vide = variable de dépôt API_URL_STAGING."
+        type: string
+        required: false
+      variant:
+        description: "release (à distribuer) ou debug (diagnostic, plus lourd)"
+        type: choice
+        default: release
+        options: [release, debug]
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      # L'URL est figée dans le binaire au moment du bundling : elle ne
+      # peut pas être changée après coup sans reconstruire.
+      - name: Déterminer l'URL de l'API
+        id: api
+        run: |
+          URL="${{ inputs.api_url }}"
+          [ -z "$URL" ] && URL="${{ vars.API_URL_STAGING }}"
+          if [ -z "$URL" ]; then
+            echo "::warning::Aucune URL fournie — repli sur le profil staging de eas.json."
+            URL=$(node -e "process.stdout.write(require('./apps/mobile/eas.json').build.staging.env.LAJANM_API_URL)")
+          fi
+          case "$URL" in
+            *.example) echo "::warning::URL d'exemple : l'APK s'installera et l'interface s'affichera, mais aucune connexion ni solde ne fonctionnera." ;;
+          esac
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "URL retenue : $URL"
+
+      - name: Générer le projet natif Android
+        working-directory: apps/mobile
+        env:
+          LAJANM_API_URL: ${{ steps.api.outputs.url }}
+        run: npx expo prebuild --platform android --no-install
+
+      # Un APK non signé ne s'installe pas. Si le dépôt fournit un
+      # keystore, on l'utilise ; sinon on en fabrique un éphémère, ce qui
+      # convient pour tester mais PAS pour publier : chaque run produit
+      # alors une clé différente, et Android refuse de mettre à jour une
+      # app dont la signature a changé.
+      - name: Préparer la signature
+        if: inputs.variant == 'release'
+        working-directory: apps/mobile/android/app
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > release.keystore
+            echo "STORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS_RESOLVED=$KEY_ALIAS"      >> "$GITHUB_ENV"
+            echo "Keystore du dépôt utilisé."
+          else
+            echo "::warning::Aucun keystore configuré — clé éphémère générée. APK utilisable pour tester, jamais pour publier sur le Play Store."
+            keytool -genkeypair -v -keystore release.keystore -alias lajanm \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass lajanm-ephemere -keypass lajanm-ephemere \
+              -dname "CN=Lajanm Test, OU=Dev, O=Lajanm, L=Port-au-Prince, C=HT"
+            echo "STORE_PASSWORD=lajanm-ephemere" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS_RESOLVED=lajanm"      >> "$GITHUB_ENV"
+          fi
+
+      - name: Compiler l'APK
+        working-directory: apps/mobile/android
+        run: |
+          if [ "${{ inputs.variant }}" = "release" ]; then
+            ./gradlew assembleRelease --no-daemon \
+              -Pandroid.injected.signing.store.file="$PWD/app/release.keystore" \
+              -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS_RESOLVED" \
+              -Pandroid.injected.signing.key.password="$STORE_PASSWORD"
+          else
+            ./gradlew assembleDebug --no-daemon
+          fi
+
+      # La clé ne doit jamais partir dans l'artefact téléchargeable.
+      - name: Effacer le keystore
+        if: always()
+        run: rm -f apps/mobile/android/app/release.keystore
+
+      - name: Localiser l'APK
+        id: find
+        run: |
+          APK=$(find apps/mobile/android/app/build/outputs/apk -name '*.apk' | head -1)
+          if [ -z "$APK" ]; then echo "::error::Aucun APK produit."; exit 1; fi
+          ls -lh "$APK"
+          echo "path=$APK" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lajanm-${{ inputs.variant }}-apk
+          path: ${{ steps.find.outputs.path }}
+          retention-days: 30

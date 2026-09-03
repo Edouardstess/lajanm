@@ -20,6 +20,50 @@ l'URL finale oblige à tout reconstruire.
 4. Publier sur les stores
 ```
 
+## Où déployer quoi
+
+Les deux applications n'ont pas les mêmes besoins, et une seule des deux
+va sur Vercel.
+
+| Composant | Hébergeur | Pourquoi |
+|---|---|---|
+| `apps/admin-web` (Next.js) | **Vercel** | C'est précisément son usage. `vercel.json` est prêt. |
+| `services/api` (NestJS) | **Pas Vercel** — Railway, Render, Fly.io, ou un VPS | Voir ci-dessous |
+
+### Pourquoi l'API ne peut pas aller sur Vercel
+
+Ce n'est pas une préférence, c'est une incompatibilité qui coûterait de
+l'argent aux clients.
+
+`TopupInitiationProcessor` est un **worker BullMQ** : quand MonCash est
+indisponible, la demande de dépôt est mise en file et rejouée plus tard.
+Vercel est serverless — un processus s'arrête dès la réponse envoyée, il
+n'existe aucun consommateur permanent. **Les dépôts échoués seraient mis
+en file et jamais rejoués** : le client a payé chez MonCash, et son solde
+n'est jamais crédité.
+
+S'ajoutent deux problèmes classiques du serverless pour cette API : chaque
+instance ouvre son propre pool TypeORM, ce qui épuise les connexions
+Postgres sans pooler dédié, et les migrations n'ont aucun moment naturel
+pour s'exécuter.
+
+Tout hébergeur exécutant un conteneur en processus long convient — le
+`Dockerfile` est prêt et testé.
+
+### Déployer le back-office sur Vercel
+
+1. Vercel → New Project → importer le dépôt
+2. **Root Directory : `apps/admin-web`**, et activer « Include source files
+   outside of the Root Directory » (le monorepo utilise les workspaces npm)
+3. Variable d'environnement : `NEXT_PUBLIC_API_BASE_URL` = l'URL publique
+   de votre API
+4. Ajouter l'origine Vercel à `CORS_ORIGINS` côté API, sinon le navigateur
+   bloque chaque requête avant qu'elle n'atteigne un contrôleur
+
+`vercel.json` fixe déjà les en-têtes de sécurité (`X-Frame-Options: DENY`
+contre le clickjacking, HSTS, `noindex` — une console d'exploitation n'a
+rien à faire dans un moteur de recherche).
+
 ## Étape 1 — Déployer l'API
 
 Il vous faut, chez l'hébergeur de votre choix :
@@ -110,10 +154,22 @@ eas build --profile production --platform all
 EAS génère et conserve les clés de signature. Le lien de téléchargement
 s'affiche à la fin du build.
 
-### Alternative Android sans compte Expo
+### Obtenir un APK sans aucun compte (recommandé pour démarrer)
 
-Un APK peut se construire localement, mais il faut le SDK Android
-(≈ 3 Go) et gérer soi-même la clé de signature :
+Le workflow **« APK Android (build locale, sans Expo) »** compile l'APK
+directement sur un runner GitHub, dont le SDK Android est préinstallé.
+Aucun compte Expo, aucun jeton, aucun compte Apple.
+
+Actions → *APK Android* → Run workflow → l'APK se télécharge dans la
+section « Artifacts » du run.
+
+Par défaut il est signé avec une clé **éphémère**, régénérée à chaque run :
+parfait pour installer et tester, inutilisable pour le Play Store, car
+Android refuse de mettre à jour une application dont la signature a changé.
+Pour une clé stable, ajoutez les secrets `ANDROID_KEYSTORE_BASE64`,
+`ANDROID_KEYSTORE_PASSWORD` et `ANDROID_KEY_ALIAS`.
+
+En local, la même chose demande le SDK Android (≈ 3 Go) :
 
 ```bash
 cd apps/mobile
@@ -121,7 +177,7 @@ LAJANM_API_URL=https://api.VOTRE-DOMAINE.ht npx expo prebuild --platform android
 cd android && ./gradlew assembleRelease
 ```
 
-Il n'existe **aucun équivalent pour iOS sans macOS.**
+Il n'existe **aucun équivalent pour iOS sans macOS ni compte Apple.**
 
 ## Étape 4 — Publier
 
