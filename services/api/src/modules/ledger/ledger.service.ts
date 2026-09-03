@@ -122,7 +122,14 @@ export class LedgerService {
       .getRepository(LedgerEntry)
       .createQueryBuilder('entry')
       .select(
-        `COALESCE(SUM(CASE WHEN entry.direction = :credit THEN entry.amountMinor ELSE -entry.amountMinor END), 0)`,
+        // Quoted column name: unlike `.where()`/`.andWhere()`, TypeORM does
+        // NOT rewrite bare `alias.property` tokens inside a raw `.select()`
+        // expression into the correctly-cased quoted column — Postgres then
+        // folds the unquoted "amountMinor" to "amountminor" and the column
+        // lookup fails. Verified against a real Postgres instance, not
+        // just the in-memory test double (which doesn't execute real SQL
+        // and so never caught this).
+        `COALESCE(SUM(CASE WHEN entry.direction = :credit THEN entry."amountMinor" ELSE -entry."amountMinor" END), 0)`,
         'balance',
       )
       .where('entry.accountId = :accountId', { accountId })
@@ -131,6 +138,42 @@ export class LedgerService {
       .getRawOne<{ balance: string }>();
 
     return BigInt(row?.balance ?? '0');
+  }
+
+  /**
+   * Paginated read of an account's movement history, each entry annotated
+   * with its operation's type (topup/payout/transfer/adjustment) so
+   * callers (e.g. WalletService) can filter/label without a second query
+   * per entry.
+   */
+  async listEntries(
+    accountId: string,
+    options: {
+      limit?: number;
+      offset?: number;
+      from?: Date;
+      to?: Date;
+      types?: OperationType[];
+    } = {},
+  ): Promise<Array<LedgerEntry & { operationType: OperationType }>> {
+    const limit = Math.min(options.limit ?? 20, 100);
+    const offset = options.offset ?? 0;
+
+    const qb = this.dataSource
+      .getRepository(LedgerEntry)
+      .createQueryBuilder('entry')
+      .innerJoinAndSelect('entry.operation', 'operation')
+      .where('entry.accountId = :accountId', { accountId })
+      .orderBy('entry.createdAt', 'DESC')
+      .limit(limit)
+      .offset(offset);
+
+    if (options.from) qb.andWhere('entry.createdAt >= :from', { from: options.from });
+    if (options.to) qb.andWhere('entry.createdAt <= :to', { to: options.to });
+    if (options.types?.length) qb.andWhere('operation.type IN (:...types)', { types: options.types });
+
+    const entries = await qb.getMany();
+    return entries.map((entry) => Object.assign(entry, { operationType: entry.operation.type }));
   }
 
   private async postOperationWithManager(

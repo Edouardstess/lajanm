@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
+import { AuditModule } from '../audit/audit.module';
+import { AuthModule } from '../auth/auth.module';
+import { LedgerModule } from '../ledger/ledger.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { WalletController } from './wallet.controller';
 import { WalletService } from './wallet.service';
 
-/**
- * Placeholder module — wired into AppModule so the module boundary exists
- * from the start (see docs/architecture.md), but the actual business logic
- * for this domain has not been implemented yet.
- */
 @Module({
+  imports: [AuthModule, AuditModule, LedgerModule, NotificationsModule],
   controllers: [WalletController],
   providers: [WalletService],
   exports: [WalletService],

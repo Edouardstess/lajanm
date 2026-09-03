@@ -5,12 +5,14 @@ import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n';
 import { DevicesScreen } from '../screens/DevicesScreen';
+import { HistoryScreen } from '../screens/HistoryScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { KycCaptureScreen } from '../screens/KycCaptureScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
 import { TopupScreen } from '../screens/TopupScreen';
+import { TransferScreen } from '../screens/TransferScreen';
 import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator();
@@ -29,6 +31,8 @@ function AppStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Lajan’m' }} />
+      <Stack.Screen name="Transfer" component={TransferScreen} options={{ title: t('wallet.transfer_title') }} />
+      <Stack.Screen name="History" component={HistoryScreen} options={{ title: t('wallet.history_title') }} />
       <Stack.Screen name="Topup" component={TopupScreen} options={{ title: t('topup.title') }} />
       <Stack.Screen name="Kyc" component={KycCaptureScreen} options={{ title: t('kyc.title') }} />
       <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: t('profile.title') }} />

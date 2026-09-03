@@ -62,5 +62,8 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Integration test (real Postgres)
+        run: npm run test:integration -w @lajanm/api
+
       - name: Build
         run: npm run build
