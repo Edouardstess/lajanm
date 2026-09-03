@@ -1,0 +1,38 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "LAJANM_API_URL": "http://10.0.2.2:3000"
+      }
+    },
+
+    "staging": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "LAJANM_API_URL": "https://api-staging.lajanm.example"
+      }
+    },
+
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "LAJANM_API_URL": "https://api.lajanm.example"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

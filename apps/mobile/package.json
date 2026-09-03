@@ -23,11 +23,11 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
-    "dev": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
+    "start": "LAJANM_API_URL=${LAJANM_API_URL:-http://10.0.2.2:3000} expo start",
+    "dev": "LAJANM_API_URL=${LAJANM_API_URL:-http://10.0.2.2:3000} expo start",
+    "android": "LAJANM_API_URL=${LAJANM_API_URL:-http://10.0.2.2:3000} expo start --android",
+    "ios": "LAJANM_API_URL=${LAJANM_API_URL:-http://localhost:3000} expo start --ios",
+    "web": "LAJANM_API_URL=${LAJANM_API_URL:-http://localhost:3000} expo start --web",
     "lint": "tsc --noEmit && node scripts/check-i18n.js"
   },
   "private": true

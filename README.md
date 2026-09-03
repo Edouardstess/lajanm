@@ -99,3 +99,4 @@ rationale and `LedgerService`'s tests for the invariants this guarantees.
 | `docs/topup.md` | The MonCash top-up flow and its webhook |
 | `docs/offline-and-performance.md` | Behaviour on 2G/EDGE: what the app may claim when a request gets no answer, request timeouts, and payload bounds |
 | `docs/audit-readiness.md` | What an external security auditor should look at, what is in place, and the known gaps — read this before commissioning an audit |
+| `docs/release.md` | Deploying the API and building the Android/iOS installers: what you must supply (accounts, domain), and the exact commands |
