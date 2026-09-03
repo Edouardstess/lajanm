@@ -62,6 +62,28 @@ const config: ExpoConfig = {
     package: ANDROID_PACKAGE,
     // Must strictly increase on every Play Store upload.
     versionCode: 1,
+
+    // KycCaptureScreen calls ImagePicker.launchCameraAsync(), which on
+    // Android needs CAMERA declared in the manifest. Without it the ID/
+    // selfie capture fails on a real device — a failure that never shows
+    // up in Expo Go or a simulator, only in a built APK.
+    permissions: ['android.permission.CAMERA'],
+
+    // Everything a wallet does NOT need. Expo merges these in from
+    // expo-image-picker and the base template, and each one is a real
+    // cost: the store listing shows them, and reviewers scrutinise them.
+    //
+    // SYSTEM_ALERT_WINDOW is the serious one. "Draw over other apps" is
+    // the standard Android overlay-attack vector used by banking trojans,
+    // so a financial app requesting it invites both Play Store rejection
+    // and an auditor's attention. It arrives in src/main (not just the
+    // debug variant), so it would otherwise ship in release builds.
+    blockedPermissions: [
+      'android.permission.SYSTEM_ALERT_WINDOW',
+      'android.permission.RECORD_AUDIO',
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.WRITE_EXTERNAL_STORAGE',
+    ],
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/android-icon-foreground.png',
@@ -80,6 +102,10 @@ const config: ExpoConfig = {
       {
         cameraPermission:
           "Lajan'm bezwen aksè a kamera a pou verifye idantite ou (pyès idantite + selfi).",
+        // The picker supports video, so it requests the microphone by
+        // default. Lajan'm only ever takes stills for KYC — a wallet
+        // asking for microphone access is an obvious trust problem.
+        microphonePermission: false,
       },
     ],
   ],
