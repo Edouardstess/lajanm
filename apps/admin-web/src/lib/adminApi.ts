@@ -130,3 +130,93 @@ export function createSar(subjectUserId: string, relatedOperationIds: string[], 
     body: { subjectUserId, relatedOperationIds, reason },
   });
 }
+
+// --- Support tickets ---
+
+export type TicketCategory = 'general' | 'transaction' | 'kyc' | 'technical' | 'other';
+export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+
+export interface SupportTicket {
+  id: string;
+  userId: string;
+  subject: string;
+  category: TicketCategory;
+  status: TicketStatus;
+  assignedTo: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupportMessage {
+  id: string;
+  ticketId: string;
+  senderId: string;
+  senderType: 'user' | 'admin';
+  body: string;
+  createdAt: string;
+}
+
+export function getTicketQueue(status?: TicketStatus) {
+  const query = status ? `?status=${status}` : '';
+  return apiRequest<SupportTicket[]>(`/support/tickets/queue${query}`, { authenticated: true });
+}
+
+export function getTicket(id: string) {
+  return apiRequest<{ ticket: SupportTicket; messages: SupportMessage[] }>(
+    `/support/tickets/queue/${id}`,
+    { authenticated: true },
+  );
+}
+
+export function replyToTicket(id: string, body: string) {
+  return apiRequest<SupportMessage>(`/support/tickets/${id}/reply`, {
+    method: 'POST',
+    authenticated: true,
+    body: { body },
+  });
+}
+
+export function updateTicket(id: string, fields: { status?: TicketStatus }) {
+  return apiRequest<SupportTicket>(`/support/tickets/${id}`, {
+    method: 'PATCH',
+    authenticated: true,
+    body: fields,
+  });
+}
+
+// --- FAQ content ---
+
+export interface FaqEntry {
+  id: string;
+  category: string;
+  question: string;
+  answer: string;
+  sortOrder: number;
+  isPublished: boolean;
+}
+
+export function getAllFaqs() {
+  return apiRequest<FaqEntry[]>('/support/faq/all', { authenticated: true });
+}
+
+export function createFaq(fields: {
+  category: string;
+  question: string;
+  answer: string;
+  sortOrder?: number;
+  isPublished?: boolean;
+}) {
+  return apiRequest<FaqEntry>('/support/faq', { method: 'POST', authenticated: true, body: fields });
+}
+
+export function updateFaq(id: string, fields: Partial<Omit<FaqEntry, 'id'>>) {
+  return apiRequest<FaqEntry>(`/support/faq/${id}`, {
+    method: 'PATCH',
+    authenticated: true,
+    body: fields,
+  });
+}
+
+export function deleteFaq(id: string) {
+  return apiRequest<{ deleted: true }>(`/support/faq/${id}`, { method: 'DELETE', authenticated: true });
+}

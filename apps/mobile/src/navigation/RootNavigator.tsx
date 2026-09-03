@@ -9,9 +9,12 @@ import { HistoryScreen } from '../screens/HistoryScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { KycCaptureScreen } from '../screens/KycCaptureScreen';
 import { LoginScreen } from '../screens/LoginScreen';
+import { NewTicketScreen } from '../screens/NewTicketScreen';
 import { PayoutScreen } from '../screens/PayoutScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
+import { SupportScreen } from '../screens/SupportScreen';
+import { TicketThreadScreen } from '../screens/TicketThreadScreen';
 import { TopupScreen } from '../screens/TopupScreen';
 import { TransferScreen } from '../screens/TransferScreen';
 import { AppLockGate } from '../security/AppLockGate';
@@ -43,6 +46,17 @@ function AppStack() {
         name="Devices"
         component={DevicesScreen}
         options={{ title: t('profile.devices_title') }}
+      />
+      <Stack.Screen name="Support" component={SupportScreen} options={{ title: t('support.title') }} />
+      <Stack.Screen
+        name="SupportNewTicket"
+        component={NewTicketScreen}
+        options={{ title: t('support.new_ticket') }}
+      />
+      <Stack.Screen
+        name="SupportTicket"
+        component={TicketThreadScreen}
+        options={{ title: t('support.tickets_title') }}
       />
     </Stack.Navigator>
   );

@@ -9,6 +9,8 @@ const sections = [
   { href: '/kyc', label: 'KYC queue', description: 'Review pending identity verifications' },
   { href: '/fraud', label: 'Fraud flags', description: 'Triage velocity-rule hits' },
   { href: '/disputes', label: 'Disputes', description: 'Customer-filed transaction complaints' },
+  { href: '/tickets', label: 'Support tickets', description: 'Answer customer help requests' },
+  { href: '/faq', label: 'FAQ content', description: 'Publish answers shown in the mobile app' },
   { href: '/sar', label: 'Suspicious activity reports', description: 'Internal UCREF-filing documentation' },
 ];
 

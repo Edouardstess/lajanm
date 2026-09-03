@@ -9,6 +9,8 @@ const links = [
   { href: '/kyc', label: 'KYC queue' },
   { href: '/fraud', label: 'Fraud flags' },
   { href: '/disputes', label: 'Disputes' },
+  { href: '/tickets', label: 'Tickets' },
+  { href: '/faq', label: 'FAQ' },
   { href: '/sar', label: 'SAR' },
 ];
 

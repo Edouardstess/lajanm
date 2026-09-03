@@ -46,6 +46,11 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
         variant="secondary"
         onPress={() => navigation.navigate('Profile')}
       />
+      <PrimaryButton
+        label={t('support.title')}
+        variant="secondary"
+        onPress={() => navigation.navigate('Support')}
+      />
     </View>
   );
 }
