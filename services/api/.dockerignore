@@ -1,0 +1,19 @@
+# Sans ce fichier, `COPY services/api services/api` embarque le
+# node_modules de la machine hôte dans l'image : des binaires natifs
+# compilés pour la mauvaise plateforme (argon2 en particulier) écrasent
+# ceux que `npm ci` vient d'installer, et l'image gonfle de centaines de
+# mégaoctets.
+node_modules
+dist
+coverage
+.turbo
+
+# Ne jamais laisser un secret entrer dans une image : une image est
+# distribuée, et un `docker history` révèle le contenu des couches.
+.env
+.env.*
+!.env.*.example
+
+*.log
+.git
+.DS_Store

@@ -68,7 +68,8 @@ with `docker compose up`.
 | Command | What it does |
 |---|---|
 | `npm run migration:generate -w @lajanm/api -- <Name>` | Generate a migration from entity changes |
-| `npm run migration:run -w @lajanm/api` | Apply pending migrations |
+| `npm run migration:run -w @lajanm/api` | Apply pending migrations (development — uses ts-node) |
+| `npm run migration:run:prod -w @lajanm/api` | Apply pending migrations from a production image (compiled data-source, no ts-node) |
 | `npm run migration:revert -w @lajanm/api` | Revert the last migration |
 | `npm run test:integration -w @lajanm/api` | Run the money-invariant tests against a real, migrated Postgres |
 | `npm run check:migrations-reversible -w @lajanm/api` | Walk every migration down and back up |

@@ -41,7 +41,14 @@ secrets de votre plateforme.
   jamais laissée vide — vide = « refléter l'origine appelante », correct en
   dev seulement.
 - `JWT_SECRET` propre à la production, jamais copié depuis staging.
-- Appliquer les migrations au déploiement : `npm run migration:run -w @lajanm/api`.
+- Appliquer les migrations au déploiement, **depuis l'image de
+  production** : `npm run migration:run:prod`. La variante `migration:run`
+  ne fonctionne qu'en développement : elle passe par ts-node et les
+  sources TypeScript, tous deux absents de l'image (`npm ci --omit=dev`,
+  et seul `dist` est copié). La variante `:prod` vise le data-source
+  compilé et le CLI `typeorm`, qui est une dépendance de production.
+  Lancez-la **avant** de démarrer l'API : sans schéma, chaque requête
+  échoue.
 - Créer le premier compte back-office (il n'y a pas d'auto-inscription) :
   `npm run seed:admin -w @lajanm/api -- --email=... --password=... --role=admin`
 

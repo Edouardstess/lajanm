@@ -14,6 +14,25 @@ COPY package.json package-lock.json ./
 COPY services/api/package.json services/api/package.json
 RUN npm ci --omit=dev --no-audit --no-fund -w @lajanm/api
 COPY --from=build /repo/services/api/dist services/api/dist
+
+# Les migrations doivent pouvoir tourner depuis CETTE image, avant que
+# l'API ne démarre. C'est pourquoi le script de production vise le
+# data-source compilé (dist/database/data-source.js) et le CLI `typeorm`,
+# qui est une dépendance de production : `npm run migration:run` passe par
+# typeorm-ts-node-commonjs et src/*.ts, tous deux absents ici après
+# --omit=dev. Voir migration:run:prod dans services/api/package.json.
+
+# Un service financier ne tourne pas en root. L'image node fournit déjà un
+# utilisateur `node` non privilégié ; il n'a besoin d'aucun droit d'écriture
+# sur le code.
+USER node
+
 WORKDIR /repo/services/api
 EXPOSE 3000
+
+# Permet à l'orchestrateur de ne router du trafic que vers une instance
+# réellement prête, et de redémarrer celles qui ne répondent plus.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "require('http').get('http://127.0.0.1:'+(process.env.PORT||3000)+'/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+
 CMD ["node", "dist/main.js"]

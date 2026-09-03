@@ -64,6 +64,27 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      # L'URL de l'API peut venir d'une variable de dépôt plutôt que du
+      # fichier, pour qu'en changer ne demande pas de commit :
+      #   Settings → Secrets and variables → Actions → Variables
+      #   API_URL_STAGING / API_URL_PRODUCTION
+      # eas.json reste le repli si la variable n'est pas définie.
+      - name: Injecter l'URL de l'API dans le profil
+        env:
+          OVERRIDE: ${{ inputs.profile == 'production' && vars.API_URL_PRODUCTION || vars.API_URL_STAGING }}
+        run: |
+          if [ -n "$OVERRIDE" ]; then
+            node -e "
+              const fs = require('fs');
+              const j = JSON.parse(fs.readFileSync('eas.json', 'utf8'));
+              j.build['${{ inputs.profile }}'].env.LAJANM_API_URL = process.env.OVERRIDE;
+              fs.writeFileSync('eas.json', JSON.stringify(j, null, 2) + '\n');
+            "
+            echo "URL prise depuis la variable de dépôt."
+          else
+            echo "::notice::Aucune variable d'URL définie — repli sur eas.json."
+          fi
+
       # Les mêmes garde-fous qu'en local : app.config.ts refuse une URL
       # absente ou non-https, donc une erreur de profil se voit ici et non
       # après vingt minutes de build.
@@ -75,7 +96,9 @@ jobs:
           ")
           echo "LAJANM_API_URL du profil ${{ inputs.profile }} : $URL"
           case "$URL" in
-            *.example) echo "::warning::L'URL est un domaine d'exemple — le binaire ne joindra aucune API." ;;
+            *.example)
+              echo "::error::L'URL est encore un domaine d'exemple. Le binaire produit serait installable mais ne joindrait aucune API. Définissez la variable de dépôt API_URL_STAGING / API_URL_PRODUCTION, ou corrigez apps/mobile/eas.json."
+              exit 1 ;;
           esac
           LAJANM_API_URL="$URL" npx expo config --type public > /dev/null
           echo "Configuration valide."
