@@ -70,6 +70,9 @@ with `docker compose up`.
 | `npm run migration:generate -w @lajanm/api -- <Name>` | Generate a migration from entity changes |
 | `npm run migration:run -w @lajanm/api` | Apply pending migrations |
 | `npm run migration:revert -w @lajanm/api` | Revert the last migration |
+| `npm run test:integration -w @lajanm/api` | Run the money-invariant tests against a real, migrated Postgres |
+| `npm run check:migrations-reversible -w @lajanm/api` | Walk every migration down and back up |
+| `npm run seed:admin -w @lajanm/api -- --email=... --password=... --role=admin` | Create a back-office account (there is no self-registration) |
 
 ## Environments
 
@@ -87,3 +90,12 @@ set of debit/credit entries tied to an idempotency key, and ledger entries
 are never updated or deleted once written — corrections are posted as new,
 reversing entries. See `docs/architecture.md` for the full design
 rationale and `LedgerService`'s tests for the invariants this guarantees.
+
+## Documentation
+
+| Document | Contents |
+|---|---|
+| `docs/architecture.md` | Stack choices, the ledger design, regulatory-driven technical requirements |
+| `docs/topup.md` | The MonCash top-up flow and its webhook |
+| `docs/offline-and-performance.md` | Behaviour on 2G/EDGE: what the app may claim when a request gets no answer, request timeouts, and payload bounds |
+| `docs/audit-readiness.md` | What an external security auditor should look at, what is in place, and the known gaps — read this before commissioning an audit |

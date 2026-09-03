@@ -65,5 +65,11 @@ jobs:
       - name: Integration test (real Postgres)
         run: npm run test:integration -w @lajanm/api
 
+      # A broken down() migration is otherwise discovered during a
+      # production rollback, at the worst possible moment. Runs last among
+      # the database steps because it leaves the schema freshly re-applied.
+      - name: Migrations are reversible
+        run: npm run check:migrations-reversible -w @lajanm/api
+
       - name: Build
         run: npm run build
