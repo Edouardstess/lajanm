@@ -40,4 +40,14 @@ export default {
     change_pin: 'Changer le code PIN',
     logout: 'Se déconnecter',
   },
+  topup: {
+    title: 'Recharger votre compte',
+    amount_label: 'Montant (HTG)',
+    submit_button: 'Continuer avec MonCash',
+    status_pending: 'En attente de confirmation MonCash. Cela peut prendre quelques minutes.',
+    status_completed: 'Le montant a été crédité sur votre compte',
+    status_failed: 'La recharge a échoué. Réessayez.',
+    check_status: 'Vérifier le statut',
+    history_title: 'Historique des recharges',
+  },
 };

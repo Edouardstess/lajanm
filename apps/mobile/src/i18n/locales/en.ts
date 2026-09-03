@@ -39,4 +39,14 @@ export default {
     change_pin: 'Change PIN code',
     logout: 'Log out',
   },
+  topup: {
+    title: 'Top up your account',
+    amount_label: 'Amount (HTG)',
+    submit_button: 'Continue with MonCash',
+    status_pending: 'Waiting for MonCash confirmation. This can take a few minutes.',
+    status_completed: 'The amount has been credited to your account',
+    status_failed: 'The top-up failed. Please try again.',
+    check_status: 'Check status',
+    history_title: 'Top-up history',
+  },
 };

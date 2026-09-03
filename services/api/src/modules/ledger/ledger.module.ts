@@ -4,10 +4,11 @@ import { Account } from './entities/account.entity';
 import { LedgerEntry } from './entities/ledger-entry.entity';
 import { Operation } from './entities/operation.entity';
 import { LedgerService } from './ledger.service';
+import { AccountsService } from './services/accounts.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Account, Operation, LedgerEntry])],
-  providers: [LedgerService],
-  exports: [LedgerService],
+  providers: [LedgerService, AccountsService],
+  exports: [LedgerService, AccountsService],
 })
 export class LedgerModule {}

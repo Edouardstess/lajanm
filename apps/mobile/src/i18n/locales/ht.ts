@@ -44,4 +44,14 @@ export default {
     change_pin: 'Chanje kòd PIN',
     logout: 'Dekonekte',
   },
+  topup: {
+    title: 'Mete lajan nan kont ou',
+    amount_label: 'Montan an (HTG)',
+    submit_button: 'Kontinye ak MonCash',
+    status_pending: 'N ap tann konfimasyon MonCash. Sa ka pran kèk minit.',
+    status_completed: 'Lajan an anrejistre nan kont ou',
+    status_failed: 'Depo a pa mache. Eseye ankò.',
+    check_status: 'Verifye estati a',
+    history_title: 'Istorik depo',
+  },
 };

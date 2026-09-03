@@ -10,6 +10,7 @@ import { KycCaptureScreen } from '../screens/KycCaptureScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
+import { TopupScreen } from '../screens/TopupScreen';
 import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator();
@@ -28,6 +29,7 @@ function AppStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Lajan’m' }} />
+      <Stack.Screen name="Topup" component={TopupScreen} options={{ title: t('topup.title') }} />
       <Stack.Screen name="Kyc" component={KycCaptureScreen} options={{ title: t('kyc.title') }} />
       <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: t('profile.title') }} />
       <Stack.Screen

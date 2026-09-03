@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsInt, IsString, Max, Min, validateSync } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min, validateSync } from 'class-validator';
 
 enum Environment {
   Development = 'development',
@@ -30,6 +30,27 @@ class EnvironmentVariables {
 
   @IsString()
   JWT_SECRET: string;
+
+  // MonCash integration: optional at boot (so the app still starts in an
+  // environment that hasn't configured payments yet). When missing,
+  // MonCashClient treats every call as MonCash-unavailable, which routes
+  // through the same honest "pending, retrying" path as a real outage —
+  // never a silent fake success. See MonCashClient.createPayment.
+  @IsOptional()
+  @IsString()
+  MONCASH_BASE_URL?: string;
+
+  @IsOptional()
+  @IsString()
+  MONCASH_CLIENT_ID?: string;
+
+  @IsOptional()
+  @IsString()
+  MONCASH_CLIENT_SECRET?: string;
+
+  @IsOptional()
+  @IsString()
+  MONCASH_WEBHOOK_SECRET?: string;
 }
 
 export function validate(config: Record<string, unknown>) {
