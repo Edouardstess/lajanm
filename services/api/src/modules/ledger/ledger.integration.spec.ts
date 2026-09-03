@@ -62,4 +62,16 @@ runIfConfigured('LedgerService against a real Postgres instance', () => {
     expect(entries.length).toBeGreaterThan(0);
     expect(entries[0].operationType).toBe(OperationType.ADJUSTMENT);
   });
+
+  it('sums entries by direction via real SQL (same amountMinor-quoting hazard as getBalance)', async () => {
+    const since = new Date(Date.now() - 60_000);
+    expect(await ledgerService.sumDirection(accountA.id, EntryDirection.CREDIT, since)).toBe(12_345n);
+    expect(await ledgerService.sumDirection(accountA.id, EntryDirection.DEBIT, since)).toBe(0n);
+  });
+
+  it('counts entries by direction via real SQL', async () => {
+    const since = new Date(Date.now() - 60_000);
+    expect(await ledgerService.countDirection(accountA.id, EntryDirection.CREDIT, since)).toBe(1);
+    expect(await ledgerService.countDirection(accountA.id, EntryDirection.DEBIT, since)).toBe(0);
+  });
 });

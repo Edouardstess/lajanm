@@ -62,6 +62,57 @@ class EnvironmentVariables {
   @IsInt()
   @Min(1)
   PAYOUT_MAX_AMOUNT_HTG?: number;
+
+  // Sensitive transactions (transfer/payout) at or above this amount
+  // require a verified OTP — see SecurityService.enforceOtpIfRequired.
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  OTP_THRESHOLD_HTG?: number;
+
+  // Tier-based daily/monthly caps, layered on top of the per-transaction
+  // payout cap. Each is independently configurable and defaults to a
+  // conservative value — see SecurityService.getTierLimits.
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  LIMIT_BASIC_DAILY_HTG?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  LIMIT_BASIC_MONTHLY_HTG?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  LIMIT_VERIFIED_DAILY_HTG?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  LIMIT_VERIFIED_MONTHLY_HTG?: number;
+
+  // Fraud velocity-rule thresholds — see FraudService.
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  FRAUD_VELOCITY_COUNT_THRESHOLD?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  FRAUD_VELOCITY_WINDOW_MINUTES?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(2)
+  FRAUD_AMOUNT_MULTIPLIER?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  FRAUD_NEW_BENEFICIARY_THRESHOLD?: number;
 }
 
 export function validate(config: Record<string, unknown>) {

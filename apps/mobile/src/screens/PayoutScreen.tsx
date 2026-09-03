@@ -4,6 +4,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { getPayoutLimit, initiatePayout } from '../api/payout';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { useOtpStep } from '../hooks/useOtpStep';
 import { useTranslation } from '../i18n';
 import { colors, spacing, touchTarget, typography } from '../theme';
 
@@ -16,6 +17,7 @@ export function PayoutScreen() {
   const [state, setState] = useState<ScreenState>('form');
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const otp = useOtpStep('payout');
 
   useEffect(() => {
     getPayoutLimit()
@@ -30,7 +32,7 @@ export function PayoutScreen() {
     setSubmitting(true);
     setMessage(null);
     try {
-      const result = await initiatePayout(amountHTG, Crypto.randomUUID());
+      const result = await initiatePayout(amountHTG, Crypto.randomUUID(), otp.otpPayload);
       if (result.status === 'completed') {
         setState('completed');
       } else {
@@ -38,8 +40,12 @@ export function PayoutScreen() {
         setState('failed');
       }
     } catch (err) {
-      setMessage(err instanceof ApiError ? err.message : t('common.error_generic'));
-      setState('failed');
+      if (err instanceof ApiError && !otp.needsOtp && otp.isOtpRequiredError(err)) {
+        await otp.beginOtpFlow();
+      } else {
+        setMessage(err instanceof ApiError ? err.message : t('common.error_generic'));
+        setState('failed');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -79,9 +85,29 @@ export function PayoutScreen() {
         onChangeText={setAmount}
         keyboardType="number-pad"
         placeholder="500"
+        editable={!otp.needsOtp}
       />
 
-      <PrimaryButton label={t('payout.submit_button')} onPress={onSubmit} loading={submitting} />
+      {otp.needsOtp && (
+        <>
+          <Text style={styles.label}>{t('security.otp_label')}</Text>
+          <TextInput
+            style={styles.input}
+            value={otp.otpCode}
+            onChangeText={otp.setOtpCode}
+            keyboardType="number-pad"
+            maxLength={6}
+            placeholder="123456"
+          />
+        </>
+      )}
+
+      <PrimaryButton
+        label={otp.needsOtp ? t('security.otp_submit') : t('payout.submit_button')}
+        onPress={onSubmit}
+        loading={submitting || otp.requesting}
+        disabled={otp.needsOtp && otp.otpCode.length < 4}
+      />
     </View>
   );
 }

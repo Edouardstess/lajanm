@@ -155,6 +155,48 @@ export class LedgerService {
   }
 
   /**
+   * Sum of entries in one direction (e.g. all debits = money moved out)
+   * for an account since `since`. Used for tier-based daily/monthly caps
+   * and fraud velocity checks — deliberately a dedicated aggregate query
+   * rather than `listEntries(...).reduce(...)`, so a high-volume account
+   * doesn't require loading every row into memory to compute a sum.
+   */
+  async sumDirection(
+    accountId: string,
+    direction: EntryDirection,
+    since: Date,
+    currency = 'HTG',
+  ): Promise<bigint> {
+    const row = await this.dataSource
+      .getRepository(LedgerEntry)
+      .createQueryBuilder('entry')
+      // Quoted column name — see getBalance's comment on why: TypeORM
+      // does not rewrite bare `alias.property` tokens inside a raw
+      // `.select()` expression, so an unquoted amountMinor gets folded to
+      // amountminor by Postgres and the query fails.
+      .select(`COALESCE(SUM(entry."amountMinor"), 0)`, 'total')
+      .where('entry.accountId = :accountId', { accountId })
+      .andWhere('entry.direction = :direction', { direction })
+      .andWhere('entry.currency = :currency', { currency })
+      .andWhere('entry.createdAt >= :since', { since })
+      .getRawOne<{ total: string }>();
+
+    return BigInt(row?.total ?? '0');
+  }
+
+  /** Count of entries in one direction for an account since `since` — used by fraud velocity checks. */
+  async countDirection(accountId: string, direction: EntryDirection, since: Date): Promise<number> {
+    const count = await this.dataSource
+      .getRepository(LedgerEntry)
+      .createQueryBuilder('entry')
+      .where('entry.accountId = :accountId', { accountId })
+      .andWhere('entry.direction = :direction', { direction })
+      .andWhere('entry.createdAt >= :since', { since })
+      .getCount();
+    return count;
+  }
+
+  /**
    * Paginated read of an account's movement history, each entry annotated
    * with its operation's type (topup/payout/transfer/adjustment) so
    * callers (e.g. WalletService) can filter/label without a second query

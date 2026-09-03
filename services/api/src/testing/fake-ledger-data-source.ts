@@ -78,7 +78,11 @@ export class FakeLedgerDataSource {
         }
         // LedgerEntry repository
         return {
-          create: (data: Record<string, unknown>) => ({ id: randomUUID(), ...data }),
+          create: (data: Record<string, unknown>) => ({
+            id: randomUUID(),
+            createdAt: new Date(),
+            ...data,
+          }),
           save: async (data: Array<Record<string, unknown>>) => {
             this.entries.push(...data);
             insertedEntries.push(...data);
@@ -88,8 +92,20 @@ export class FakeLedgerDataSource {
             this.entries.filter((e) => Object.entries(where).every(([k, v]) => e[k] === v)),
           createQueryBuilder: () => {
             const params: Record<string, unknown> = {};
+            let limitVal: number | undefined;
+            let offsetVal: number | undefined;
             const builder = {
               select: () => builder,
+              innerJoinAndSelect: () => builder,
+              orderBy: () => builder,
+              limit: (n: number) => {
+                limitVal = n;
+                return builder;
+              },
+              offset: (n: number) => {
+                offsetVal = n;
+                return builder;
+              },
               where: (_expr: string, p: Record<string, unknown>) => {
                 Object.assign(params, p);
                 return builder;
@@ -102,10 +118,67 @@ export class FakeLedgerDataSource {
                 params[key] = value;
                 return builder;
               },
-              getRawOne: async () => {
-                const relevant = this.entries.filter(
-                  (e) => e.accountId === params.accountId && e.currency === params.currency,
+              // Mirrors LedgerService.listEntries: filter by account/date
+              // range/operation type, join the operation, sort newest
+              // first, then page.
+              getMany: async () => {
+                let result = this.entries.filter((e) => e.accountId === params.accountId);
+                if (params.from) {
+                  result = result.filter(
+                    (e) => new Date(e.createdAt as string | Date) >= (params.from as Date),
+                  );
+                }
+                if (params.to) {
+                  result = result.filter(
+                    (e) => new Date(e.createdAt as string | Date) <= (params.to as Date),
+                  );
+                }
+
+                let withOperation: Array<Record<string, unknown>> = result.map((e) => ({
+                  ...e,
+                  operation: this.operations.find((o) => o.id === e.operationId),
+                }));
+
+                if (params.types) {
+                  const types = params.types as unknown[];
+                  withOperation = withOperation.filter((e) =>
+                    types.includes((e.operation as Record<string, unknown> | undefined)?.type),
+                  );
+                }
+
+                withOperation.sort(
+                  (a, b) =>
+                    new Date(b.createdAt as string | Date).getTime() -
+                    new Date(a.createdAt as string | Date).getTime(),
                 );
+
+                const paged = withOperation.slice(offsetVal ?? 0);
+                return limitVal !== undefined ? paged.slice(0, limitVal) : paged;
+              },
+              getCount: async () => {
+                return this.entries.filter((e) => {
+                  if (e.accountId !== params.accountId) return false;
+                  if ('direction' in params && e.direction !== params.direction) return false;
+                  if (params.since && new Date(e.createdAt as string | Date) < params.since) return false;
+                  return true;
+                }).length;
+              },
+              getRawOne: async () => {
+                const relevant = this.entries.filter((e) => {
+                  if (e.accountId !== params.accountId || e.currency !== params.currency) return false;
+                  if (params.since && new Date(e.createdAt as string | Date) < params.since) return false;
+                  return true;
+                });
+
+                if ('direction' in params) {
+                  // sumDirection: filter to one direction, sum plainly.
+                  const total = relevant
+                    .filter((e) => e.direction === params.direction)
+                    .reduce((sum, e) => sum + BigInt(e.amountMinor as string), 0n);
+                  return { total: total.toString() };
+                }
+
+                // getBalance: credits add, debits subtract.
                 let balance = 0n;
                 for (const e of relevant) {
                   const amount = BigInt(e.amountMinor as string);

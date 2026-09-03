@@ -1,4 +1,4 @@
-import { IsInt, IsUUID, Matches, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, Matches, Min } from 'class-validator';
 
 export class TransferDto {
   @Matches(/^\+?[0-9]{8,15}$/, { message: 'recipientPhone must be a valid phone number' })
@@ -16,4 +16,16 @@ export class TransferDto {
    */
   @IsUUID()
   clientRequestId: string;
+
+  /**
+   * Required only when amountHTG is at/above SecurityService's OTP
+   * threshold — obtained from POST /security/otp/request beforehand.
+   */
+  @IsOptional()
+  @IsUUID()
+  otpRequestId?: string;
+
+  @IsOptional()
+  @IsString()
+  otpCode?: string;
 }

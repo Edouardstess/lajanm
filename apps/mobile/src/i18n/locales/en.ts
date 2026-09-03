@@ -65,6 +65,13 @@ export default {
     type_transfer: 'Transfer',
     type_adjustment: 'Adjustment',
   },
+  security: {
+    locked_title: 'App locked',
+    unlock_button: 'Unlock with biometrics',
+    biometric_toggle: 'Use biometrics to unlock',
+    otp_label: 'Verification code sent by SMS',
+    otp_submit: 'Confirm',
+  },
   payout: {
     title: 'Withdraw money',
     limit_label: 'Per-transaction limit',

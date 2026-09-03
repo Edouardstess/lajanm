@@ -66,6 +66,13 @@ export default {
     type_transfer: 'Transfert',
     type_adjustment: 'Ajustement',
   },
+  security: {
+    locked_title: 'Application verrouillée',
+    unlock_button: 'Déverrouiller avec la biométrie',
+    biometric_toggle: 'Utiliser la biométrie pour déverrouiller',
+    otp_label: 'Code de vérification envoyé par SMS',
+    otp_submit: 'Confirmer',
+  },
   payout: {
     title: 'Retirer de l’argent',
     limit_label: 'Limite par transaction',

@@ -22,11 +22,16 @@ export function getBalance() {
   return apiRequest<BalanceSnapshot>('/wallet/balance', { authenticated: true });
 }
 
-export function transfer(recipientPhone: string, amountHTG: number, clientRequestId: string) {
+export function transfer(
+  recipientPhone: string,
+  amountHTG: number,
+  clientRequestId: string,
+  otp?: { otpRequestId: string; otpCode: string },
+) {
   return apiRequest<{ operationId: string; idempotent: boolean }>('/wallet/transfer', {
     method: 'POST',
     authenticated: true,
-    body: { recipientPhone, amountHTG, clientRequestId },
+    body: { recipientPhone, amountHTG, clientRequestId, ...otp },
   });
 }
 

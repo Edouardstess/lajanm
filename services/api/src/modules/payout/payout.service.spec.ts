@@ -3,12 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { DataSource } from 'typeorm';
 import { AuditService } from '../audit/audit.service';
-import { User } from '../auth/entities/user.entity';
+import { User, UserTier } from '../auth/entities/user.entity';
+import { FraudService } from '../fraud/fraud.service';
 import { Account, AccountOwnerType } from '../ledger/entities/account.entity';
 import { EntryDirection } from '../ledger/entities/ledger-entry.entity';
 import { LedgerService } from '../ledger/ledger.service';
 import { AccountsService } from '../ledger/services/accounts.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { SecurityService } from '../security/security.service';
 import { MonCashClient, MonCashUnavailableError } from '../topup/moncash-client.service';
 import { FakeLedgerDataSource } from '../../testing/fake-ledger-data-source';
 import { PayoutStatus, PayoutTransaction } from './entities/payout-transaction.entity';
@@ -47,6 +49,7 @@ function createTransactionsRepo() {
 const testUser: User = {
   id: 'user-1',
   phone: '+50900000001',
+  tier: UserTier.BASIC,
 } as User;
 
 const walletAccount: Account = {
@@ -70,6 +73,7 @@ function buildService(options: {
   fakeLedgerDataSource: FakeLedgerDataSource;
   monCashClient: MonCashClient;
   configValues?: Record<string, unknown>;
+  securityService?: Partial<SecurityService>;
 }) {
   const transactions = createTransactionsRepo();
   const users = { findOneByOrFail: jest.fn().mockResolvedValue(testUser) };
@@ -80,6 +84,12 @@ function buildService(options: {
   } as unknown as AccountsService;
   const auditService = { record: jest.fn().mockResolvedValue(undefined) } as unknown as AuditService;
   const notificationsService = { notify: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService;
+  const securityService = {
+    enforceLimits: jest.fn().mockResolvedValue(undefined),
+    enforceOtpIfRequired: jest.fn().mockResolvedValue(undefined),
+    ...options.securityService,
+  } as unknown as SecurityService;
+  const fraudService = { evaluate: jest.fn().mockResolvedValue(undefined) } as unknown as FraudService;
   const config = new ConfigService(options.configValues ?? {});
 
   const service = new PayoutService(
@@ -91,9 +101,11 @@ function buildService(options: {
     auditService,
     notificationsService,
     options.monCashClient,
+    securityService,
+    fraudService,
   );
 
-  return { service, transactions, ledgerService };
+  return { service, transactions, ledgerService, securityService, fraudService };
 }
 
 async function fundWallet(ledgerService: LedgerService, amountMinor: bigint) {
@@ -182,5 +194,49 @@ describe('PayoutService', () => {
 
     expect(second.payoutTransactionId).toBe(first.payoutTransactionId);
     expect(monCashClient.createPayout).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects the payout when SecurityService says the tier limit would be exceeded, before touching MonCash', async () => {
+    const fakeLedgerDataSource = new FakeLedgerDataSource();
+    const monCashClient = { createPayout: jest.fn() } as unknown as MonCashClient;
+    const { service, ledgerService } = buildService({
+      fakeLedgerDataSource,
+      monCashClient,
+      securityService: {
+        enforceLimits: jest.fn().mockRejectedValue(new BadRequestException('exceeds daily limit')),
+      },
+    });
+
+    await fundWallet(ledgerService, 100_000n);
+    await expect(
+      service.initiate('user-1', { amountHTG: 300, clientRequestId: randomUUID() }),
+    ).rejects.toThrow('exceeds daily limit');
+    expect(monCashClient.createPayout).not.toHaveBeenCalled();
+    // Nothing was reserved either — the limit check runs before the debit.
+    expect(await ledgerService.getBalance(walletAccount.id)).toBe(100_000n);
+  });
+
+  it('requires a verified OTP when SecurityService says one is needed, before touching MonCash', async () => {
+    const fakeLedgerDataSource = new FakeLedgerDataSource();
+    const monCashClient = { createPayout: jest.fn() } as unknown as MonCashClient;
+    const { service, ledgerService, securityService } = buildService({
+      fakeLedgerDataSource,
+      monCashClient,
+      securityService: {
+        enforceOtpIfRequired: jest.fn().mockRejectedValue(new BadRequestException('An OTP is required')),
+      },
+    });
+
+    await fundWallet(ledgerService, 100_000n);
+    await expect(
+      service.initiate('user-1', { amountHTG: 300, clientRequestId: randomUUID() }),
+    ).rejects.toThrow('An OTP is required');
+    expect(securityService.enforceOtpIfRequired).toHaveBeenCalledWith(
+      'user-1',
+      'payout',
+      300,
+      undefined,
+    );
+    expect(monCashClient.createPayout).not.toHaveBeenCalled();
   });
 });

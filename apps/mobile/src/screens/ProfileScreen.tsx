@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n';
+import { isBiometricLockEnabled, setBiometricLockEnabled } from '../security/biometricPreference';
 import { colors, spacing, touchTarget, typography } from '../theme';
 
 export function ProfileScreen({ navigation }: { navigation: { navigate: (screen: string) => void } }) {
@@ -13,6 +14,11 @@ export function ProfileScreen({ navigation }: { navigation: { navigate: (screen:
   const [email, setEmail] = useState(user?.email ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [biometricEnabled, setBiometricEnabledState] = useState(false);
+
+  useEffect(() => {
+    isBiometricLockEnabled().then(setBiometricEnabledState);
+  }, []);
 
   if (!user) return null;
 
@@ -26,6 +32,11 @@ export function ProfileScreen({ navigation }: { navigation: { navigate: (screen:
     } finally {
       setSaving(false);
     }
+  };
+
+  const onToggleBiometric = async (value: boolean) => {
+    setBiometricEnabledState(value);
+    await setBiometricLockEnabled(value);
   };
 
   return (
@@ -50,6 +61,12 @@ export function ProfileScreen({ navigation }: { navigation: { navigate: (screen:
       {error && <Text style={styles.error}>{error}</Text>}
 
       <PrimaryButton label={t('common.save')} onPress={onSave} loading={saving} />
+
+      <View style={styles.toggleRow}>
+        <Text style={styles.toggleLabel}>{t('security.biometric_toggle')}</Text>
+        <Switch value={biometricEnabled} onValueChange={onToggleBiometric} />
+      </View>
+
       <PrimaryButton
         label={t('profile.devices_title')}
         variant="secondary"
@@ -75,4 +92,12 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   error: { color: colors.danger, marginTop: spacing.md },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    marginTop: spacing.sm,
+  },
+  toggleLabel: { fontSize: typography.body, color: colors.text, flex: 1, marginRight: spacing.md },
 });

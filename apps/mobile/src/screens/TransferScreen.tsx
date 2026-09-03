@@ -4,6 +4,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { transfer } from '../api/wallet';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { useOtpStep } from '../hooks/useOtpStep';
 import { useTranslation } from '../i18n';
 import { colors, spacing, touchTarget, typography } from '../theme';
 
@@ -16,6 +17,7 @@ export function TransferScreen() {
   const [state, setState] = useState<ScreenState>('form');
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const otp = useOtpStep('transfer');
 
   const onSubmit = async () => {
     const amountHTG = parseInt(amount, 10);
@@ -24,14 +26,22 @@ export function TransferScreen() {
     setSubmitting(true);
     const clientRequestId = Crypto.randomUUID();
     try {
-      await transfer(recipientPhone, amountHTG, clientRequestId);
+      await transfer(recipientPhone, amountHTG, clientRequestId, otp.otpPayload);
       setState('sent');
     } catch (err) {
       if (err instanceof ApiError) {
-        // The server responded — this is a real outcome (insufficient
-        // funds, unknown recipient, ...), not a connectivity problem.
-        setMessage(err.message);
-        setState('error');
+        if (!otp.needsOtp && otp.isOtpRequiredError(err)) {
+          // Don't show this as a failure — it's the server telling us to
+          // collect a code, the transfer hasn't been attempted for real
+          // yet in a way that matters to the user.
+          await otp.beginOtpFlow();
+        } else {
+          // The server responded — this is a real outcome (insufficient
+          // funds, unknown recipient, wrong OTP...), not a connectivity
+          // problem.
+          setMessage(err.message);
+          setState('error');
+        }
       } else {
         // No response at all: we genuinely don't know whether this
         // reached the server. Never say "sent" here — the honest state is
@@ -71,6 +81,7 @@ export function TransferScreen() {
         onChangeText={setRecipientPhone}
         keyboardType="phone-pad"
         placeholder="+509..."
+        editable={!otp.needsOtp}
       />
 
       <Text style={styles.label}>{t('wallet.amount_label')}</Text>
@@ -80,11 +91,31 @@ export function TransferScreen() {
         onChangeText={setAmount}
         keyboardType="number-pad"
         placeholder="100"
+        editable={!otp.needsOtp}
       />
+
+      {otp.needsOtp && (
+        <>
+          <Text style={styles.label}>{t('security.otp_label')}</Text>
+          <TextInput
+            style={styles.input}
+            value={otp.otpCode}
+            onChangeText={otp.setOtpCode}
+            keyboardType="number-pad"
+            maxLength={6}
+            placeholder="123456"
+          />
+        </>
+      )}
 
       {state === 'error' && message && <Text style={styles.errorText}>{message}</Text>}
 
-      <PrimaryButton label={t('wallet.transfer_submit')} onPress={onSubmit} loading={submitting} />
+      <PrimaryButton
+        label={otp.needsOtp ? t('security.otp_submit') : t('wallet.transfer_submit')}
+        onPress={onSubmit}
+        loading={submitting || otp.requesting}
+        disabled={otp.needsOtp && otp.otpCode.length < 4}
+      />
     </View>
   );
 }

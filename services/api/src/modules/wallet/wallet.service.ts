@@ -3,11 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuditService } from '../audit/audit.service';
 import { User } from '../auth/entities/user.entity';
+import { FraudService } from '../fraud/fraud.service';
 import { EntryDirection } from '../ledger/entities/ledger-entry.entity';
 import { OperationType } from '../ledger/entities/operation.entity';
 import { LedgerService } from '../ledger/ledger.service';
 import { AccountsService } from '../ledger/services/accounts.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { OtpPurpose } from '../security/entities/otp-code.entity';
+import { SecurityService } from '../security/security.service';
 import { HistoryQueryDto } from './dto/history-query.dto';
 import { TransferDto } from './dto/transfer.dto';
 
@@ -29,6 +32,8 @@ export class WalletService {
     private readonly accountsService: AccountsService,
     private readonly auditService: AuditService,
     private readonly notificationsService: NotificationsService,
+    private readonly securityService: SecurityService,
+    private readonly fraudService: FraudService,
   ) {}
 
   async getBalance(userId: string): Promise<BalanceSnapshot> {
@@ -38,6 +43,7 @@ export class WalletService {
   }
 
   async transfer(senderId: string, dto: TransferDto): Promise<{ operationId: string; idempotent: boolean }> {
+    const sender = await this.users.findOneByOrFail({ id: senderId });
     const recipient = await this.users.findOneBy({ phone: dto.recipientPhone });
     if (!recipient) {
       throw new NotFoundException('No Lajan’m account found for this phone number');
@@ -54,12 +60,19 @@ export class WalletService {
     // truth against overdraft. The real guarantee is that postOperation's
     // debit entry can never make the ledger inconsistent; a concurrent
     // transfer racing this check is a known limitation for the MVP (see
-    // docs/architecture.md hardening notes) and is revisited alongside the
-    // security module's velocity limits.
+    // docs/architecture.md hardening notes).
     const senderBalance = await this.ledgerService.getBalance(senderAccount.id);
     if (senderBalance < amountMinor) {
       throw new BadRequestException('Insufficient balance');
     }
+
+    await this.securityService.enforceLimits(senderId, sender.tier, senderAccount.id, dto.amountHTG);
+    await this.securityService.enforceOtpIfRequired(
+      senderId,
+      OtpPurpose.TRANSFER,
+      dto.amountHTG,
+      dto.otpRequestId && dto.otpCode ? { otpRequestId: dto.otpRequestId, code: dto.otpCode } : undefined,
+    );
 
     const result = await this.ledgerService.postOperation({
       idempotencyKey: `wallet-transfer:${dto.clientRequestId}`,
@@ -89,6 +102,13 @@ export class WalletService {
         type: 'wallet.credit',
         title: 'Lajan resevwa',
         body: `Ou resevwa ${dto.amountHTG} HTG`,
+      });
+      await this.fraudService.evaluate({
+        userId: senderId,
+        accountId: senderAccount.id,
+        operationId: result.operation.id,
+        amountMinor,
+        recipientId: recipient.id,
       });
     }
 

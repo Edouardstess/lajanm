@@ -108,6 +108,55 @@ describe('LedgerService', () => {
     expect(updated.status).toBe(OperationStatus.REVERSED);
   });
 
+  it('sums only entries in the requested direction since the given date', async () => {
+    await service.postOperation({
+      idempotencyKey: 'sum-1',
+      type: OperationType.TOPUP,
+      entries: [
+        { accountId: accountA, direction: EntryDirection.CREDIT, amountMinor: 3_000n },
+        { accountId: accountB, direction: EntryDirection.DEBIT, amountMinor: 3_000n },
+      ],
+    });
+    await service.postOperation({
+      idempotencyKey: 'sum-2',
+      type: OperationType.TRANSFER,
+      entries: [
+        { accountId: accountA, direction: EntryDirection.DEBIT, amountMinor: 1_000n },
+        { accountId: accountB, direction: EntryDirection.CREDIT, amountMinor: 1_000n },
+      ],
+    });
+
+    const since = new Date(Date.now() - 60_000);
+    expect(await service.sumDirection(accountA, EntryDirection.CREDIT, since)).toBe(3_000n);
+    expect(await service.sumDirection(accountA, EntryDirection.DEBIT, since)).toBe(1_000n);
+
+    const future = new Date(Date.now() + 60_000);
+    expect(await service.sumDirection(accountA, EntryDirection.CREDIT, future)).toBe(0n);
+  });
+
+  it('counts entries in one direction since a given date', async () => {
+    await service.postOperation({
+      idempotencyKey: 'count-1',
+      type: OperationType.TRANSFER,
+      entries: [
+        { accountId: accountA, direction: EntryDirection.DEBIT, amountMinor: 100n },
+        { accountId: accountB, direction: EntryDirection.CREDIT, amountMinor: 100n },
+      ],
+    });
+    await service.postOperation({
+      idempotencyKey: 'count-2',
+      type: OperationType.TRANSFER,
+      entries: [
+        { accountId: accountA, direction: EntryDirection.DEBIT, amountMinor: 50n },
+        { accountId: accountB, direction: EntryDirection.CREDIT, amountMinor: 50n },
+      ],
+    });
+
+    const since = new Date(Date.now() - 60_000);
+    expect(await service.countDirection(accountA, EntryDirection.DEBIT, since)).toBe(2);
+    expect(await service.countDirection(accountA, EntryDirection.CREDIT, since)).toBe(0);
+  });
+
   it('rejects entries with a non-positive amount', async () => {
     await expect(
       service.postOperation({

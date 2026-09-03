@@ -4,11 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuditService } from '../audit/audit.service';
 import { User } from '../auth/entities/user.entity';
+import { FraudService } from '../fraud/fraud.service';
 import { EntryDirection } from '../ledger/entities/ledger-entry.entity';
 import { OperationStatus, OperationType } from '../ledger/entities/operation.entity';
 import { LedgerService } from '../ledger/ledger.service';
 import { AccountsService } from '../ledger/services/accounts.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { OtpPurpose } from '../security/entities/otp-code.entity';
+import { SecurityService } from '../security/security.service';
 import { MONCASH_FLOAT_ACCOUNT } from '../topup/topup.service';
 import { MonCashClient, MonCashUnavailableError } from '../topup/moncash-client.service';
 import { InitiatePayoutDto } from './dto/initiate-payout.dto';
@@ -29,6 +32,8 @@ export class PayoutService {
     private readonly auditService: AuditService,
     private readonly notificationsService: NotificationsService,
     private readonly monCashClient: MonCashClient,
+    private readonly securityService: SecurityService,
+    private readonly fraudService: FraudService,
   ) {}
 
   /**
@@ -64,6 +69,14 @@ export class PayoutService {
     if (balance < amountMinor) {
       throw new BadRequestException('Insufficient balance');
     }
+
+    await this.securityService.enforceLimits(userId, user.tier, walletAccount.id, dto.amountHTG);
+    await this.securityService.enforceOtpIfRequired(
+      userId,
+      OtpPurpose.PAYOUT,
+      dto.amountHTG,
+      dto.otpRequestId && dto.otpCode ? { otpRequestId: dto.otpRequestId, code: dto.otpCode } : undefined,
+    );
 
     // Reserve: debit the wallet NOW, before MonCash has confirmed
     // anything, so the funds can't be spent twice while the payout is in
@@ -130,6 +143,12 @@ export class PayoutService {
         type: 'payout.completed',
         title: 'Retrè konplete',
         body: `${dto.amountHTG} HTG voye sou kont MonCash ou`,
+      });
+      await this.fraudService.evaluate({
+        userId,
+        accountId: walletAccount.id,
+        operationId: reserve.operation.id,
+        amountMinor,
       });
 
       return { payoutTransactionId: transaction.id, status: transaction.status, failureReason: null };

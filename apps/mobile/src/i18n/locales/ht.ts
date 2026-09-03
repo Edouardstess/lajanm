@@ -70,6 +70,13 @@ export default {
     type_transfer: 'Transfè',
     type_adjustment: 'Ajisteman',
   },
+  security: {
+    locked_title: 'Aplikasyon an femen',
+    unlock_button: 'Debloke ak biometri',
+    biometric_toggle: 'Itilize biometri pou debloke',
+    otp_label: 'Kòd verifikasyon yo voye ba ou nan SMS',
+    otp_submit: 'Konfime',
+  },
   payout: {
     title: 'Retire lajan',
     limit_label: 'Limit pou yon sèl tranzaksyon',

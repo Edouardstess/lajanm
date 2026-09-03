@@ -14,6 +14,7 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
 import { TopupScreen } from '../screens/TopupScreen';
 import { TransferScreen } from '../screens/TransferScreen';
+import { AppLockGate } from '../security/AppLockGate';
 import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator();
@@ -58,5 +59,15 @@ export function RootNavigator() {
     );
   }
 
-  return <NavigationContainer>{user ? <AppStack /> : <AuthStack />}</NavigationContainer>;
+  return (
+    <NavigationContainer>
+      {user ? (
+        <AppLockGate>
+          <AppStack />
+        </AppLockGate>
+      ) : (
+        <AuthStack />
+      )}
+    </NavigationContainer>
+  );
 }

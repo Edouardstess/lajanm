@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
+import { FraudModule } from '../fraud/fraud.module';
 import { LedgerModule } from '../ledger/ledger.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SecurityModule } from '../security/security.module';
 import { TopupModule } from '../topup/topup.module';
 import { PayoutTransaction } from './entities/payout-transaction.entity';
 import { PayoutController } from './payout.controller';
@@ -17,6 +19,8 @@ import { PayoutService } from './payout.service';
     LedgerModule,
     NotificationsModule,
     TopupModule,
+    SecurityModule,
+    FraudModule,
   ],
   controllers: [PayoutController],
   providers: [PayoutService],
