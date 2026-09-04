@@ -34,6 +34,10 @@ async function bootstrap() {
   });
 
   const port = config.get<number>('PORT') ?? 3000;
-  await app.listen(port);
+  // L'hôte est explicite : sans lui, Node peut n'écouter que sur l'IPv6
+  // du conteneur. Les hébergeurs (Render, Fly, Cloud Run...) sondent le
+  // port sur 0.0.0.0 et concluent « aucun port ouvert », ce qui fait
+  // échouer le déploiement alors que l'application a démarré normalement.
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
