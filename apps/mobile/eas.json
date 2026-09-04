@@ -11,17 +11,15 @@
         "LAJANM_API_URL": "http://10.0.2.2:3000"
       }
     },
-
     "staging": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       },
       "env": {
-        "LAJANM_API_URL": "https://api-staging.lajanm.example"
+        "LAJANM_API_URL": "https://lajanm-api.onrender.com"
       }
     },
-
     "production": {
       "autoIncrement": true,
       "android": {
