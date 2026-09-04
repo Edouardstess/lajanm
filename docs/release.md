@@ -84,9 +84,27 @@ démarrage) :
   identifiants **sandbox** tant que le statut FSP n'est pas clarifié.
   `MONCASH_BASE_URL` pointe déjà sur le sandbox.
 
-Le plan Postgres retenu est `basic-256mb`, pas le plan gratuit : ce
-dernier n'offre aucune sauvegarde et expire après 90 jours, ce qui exclut
-d'y placer de vraies écritures comptables, même en staging.
+### Gratuit pour tester, payant avant tout argent réel
+
+`render.yaml` est réglé sur les **plans gratuits**, pour que l'application
+puisse être déployée et essayée sans carte bancaire. C'est cohérent avec
+l'étape où en est le projet : la note de gouvernance interdit de toute
+façon de prendre des fonds réels avant la clarification du statut FSP.
+
+Ce que le gratuit implique, sans détour :
+
+| | |
+|---|---|
+| PostgreSQL | **expire (~30 jours) et n'est jamais sauvegardé** |
+| Service web | s'endort après ~15 min sans trafic ; le réveil prend ~50 s, donc la première requête après une pause paraît très lente — ce n'est pas une panne |
+| Redis | non persistant : une file perdue = un dépôt non rejoué |
+
+**Avant le moindre franc réel**, passer aux plans payants dans
+`render.yaml` : `free` → `basic-256mb` pour la base (sauvegardes
+automatiques) et `free` → `starter` pour le service (plus de mise en
+veille). Sur un plan payant, on peut aussi remplacer le `dockerCommand`
+par `preDeployCommand`, qui applique les migrations avant que la nouvelle
+version ne prenne le trafic plutôt qu'au démarrage de chaque instance.
 
 Redis est configuré en `noeviction` : une file BullMQ purgée sous pression
 mémoire, c'est un dépôt client jamais rejoué, donc jamais crédité.

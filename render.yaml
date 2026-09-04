@@ -1,13 +1,32 @@
 # Infrastructure Lajan'm sur Render, décrite dans le dépôt.
 #
 # Déploiement : Render → New → Blueprint → sélectionner ce dépôt.
-# Tout ce qui suit est créé d'un coup ; seuls les secrets marqués
-# `sync: false` restent à saisir dans l'interface.
 #
-# Pourquoi Render plutôt qu'un hébergeur serverless : l'API fait tourner un
+# ┌──────────────────────────────────────────────────────────────────────┐
+# │ CE FICHIER EST RÉGLÉ SUR LES PLANS GRATUITS — POUR TESTER, PAS POUR  │
+# │ DÉTENIR DE L'ARGENT RÉEL.                                            │
+# │                                                                      │
+# │ C'est le réglage correct pour l'étape où en est le projet : la note  │
+# │ de gouvernance (docs/audit-readiness.md) interdit de toute façon un  │
+# │ lancement avec des fonds réels avant clarification du statut FSP     │
+# │ (Circulaire BRH n°121).                                              │
+# │                                                                      │
+# │ Ce que le gratuit implique, sans détour :                            │
+# │  • la base PostgreSQL EXPIRE (~30 jours) et n'est JAMAIS sauvegardée │
+# │  • le service s'endort après ~15 min sans trafic, et le réveil prend │
+# │    ~50 s : la première requête après une pause semblera très lente   │
+# │  • Redis n'est pas persistant — une file perdue = un dépôt non rejoué│
+# │                                                                      │
+# │ AVANT LE MOINDRE FRANC RÉEL, passer aux plans payants :              │
+# │   databases.plan : free → basic-256mb  (sauvegardes automatiques)    │
+# │   services.plan  : free → starter      (pas de mise en veille)       │
+# │ et voir docs/release.md pour la version production complète.         │
+# └──────────────────────────────────────────────────────────────────────┘
+#
+# Pourquoi Render et pas un hébergeur serverless : l'API fait tourner un
 # worker BullMQ (TopupInitiationProcessor) qui rejoue les dépôts MonCash
 # échoués. Il lui faut un processus permanent — sans quoi un client paie
-# chez MonCash et n'est jamais crédité. Voir docs/release.md.
+# chez MonCash et n'est jamais crédité.
 
 databases:
   - name: lajanm-postgres
@@ -15,10 +34,7 @@ databases:
     user: lajanm
     # Virginie : la région la plus proche d'Haïti chez Render.
     region: virginia
-    # Le registre comptable ne tolère pas la perte de données. Le plan
-    # gratuit n'offre aucune sauvegarde et expire au bout de 90 jours : il
-    # ne convient pas, même pour du staging contenant de vraies écritures.
-    plan: basic-256mb
+    plan: free
     ipAllowList: []   # accès via le réseau privé Render uniquement
 
 services:
@@ -27,19 +43,20 @@ services:
     name: lajanm-api
     runtime: docker
     region: virginia
-    plan: starter
+    plan: free
     # Le Dockerfile copie package.json et package-lock.json depuis la
-    # racine du monorepo : le contexte de build doit donc être la racine,
-    # pas services/api.
+    # racine du monorepo : le contexte de build doit donc être la racine.
     dockerfilePath: ./services/api/Dockerfile
     dockerContext: .
     healthCheckPath: /health
 
-    # Applique les migrations AVANT que la nouvelle version ne prenne le
-    # trafic. Sans cela, l'API démarre contre un schéma absent ou périmé
-    # et chaque requête échoue. La variante `:prod` vise le data-source
-    # compilé — `migration:run` dépend de ts-node, absent de l'image.
-    preDeployCommand: npm run migration:run:prod
+    # Les migrations tournent au démarrage du conteneur, et non via
+    # `preDeployCommand` : celui-ci n'existe que sur les plans payants, et
+    # une API démarrée contre un schéma absent échoue à chaque requête.
+    # TypeORM ignore les migrations déjà appliquées, donc relancer à chaque
+    # démarrage est sans effet de bord. Séquence vérifiée en local telle
+    # quelle : migrations appliquées, /health à 200, inscription réussie.
+    dockerCommand: sh -c "npm run migration:run:prod && node dist/main.js"
 
     envVars:
       - key: NODE_ENV
@@ -64,15 +81,14 @@ services:
       - key: JWT_SECRET
         generateValue: true
 
-      # Origine du back-office Vercel. À renseigner après son premier
-      # déploiement : laissée vide, l'API reflète l'origine appelante, ce
-      # qui n'est acceptable qu'en développement local.
+      # Origine du back-office Vercel, à renseigner après son déploiement.
+      # Laissée vide, l'API reflète l'origine appelante — acceptable en
+      # test, jamais en production.
       - key: CORS_ORIGINS
         sync: false
 
-      # Note de gouvernance (docs/audit-readiness.md) : garder l'URL
-      # sandbox tant que le statut FSP (Circulaire BRH n°121) n'est pas
-      # clarifié. Ne pas basculer sur l'API MonCash de production avant.
+      # Note de gouvernance : garder l'URL sandbox tant que le statut FSP
+      # n'est pas clarifié. Ne pas basculer sur MonCash production avant.
       - key: MONCASH_BASE_URL
         value: https://sandbox.moncashbutton.digicelgroup.com/Api
       - key: MONCASH_CLIENT_ID
@@ -91,9 +107,8 @@ services:
   - type: redis
     name: lajanm-redis
     region: virginia
-    plan: starter
-    # Files BullMQ uniquement : accessible seulement depuis le réseau
-    # privé Render, jamais exposé publiquement.
+    plan: free
+    # Files BullMQ uniquement : jamais exposé publiquement.
     ipAllowList: []
     # Les files ne doivent pas être vidées sous pression mémoire : un job
     # de rejeu supprimé, c'est un dépôt client jamais crédité.
