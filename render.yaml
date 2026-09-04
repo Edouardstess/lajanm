@@ -50,14 +50,12 @@ services:
     dockerContext: .
     healthCheckPath: /health
 
-    # Les migrations tournent au démarrage du conteneur, et non via
-    # `preDeployCommand` : celui-ci n'existe que sur les plans payants, et
-    # une API démarrée contre un schéma absent échoue à chaque requête.
-    # TypeORM ignore les migrations déjà appliquées, donc relancer à chaque
-    # démarrage est sans effet de bord. Séquence vérifiée en local telle
-    # quelle : migrations appliquées, /health à 200, inscription réussie.
-    dockerCommand: sh -c "npm run migration:run:prod && node dist/main.js"
-
+    # Aucune commande n'est définie ici : c'est le CMD du Dockerfile qui
+    # applique les migrations puis démarre l'API. Un `dockerCommand` avec
+    # guillemets voit ceux-ci conservés littéralement, et le conteneur sort
+    # en 127. Les migrations tournent au démarrage plutôt que via
+    # `preDeployCommand`, réservé aux plans payants ; TypeORM ignorant
+    # celles déjà appliquées, c'est sans effet de bord.
     envVars:
       - key: NODE_ENV
         value: production
