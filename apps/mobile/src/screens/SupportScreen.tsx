@@ -8,7 +8,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { SectionHeader } from '../components/SectionHeader';
 import { formatDate } from '../format';
 import { useTranslation } from '../i18n';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 
 const OPEN_STATUSES: SupportTicket['status'][] = ['open', 'in_progress'];
 
@@ -124,21 +124,21 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   faqHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  faqQuestion: { flex: 1, fontSize: typography.label, fontWeight: '600', color: colors.text, lineHeight: 21 },
+  faqQuestion: { flex: 1, fontSize: typography.label, fontFamily: fonts.semibold, color: colors.text, lineHeight: 21 },
   faqAnswer: {
-    fontSize: typography.label - 1,
+    fontSize: typography.label - 1, fontFamily: fonts.regular,
     color: colors.muted,
     lineHeight: 22,
     marginTop: spacing.sm + 2,
   },
   ticket: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
   ticketBody: { flex: 1 },
-  ticketSubject: { fontSize: typography.label, fontWeight: '600', color: colors.text },
-  ticketDate: { fontSize: typography.overline, color: colors.muted, marginTop: 3 },
+  ticketSubject: { fontSize: typography.label, fontFamily: fonts.semibold, color: colors.text },
+  ticketDate: { fontSize: typography.overline, fontFamily: fonts.regular, color: colors.muted, marginTop: 3 },
   status: { borderRadius: radius.pill, paddingHorizontal: spacing.sm + 2, paddingVertical: 5 },
   statusOpen: { backgroundColor: colors.warningSoft },
   statusClosed: { backgroundColor: colors.surfaceAlt },
-  statusLabel: { fontSize: 11, fontWeight: '600', color: colors.muted },
-  statusLabelOpen: { color: colors.accentText },
+  statusLabel: { fontSize: 11, fontFamily: fonts.semibold, color: colors.muted },
+  statusLabelOpen: { color: colors.onAccent },
   cta: { marginTop: spacing.lg },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { splitAmount } from '../format';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 import { Icon } from './Icon';
 
 interface Props {
@@ -77,7 +77,10 @@ export function BalanceCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.primaryDeep,
+    // Le bleu de la charte tel quel : `primaryDeep` vire au noir et
+    // perd l'identité de la marque sur la plus grande surface colorée
+    // de l'application.
+    backgroundColor: colors.primary,
     borderRadius: radius.xl,
     padding: spacing.lg,
     overflow: 'hidden',
@@ -96,10 +99,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 6,
   },
-  tierLabel: { color: colors.primaryText, fontSize: 11, fontWeight: '600' },
+  tierLabel: { color: colors.primaryText, fontSize: 11, fontFamily: fonts.semibold },
   label: {
     color: colors.primaryText,
-    fontSize: typography.caption,
+    fontSize: typography.caption, fontFamily: fonts.regular,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
     opacity: 0.72,
@@ -107,12 +110,12 @@ const styles = StyleSheet.create({
   value: {
     color: colors.primaryText,
     fontSize: typography.display,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     letterSpacing: -0.8,
     marginTop: spacing.sm,
   },
-  decimals: { fontSize: typography.heading, fontWeight: '700', letterSpacing: 0 },
-  currency: { fontSize: typography.body, fontWeight: '600', opacity: 0.8, letterSpacing: 0 },
+  decimals: { fontSize: typography.heading, fontFamily: fonts.bold, letterSpacing: 0 },
+  currency: { fontSize: typography.body, fontFamily: fonts.semibold, opacity: 0.8, letterSpacing: 0 },
   stale: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.md },
-  staleLabel: { color: colors.primaryText, fontSize: typography.overline, opacity: 0.75 },
+  staleLabel: { color: colors.primaryText, fontSize: typography.overline, fontFamily: fonts.regular, opacity: 0.75 },
 });

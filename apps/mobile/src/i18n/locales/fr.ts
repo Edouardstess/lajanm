@@ -47,6 +47,7 @@ export default {
   },
   topup: {
     title: 'Recharger votre compte',
+    title_short: 'Déposer',
     amount_label: 'Montant (HTG)',
     submit_button: 'Continuer avec MonCash',
     status_pending: 'En attente de confirmation MonCash. Cela peut prendre quelques minutes.',
@@ -112,6 +113,7 @@ export default {
   },
   payout: {
     title: 'Retirer de l’argent',
+    title_short: 'Retirer',
     limit_label: 'Limite par transaction',
     limit_used: 'Utilisé',
     over_limit: 'Le montant dépasse la limite par transaction',

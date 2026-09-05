@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, spacing, typography } from '../theme';
+import { colors, fonts, spacing, typography } from '../theme';
 import { Icon } from './Icon';
 
 /**
@@ -27,5 +27,5 @@ const styles = StyleSheet.create({
     marginTop: spacing.md - 4,
     paddingHorizontal: spacing.sm,
   },
-  text: { flexShrink: 1, fontSize: typography.overline, color: colors.muted, textAlign: 'center' },
+  text: { flexShrink: 1, fontSize: typography.overline, fontFamily: fonts.regular, color: colors.muted, textAlign: 'center' },
 });

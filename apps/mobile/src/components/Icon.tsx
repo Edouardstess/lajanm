@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View, ViewStyle } from 'react-native';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 
 export type IconName =
   | 'arrow-up'
@@ -245,7 +245,7 @@ function renderGlyph(name: IconName, size: number, color: string, stroke: number
     case 'alert':
       return (
         <View style={[styles.circle(size, stroke, color), { alignItems: 'center', justifyContent: 'center' }]}>
-          <Text style={{ color, fontSize: size * 0.56, fontWeight: '700', lineHeight: size * 0.72 }}>
+          <Text style={{ color, fontSize: size * 0.56, fontFamily: fonts.bold, lineHeight: size * 0.72 }}>
             {name === 'help' ? '?' : '!'}
           </Text>
         </View>

@@ -12,7 +12,7 @@ import { StatusView } from '../components/StatusView';
 import { formatRounded } from '../format';
 import { useOtpStep } from '../hooks/useOtpStep';
 import { useTranslation } from '../i18n';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 
 type ScreenState = 'form' | 'completed' | 'failed' | 'unconfirmed';
 
@@ -180,10 +180,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   limitHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm + 2 },
-  limitLabel: { flex: 1, fontSize: typography.caption, color: colors.muted },
-  limitValue: { fontSize: typography.caption, fontWeight: '700', color: colors.text },
+  limitLabel: { flex: 1, fontSize: typography.caption, fontFamily: fonts.regular, color: colors.muted },
+  limitValue: { fontSize: typography.caption, fontFamily: fonts.bold, color: colors.text },
   track: { height: 7, borderRadius: radius.pill, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: radius.pill, backgroundColor: colors.primary },
   fillOver: { backgroundColor: colors.danger },
-  limitFoot: { fontSize: typography.overline, color: colors.muted, marginTop: spacing.sm + 1 },
+  limitFoot: { fontSize: typography.overline, fontFamily: fonts.regular, color: colors.muted, marginTop: spacing.sm + 1 },
 });

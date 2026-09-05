@@ -12,7 +12,7 @@ import { SectionHeader } from '../components/SectionHeader';
 import { useAuth } from '../context/AuthContext';
 import { SUPPORTED_LOCALES, useTranslation } from '../i18n';
 import { isBiometricLockEnabled, setBiometricLockEnabled } from '../security/biometricPreference';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 
 // Endonyms, deliberately untranslated: someone looking for their own
 // language finds it faster by its own name than by its name in a language
@@ -144,12 +144,12 @@ const styles = StyleSheet.create({
   },
   badgeVerified: { backgroundColor: colors.successSoft },
   identityBody: { flex: 1 },
-  phone: { fontSize: typography.body, fontWeight: '700', color: colors.text },
-  tier: { fontSize: typography.caption, color: colors.muted, marginTop: 3 },
-  tierVerified: { color: colors.success, fontWeight: '600' },
+  phone: { fontSize: typography.body, fontFamily: fonts.bold, color: colors.text },
+  tier: { fontSize: typography.caption, fontFamily: fonts.regular, color: colors.muted, marginTop: 3 },
+  tierVerified: { color: colors.success, fontFamily: fonts.semibold },
   upsell: { marginTop: spacing.md, gap: spacing.xs },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  toggleLabel: { flex: 1, fontSize: typography.label, color: colors.text },
+  toggleLabel: { flex: 1, fontSize: typography.label, fontFamily: fonts.regular, color: colors.text },
   locales: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   logout: { marginTop: spacing.xl },
 });

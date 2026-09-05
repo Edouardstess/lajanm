@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { formatAmount, formatRounded } from '../format';
-import { colors, radius, spacing, touchTarget, typography } from '../theme';
+import { colors, fonts, radius, spacing, touchTarget, typography } from '../theme';
 
 interface Props {
   label: string;
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   boxError: { borderColor: colors.danger },
   boxDisabled: { backgroundColor: colors.surfaceAlt },
   label: {
-    fontSize: typography.overline,
+    fontSize: typography.overline, fontFamily: fonts.regular,
     color: colors.muted,
     letterSpacing: 0.6,
     textTransform: 'uppercase',
@@ -121,13 +121,13 @@ const styles = StyleSheet.create({
     // largeur intrinsèque et repousse le suffixe « HTG » hors de la carte.
     minWidth: 0,
     fontSize: typography.amount,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     letterSpacing: -0.6,
     color: colors.text,
     paddingVertical: spacing.xs,
   },
-  currency: { fontSize: typography.body, fontWeight: '600', color: colors.muted },
-  error: { fontSize: typography.overline, color: colors.danger, marginTop: spacing.xs },
+  currency: { fontSize: typography.body, fontFamily: fonts.semibold, color: colors.muted },
+  error: { fontSize: typography.overline, fontFamily: fonts.regular, color: colors.danger, marginTop: spacing.xs },
   presets: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm + 2 },
   preset: {
     flex: 1,
@@ -140,8 +140,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.xs,
   },
-  presetSelected: { backgroundColor: colors.accentSoft, borderColor: '#E4CFA6' },
+  presetSelected: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
   presetDisabled: { opacity: 0.5 },
-  presetLabel: { fontSize: typography.label - 1, fontWeight: '600', color: colors.text },
-  presetLabelSelected: { color: colors.accentText },
+  presetLabel: { fontSize: typography.label - 1, fontFamily: fonts.semibold, color: colors.text },
+  presetLabelSelected: { color: colors.onAccent },
 });

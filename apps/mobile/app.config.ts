@@ -45,6 +45,19 @@ const config: ExpoConfig = {
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'light',
+
+  // Fond dessiné par l'OS derrière l'application, et fond de l'icône
+  // adaptative Android : aux couleurs de la charte plutôt qu'au blanc
+  // générique du gabarit.
+  //
+  // L'écran de démarrage lui-même n'est pas configuré ici : depuis le SDK
+  // 54 il relève du plugin `expo-splash-screen`, qui n'est pas installé.
+  // L'ajouter est un choix à faire en même temps que les vraies icônes.
+  //
+  // ATTENTION : les fichiers sous assets/ sont encore ceux du gabarit
+  // Expo. Ils doivent porter le logo Lajan'm avant toute publication sur
+  // les stores — voir docs/brand.md.
+  backgroundColor: '#F8F9FA',
   ios: {
     supportsTablet: true,
     bundleIdentifier: IOS_BUNDLE_IDENTIFIER,
@@ -85,7 +98,7 @@ const config: ExpoConfig = {
       'android.permission.WRITE_EXTERNAL_STORAGE',
     ],
     adaptiveIcon: {
-      backgroundColor: '#E6F4FE',
+      backgroundColor: '#0B2D5B',
       foregroundImage: './assets/android-icon-foreground.png',
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',

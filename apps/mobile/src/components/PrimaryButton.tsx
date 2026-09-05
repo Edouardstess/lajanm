@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, touchTarget, typography } from '../theme';
+import { colors, fonts, radius, spacing, touchTarget, typography } from '../theme';
 import { Icon, IconName } from './Icon';
 
 interface Props {
@@ -17,9 +17,14 @@ interface Props {
 /**
  * Bouton de l'application.
  *
- * `quiet` a été ajouté pour les actions de navigation secondaires : un
- * écran où six boutons ont tous une bordure verte n'a plus d'action
- * principale, ce qui était précisément le défaut de l'accueil d'origine.
+ * `primary` est doré : c'est la part des 10 % de la règle 60/30/10, et
+ * elle est réservée à UNE action par écran. Son libellé est bleu et non
+ * blanc — du blanc sur cet or ne donne que 1,99:1, illisible en plein
+ * soleil, alors que le bleu monte à 6,48:1.
+ *
+ * `secondary` (bleu détouré) et `quiet` (surface blanche) portent tout le
+ * reste : un écran où plusieurs boutons ont le même poids n'a plus
+ * d'action principale, ce qui était le défaut de l'accueil d'origine.
  */
 export function PrimaryButton({
   label,
@@ -31,8 +36,9 @@ export function PrimaryButton({
   iconAfter,
 }: Props) {
   const inactive = disabled || loading;
-  const contentColor =
-    variant === 'primary' ? colors.primaryText : variant === 'quiet' ? colors.text : colors.primary;
+  // Sur l'or comme sur le blanc, le texte est bleu ; seul le bouton bleu
+  // plein prend du blanc — et il n'existe plus comme variante.
+  const contentColor = variant === 'primary' ? colors.onAccent : colors.primary;
 
   const glyph = icon && !loading && <Icon name={icon} size={19} color={contentColor} />;
 
@@ -45,7 +51,7 @@ export function PrimaryButton({
       style={({ pressed }) => [
         styles.button,
         styles[variant],
-        pressed && !inactive && styles.pressed,
+        pressed && !inactive && (variant === 'primary' ? styles.pressedPrimary : styles.pressed),
         inactive && styles.disabled,
       ]}
     >
@@ -74,10 +80,14 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   content: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 1 },
-  primary: { backgroundColor: colors.primary },
+  primary: { backgroundColor: colors.accent },
   secondary: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.primary },
   quiet: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  pressed: { opacity: 0.85 },
+  // L'état pressé assombrit l'or plutôt que de le rendre transparent :
+  // une opacité réduite ferait passer le libellé sous le seuil de
+  // contraste au moment précis où l'utilisateur regarde le bouton.
+  pressed: { opacity: 0.9 },
+  pressedPrimary: { backgroundColor: colors.accentDeep, opacity: 1 },
   disabled: { opacity: 0.45 },
-  label: { fontSize: typography.body, fontWeight: '700', letterSpacing: -0.2 },
+  label: { fontSize: typography.body, fontFamily: fonts.bold, letterSpacing: -0.2 },
 });

@@ -6,7 +6,7 @@ import { EmptyState } from '../components/EmptyState';
 import { Icon } from '../components/Icon';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { formatDateTime } from '../format';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 import { useTranslation } from '../i18n';
 
 export function DevicesScreen() {
@@ -83,6 +83,6 @@ const styles = StyleSheet.create({
   },
   iconRevoked: { backgroundColor: colors.surfaceAlt },
   body: { flex: 1 },
-  name: { fontSize: typography.label, fontWeight: '600', color: colors.text },
-  lastSeen: { fontSize: typography.overline, color: colors.muted, marginTop: 3 },
+  name: { fontSize: typography.label, fontFamily: fonts.semibold, color: colors.text },
+  lastSeen: { fontSize: typography.overline, fontFamily: fonts.regular, color: colors.muted, marginTop: 3 },
 });

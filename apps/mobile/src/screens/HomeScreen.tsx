@@ -13,7 +13,7 @@ import { TransactionRow } from '../components/TransactionRow';
 import { useAuth } from '../context/AuthContext';
 import { useBalance } from '../hooks/useBalance';
 import { useTranslation } from '../i18n';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 
 const RECENT_COUNT = 3;
 
@@ -112,8 +112,11 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
             label={t('wallet.transfer_title')}
             onPress={() => navigation.navigate('Transfer')}
           />
-          <QuickAction icon="arrow-down" label={t('topup.title')} onPress={() => navigation.navigate('Topup')} />
-          <QuickAction icon="arrow-up" label={t('payout.title')} onPress={() => navigation.navigate('Payout')} />
+          {/* Libellés courts : « Mete lajan nan kont ou » ne tient pas dans
+              une tuile d'un quart de largeur, surtout en Montserrat, plus
+              large que la police système. */}
+          <QuickAction icon="arrow-down" label={t('topup.title_short')} onPress={() => navigation.navigate('Topup')} />
+          <QuickAction icon="arrow-up" label={t('payout.title_short')} onPress={() => navigation.navigate('Payout')} />
           {/* Libellé court : « Istorik tranzaksyon » ne tient pas dans une
               tuile d'un quart de largeur et s'y coupait en « Istorik
               tranzaksy… ». */}
@@ -177,14 +180,17 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radius.sm + 2,
-    backgroundColor: colors.accentSoft,
+    // Bleu clair et non doré : sur cet écran l'or est déjà pris par la
+    // tuile « Voye lajan ». Deux touches d'or au même niveau, et la règle
+    // des 10 % ne veut plus rien dire.
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { fontSize: typography.body - 1, fontWeight: '700', color: colors.primaryDeep },
+  avatarText: { fontSize: typography.body - 1, fontFamily: fonts.bold, color: colors.primaryDeep },
   identity: { flex: 1 },
-  greeting: { fontSize: typography.caption, color: colors.muted },
-  phone: { fontSize: typography.body - 1, fontWeight: '600', color: colors.text, marginTop: 2 },
+  greeting: { fontSize: typography.caption, fontFamily: fonts.regular, color: colors.muted },
+  phone: { fontSize: typography.body - 1, fontFamily: fonts.semibold, color: colors.text, marginTop: 2 },
   headerButton: {
     width: 44,
     height: 44,

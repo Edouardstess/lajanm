@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 import { Icon, IconName } from './Icon';
 
 export type StatusTone = 'success' | 'waiting' | 'danger';
@@ -16,7 +16,7 @@ interface Props {
 
 const TONES: Record<StatusTone, { icon: IconName; color: string; bg: string }> = {
   success: { icon: 'check', color: colors.success, bg: colors.successSoft },
-  waiting: { icon: 'clock', color: colors.accent, bg: colors.warningSoft },
+  waiting: { icon: 'clock', color: colors.accentInk, bg: colors.warningSoft },
   danger: { icon: 'alert', color: colors.danger, bg: colors.dangerSoft },
 };
 
@@ -54,13 +54,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: typography.title,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     textAlign: 'center',
     letterSpacing: -0.3,
     lineHeight: 31,
   },
   message: {
-    fontSize: typography.label,
+    fontSize: typography.label, fontFamily: fonts.regular,
     color: colors.muted,
     textAlign: 'center',
     lineHeight: 22,

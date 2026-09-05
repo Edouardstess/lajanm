@@ -46,6 +46,7 @@ export default {
   },
   topup: {
     title: 'Top up your account',
+    title_short: 'Add money',
     amount_label: 'Amount (HTG)',
     submit_button: 'Continue with MonCash',
     status_pending: 'Waiting for MonCash confirmation. This can take a few minutes.',
@@ -111,6 +112,7 @@ export default {
   },
   payout: {
     title: 'Withdraw money',
+    title_short: 'Withdraw',
     limit_label: 'Per-transaction limit',
     limit_used: 'Used',
     over_limit: 'Amount is above the per-transaction limit',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 
 interface Props {
   label: string;
@@ -33,6 +33,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   selected: { backgroundColor: colors.primary, borderColor: colors.primary },
-  label: { fontSize: typography.label, color: colors.text },
-  labelSelected: { color: colors.primaryText, fontWeight: '600' },
+  label: { fontSize: typography.label, fontFamily: fonts.regular, color: colors.text },
+  labelSelected: { color: colors.primaryText, fontFamily: fonts.semibold },
 });

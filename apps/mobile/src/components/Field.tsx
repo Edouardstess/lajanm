@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
-import { colors, radius, spacing, touchTarget, typography } from '../theme';
+import { colors, fonts, radius, spacing, touchTarget, typography } from '../theme';
 
 interface Props extends TextInputProps {
   label: string;
@@ -55,8 +55,8 @@ export const Field = forwardRef<TextInput, Props>(function Field(
 
 const styles = StyleSheet.create({
   wrapper: { marginBottom: spacing.md },
-  label: { fontSize: typography.label, fontWeight: '600', color: colors.text, marginBottom: spacing.sm },
-  hint: { fontSize: typography.overline, color: colors.muted, marginTop: -spacing.xs, marginBottom: spacing.sm },
+  label: { fontSize: typography.label, fontFamily: fonts.semibold, color: colors.text, marginBottom: spacing.sm },
+  hint: { fontSize: typography.overline, fontFamily: fonts.regular, color: colors.muted, marginTop: -spacing.xs, marginBottom: spacing.sm },
   input: {
     minHeight: touchTarget.comfortable,
     backgroundColor: colors.surface,
@@ -64,11 +64,11 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    fontSize: typography.body,
+    fontSize: typography.body, fontFamily: fonts.regular,
     color: colors.text,
   },
   inputFocused: { borderColor: colors.primary },
   inputError: { borderColor: colors.danger },
   inputDisabled: { backgroundColor: colors.surfaceAlt, color: colors.muted },
-  error: { fontSize: typography.overline, color: colors.danger, marginTop: spacing.xs },
+  error: { fontSize: typography.overline, fontFamily: fonts.regular, color: colors.danger, marginTop: spacing.xs },
 });

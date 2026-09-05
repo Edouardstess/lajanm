@@ -3,11 +3,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { Field } from '../components/Field';
 import { InfoNote } from '../components/InfoNote';
+import { Logo } from '../components/Logo';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { Screen } from '../components/Screen';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, spacing, typography } from '../theme';
 
 export function RegisterScreen({ navigation }: { navigation: { navigate: (screen: string) => void } }) {
   const { t } = useTranslation();
@@ -34,10 +35,7 @@ export function RegisterScreen({ navigation }: { navigation: { navigate: (screen
   return (
     <Screen scroll center>
       <View style={styles.brand}>
-        <View style={styles.mark}>
-          <Text style={styles.markText}>L</Text>
-        </View>
-        <Text style={styles.wordmark}>Lajan’m</Text>
+        <Logo size="lg" />
       </View>
 
       <Text style={styles.title}>{t('auth.register_title')}</Text>
@@ -81,29 +79,13 @@ export function RegisterScreen({ navigation }: { navigation: { navigate: (screen
 
 const styles = StyleSheet.create({
   brand: { alignItems: 'center', marginBottom: spacing.xl },
-  mark: {
-    width: 64,
-    height: 64,
-    borderRadius: radius.lg,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markText: { color: colors.primaryText, fontSize: 32, fontWeight: '700' },
-  wordmark: {
-    fontSize: typography.heading,
-    fontWeight: '700',
-    color: colors.primaryDeep,
-    marginTop: spacing.sm + 2,
-    letterSpacing: -0.3,
-  },
   title: {
     fontSize: typography.title,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: colors.text,
     marginBottom: spacing.lg,
     letterSpacing: -0.3,
   },
   link: { marginTop: spacing.lg, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
-  linkText: { color: colors.primary, fontSize: typography.label, fontWeight: '600' },
+  linkText: { color: colors.primary, fontSize: typography.label, fontFamily: fonts.semibold },
 });

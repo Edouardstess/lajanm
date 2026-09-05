@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, spacing, typography } from '../theme';
+import { colors, fonts, spacing, typography } from '../theme';
 
 export interface RecapLine {
   label: string;
@@ -32,8 +32,8 @@ const styles = StyleSheet.create({
   box: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md, marginTop: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm + 1 },
   totalRow: { marginBottom: 0 },
-  label: { flex: 1, fontSize: typography.label - 1, color: colors.muted },
-  totalLabel: { fontSize: typography.label, fontWeight: '600', color: colors.text },
-  value: { fontSize: typography.label - 1, fontWeight: '600', color: colors.text },
-  totalValue: { fontSize: typography.body, fontWeight: '700', color: colors.text },
+  label: { flex: 1, fontSize: typography.label - 1, fontFamily: fonts.regular, color: colors.muted },
+  totalLabel: { fontSize: typography.label, fontFamily: fonts.semibold, color: colors.text },
+  value: { fontSize: typography.label - 1, fontFamily: fonts.semibold, color: colors.text },
+  totalValue: { fontSize: typography.body, fontFamily: fonts.bold, color: colors.text },
 });

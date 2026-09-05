@@ -4,7 +4,7 @@ import { AppState, AppStateStatus, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '../components/Icon';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { useTranslation } from '../i18n';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 import { isBiometricLockEnabled } from './biometricPreference';
 
 const BACKGROUND_LOCK_DELAY_MS = 30_000;
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: typography.title,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: colors.text,
     textAlign: 'center',
     letterSpacing: -0.3,

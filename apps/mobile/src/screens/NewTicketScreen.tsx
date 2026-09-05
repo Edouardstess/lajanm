@@ -7,7 +7,7 @@ import { Field } from '../components/Field';
 import { InfoNote } from '../components/InfoNote';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { useTranslation } from '../i18n';
-import { colors, spacing, typography } from '../theme';
+import { colors, fonts, spacing, typography } from '../theme';
 
 const CATEGORIES: TicketCategory[] = ['general', 'transaction', 'kyc', 'technical', 'other'];
 
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   categoryBlock: { marginBottom: spacing.md },
   categoryLabel: {
     fontSize: typography.label,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
     color: colors.text,
     marginBottom: spacing.sm,
   },

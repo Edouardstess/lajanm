@@ -51,6 +51,7 @@ export default {
   },
   topup: {
     title: 'Mete lajan nan kont ou',
+    title_short: 'Mete lajan',
     amount_label: 'Montan an (HTG)',
     submit_button: 'Kontinye ak MonCash',
     status_pending: 'N ap tann konfimasyon MonCash. Sa ka pran kèk minit.',
@@ -116,6 +117,7 @@ export default {
   },
   payout: {
     title: 'Retire lajan',
+    title_short: 'Retire lajan',
     limit_label: 'Limit pou yon sèl tranzaksyon',
     limit_used: 'Ou itilize',
     over_limit: 'Montan an depase limit pou yon sèl tranzaksyon',

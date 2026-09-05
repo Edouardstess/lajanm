@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 import { Icon, IconName } from './Icon';
 
 interface Props {
@@ -20,7 +20,7 @@ export function QuickAction({ label, icon, onPress, primary }: Props) {
       style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
     >
       <View style={[styles.icon, primary && styles.iconPrimary]}>
-        <Icon name={icon} size={19} color={primary ? colors.primaryText : colors.primaryDeep} />
+        <Icon name={icon} size={19} color={colors.primary} />
       </View>
       <Text style={styles.label} numberOfLines={2}>
         {label}
@@ -48,10 +48,11 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: radius.sm,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconPrimary: { backgroundColor: colors.primary },
-  label: { fontSize: typography.overline - 1, fontWeight: '600', color: colors.text, textAlign: 'center', lineHeight: 14 },
+  // La seule tuile dorée de l'écran : l'action que l'on vient faire.
+  iconPrimary: { backgroundColor: colors.accent },
+  label: { fontSize: typography.overline - 1, fontFamily: fonts.semibold, color: colors.text, textAlign: 'center', lineHeight: 14 },
 });

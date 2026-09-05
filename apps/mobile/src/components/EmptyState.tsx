@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 import { Icon, IconName } from './Icon';
 
 interface Props {
@@ -32,6 +32,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
-  title: { fontSize: typography.label, color: colors.muted, textAlign: 'center', lineHeight: 22 },
+  title: { fontSize: typography.label, fontFamily: fonts.regular, color: colors.muted, textAlign: 'center', lineHeight: 22 },
   action: { alignSelf: 'stretch', marginTop: spacing.lg },
 });

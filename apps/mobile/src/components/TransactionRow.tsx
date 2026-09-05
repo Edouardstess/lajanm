@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { formatMinor } from '../format';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 import { Icon, IconName } from './Icon';
 
 interface Props {
@@ -37,7 +37,7 @@ export function TransactionRow({
   return (
     <View style={styles.row} accessible accessibilityLabel={`${title}, ${date}, ${amount} ${currency}`}>
       <View style={[styles.icon, credit ? styles.iconCredit : styles.iconDebit]}>
-        <Icon name={ICONS[direction]} size={18} color={credit ? colors.primary : colors.accent} />
+        <Icon name={ICONS[direction]} size={18} color={credit ? colors.success : colors.primary} />
       </View>
 
       <View style={styles.body}>
@@ -74,14 +74,16 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   icon: { width: 40, height: 40, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },
-  iconCredit: { backgroundColor: colors.primarySoft },
-  iconDebit: { backgroundColor: colors.accentSoft },
+  // L'or est réservé à l'action principale : il ne sert pas ici à
+  // colorer une ligne sur trois de l'historique.
+  iconCredit: { backgroundColor: colors.successSoft },
+  iconDebit: { backgroundColor: colors.primarySoft },
   body: { flex: 1 },
-  title: { fontSize: typography.label - 1, fontWeight: '600', color: colors.text },
-  date: { fontSize: typography.overline, color: colors.muted, marginTop: 3 },
+  title: { fontSize: typography.label - 1, fontFamily: fonts.semibold, color: colors.text },
+  date: { fontSize: typography.overline, fontFamily: fonts.regular, color: colors.muted, marginTop: 3 },
   amountBox: { alignItems: 'flex-end' },
-  amount: { fontSize: typography.label, fontWeight: '700', color: colors.text, letterSpacing: -0.2 },
-  amountCredit: { color: colors.primary },
-  status: { fontSize: 11, fontWeight: '600', color: colors.accent, marginTop: 3 },
+  amount: { fontSize: typography.label, fontFamily: fonts.bold, color: colors.text, letterSpacing: -0.2 },
+  amountCredit: { color: colors.success },
+  status: { fontSize: 11, fontFamily: fonts.semibold, color: colors.accentInk, marginTop: 3 },
   statusDanger: { color: colors.danger },
 });

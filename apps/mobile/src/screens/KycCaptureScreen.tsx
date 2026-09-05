@@ -9,7 +9,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { Screen } from '../components/Screen';
 import { StatusView } from '../components/StatusView';
 import { useTranslation } from '../i18n';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 
 /**
  * Captures and submits the two KYC photos. There is no object-storage
@@ -124,5 +124,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
   },
-  placeholderLabel: { fontSize: typography.caption, color: colors.muted },
+  placeholderLabel: { fontSize: typography.caption, fontFamily: fonts.regular, color: colors.muted },
 });

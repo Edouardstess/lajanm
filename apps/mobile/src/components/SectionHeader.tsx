@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, spacing, touchTarget, typography } from '../theme';
+import { colors, fonts, spacing, touchTarget, typography } from '../theme';
 
 interface Props {
   title: string;
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
-  title: { fontSize: typography.heading, fontWeight: '700', color: colors.text, letterSpacing: -0.2 },
+  title: { fontSize: typography.heading, fontFamily: fonts.bold, color: colors.text, letterSpacing: -0.2 },
   action: { marginLeft: 'auto', minHeight: touchTarget.minHeight - 20, justifyContent: 'center' },
-  actionLabel: { fontSize: typography.caption, fontWeight: '600', color: colors.primary },
+  actionLabel: { fontSize: typography.caption, fontFamily: fonts.semibold, color: colors.primary },
 });

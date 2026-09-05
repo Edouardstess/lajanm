@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, fonts, radius, spacing, typography } from '../theme';
 import { Icon, IconName } from './Icon';
 
 type Tone = 'neutral' | 'waiting' | 'success' | 'danger';
@@ -13,9 +13,9 @@ interface Props {
 
 const TONES: Record<Tone, { bg: string; border: string; icon: string; defaultIcon: IconName }> = {
   neutral: { bg: colors.surfaceAlt, border: colors.border, icon: colors.muted, defaultIcon: 'help' },
-  waiting: { bg: colors.warningSoft, border: '#E4CFA6', icon: colors.accent, defaultIcon: 'clock' },
-  success: { bg: colors.successSoft, border: '#C7DED3', icon: colors.success, defaultIcon: 'check' },
-  danger: { bg: colors.dangerSoft, border: '#EFCFCC', icon: colors.danger, defaultIcon: 'alert' },
+  waiting: { bg: colors.warningSoft, border: '#E8D9A8', icon: colors.accentInk, defaultIcon: 'clock' },
+  success: { bg: colors.successSoft, border: '#C6E0D0', icon: colors.success, defaultIcon: 'check' },
+  danger: { bg: colors.dangerSoft, border: '#F0D2D2', icon: colors.danger, defaultIcon: 'alert' },
 };
 
 /**
@@ -43,5 +43,5 @@ const styles = StyleSheet.create({
     padding: spacing.md - 2,
   },
   icon: { marginTop: 1 },
-  text: { flex: 1, fontSize: typography.caption, lineHeight: 19, color: colors.text },
+  text: { flex: 1, fontSize: typography.caption, fontFamily: fonts.regular, lineHeight: 19, color: colors.text },
 });

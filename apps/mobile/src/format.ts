@@ -5,12 +5,17 @@
 // faisait le code d'origine, c'est autant d'occasions de se tromper de
 // division. La conversion et la mise en forme vivent donc ici.
 //
-// Le séparateur de milliers est une espace insécable étroite et la
-// décimale une virgule : c'est la convention utilisée en Haïti (fr-HT).
+// Le séparateur de milliers est une espace insécable et la décimale une
+// virgule : c'est la convention utilisée en Haïti (fr-HT).
+//
+// U+00A0 et non U+202F (espace fine insécable) : Montserrat ne contient
+// pas U+202F. Le système bascule alors sur une police de repli pour ce
+// seul caractère, et le séparateur disparaît dans les petits corps —
+// « 1 000 » se lisait « 1000 » sur les puces de montant.
 // `Intl` n'est pas utilisé : Hermes n'embarque les données de locale que
 // si l'app est compilée avec `intl` activé, et le repli silencieux
 // donnerait « 12,450.00 » à un utilisateur qui lit « 12 450,00 ».
-const THIN_NBSP = ' ';
+const GROUP_SEPARATOR = '\u00A0';
 
 export function formatMinor(amountMinor: string | number, currency?: string): string {
   const value = Number(amountMinor) / 100;
@@ -22,7 +27,7 @@ export function formatAmount(value: number, currency?: string): string {
 
   const negative = value < 0;
   const [whole, decimals] = Math.abs(value).toFixed(2).split('.');
-  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, THIN_NBSP);
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, GROUP_SEPARATOR);
   const text = `${negative ? '−' : ''}${grouped},${decimals}`;
   return currency ? `${text} ${currency}` : text;
 }

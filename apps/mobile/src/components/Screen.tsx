@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { colors, spacing, typography } from '../theme';
+import { colors, fonts, spacing, typography } from '../theme';
 
 interface Props {
   children: React.ReactNode;
@@ -56,13 +56,13 @@ const styles = StyleSheet.create({
   centered: { justifyContent: 'center' },
   title: {
     fontSize: typography.title,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: colors.text,
     letterSpacing: -0.3,
     marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: typography.label,
+    fontSize: typography.label, fontFamily: fonts.regular,
     color: colors.muted,
     marginBottom: spacing.md,
     lineHeight: 21,
