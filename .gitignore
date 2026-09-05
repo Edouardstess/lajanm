@@ -41,3 +41,9 @@ coverage/
 
 # Docker volumes (local only)
 infra/docker/data/
+
+# Skills d'assistant installés localement (ui-ux-pro-max et consorts).
+# Volontairement hors du dépôt : ce sont ~4,7 Mo de fichiers tiers, dont
+# des scripts Python, sans rapport avec le code livré. Réinstallation :
+#   npx ui-ux-pro-max-cli init --ai claude
+.claude/skills/
