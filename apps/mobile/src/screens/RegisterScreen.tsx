@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ApiError } from '../api/client';
+import { Field } from '../components/Field';
+import { InfoNote } from '../components/InfoNote';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { Screen } from '../components/Screen';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n';
-import { colors, spacing, touchTarget, typography } from '../theme';
-import { ApiError } from '../api/client';
+import { colors, radius, spacing, typography } from '../theme';
 
 export function RegisterScreen({ navigation }: { navigation: { navigate: (screen: string) => void } }) {
   const { t } = useTranslation();
@@ -13,6 +16,8 @@ export function RegisterScreen({ navigation }: { navigation: { navigate: (screen
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const ready = phone.trim().length > 0 && pin.length >= 4;
 
   const onSubmit = async () => {
     setError(null);
@@ -27,55 +32,78 @@ export function RegisterScreen({ navigation }: { navigation: { navigate: (screen
   };
 
   return (
-    <View style={styles.container}>
+    <Screen scroll center>
+      <View style={styles.brand}>
+        <View style={styles.mark}>
+          <Text style={styles.markText}>L</Text>
+        </View>
+        <Text style={styles.wordmark}>Lajan’m</Text>
+      </View>
+
       <Text style={styles.title}>{t('auth.register_title')}</Text>
 
-      <Text style={styles.label}>{t('auth.phone_label')}</Text>
-      <TextInput
-        style={styles.input}
+      <Field
+        label={t('auth.phone_label')}
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
         placeholder="+509..."
-        accessibilityLabel={t('auth.phone_label')}
+        autoComplete="tel"
       />
 
-      <Text style={styles.label}>{t('auth.pin_label')}</Text>
-      <TextInput
-        style={styles.input}
+      {/* Le format attendu est écrit à côté du champ plutôt que découvert
+          après un refus du serveur. */}
+      <Field
+        label={t('auth.pin_label')}
+        hint={t('auth.pin_hint')}
         value={pin}
         onChangeText={setPin}
         keyboardType="number-pad"
         secureTextEntry
         maxLength={6}
-        accessibilityLabel={t('auth.pin_label')}
       />
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <InfoNote tone="danger">{error}</InfoNote>}
 
-      <PrimaryButton label={t('auth.register_button')} onPress={onSubmit} loading={loading} />
+      <PrimaryButton
+        label={t('auth.register_button')}
+        onPress={onSubmit}
+        loading={loading}
+        disabled={!ready}
+      />
 
-      <Pressable onPress={() => navigation.navigate('Login')} style={styles.link}>
+      <Pressable onPress={() => navigation.navigate('Login')} style={styles.link} hitSlop={8}>
         <Text style={styles.linkText}>{t('auth.already_have_account')}</Text>
       </Pressable>
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg, justifyContent: 'center' },
-  title: { fontSize: typography.title, fontWeight: '700', color: colors.text, marginBottom: spacing.lg },
-  label: { fontSize: typography.label, color: colors.text, marginTop: spacing.md, marginBottom: spacing.xs },
-  input: {
-    minHeight: touchTarget.minHeight,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    fontSize: typography.body,
-    color: colors.text,
+  brand: { alignItems: 'center', marginBottom: spacing.xl },
+  mark: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.lg,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  error: { color: colors.danger, marginTop: spacing.md },
-  link: { marginTop: spacing.lg, alignItems: 'center' },
-  linkText: { color: colors.primary, fontSize: typography.label },
+  markText: { color: colors.primaryText, fontSize: 32, fontWeight: '700' },
+  wordmark: {
+    fontSize: typography.heading,
+    fontWeight: '700',
+    color: colors.primaryDeep,
+    marginTop: spacing.sm + 2,
+    letterSpacing: -0.3,
+  },
+  title: {
+    fontSize: typography.title,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.lg,
+    letterSpacing: -0.3,
+  },
+  link: { marginTop: spacing.lg, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
+  linkText: { color: colors.primary, fontSize: typography.label, fontWeight: '600' },
 });

@@ -1,9 +1,10 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 import React, { useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus, StyleSheet, Text, View } from 'react-native';
+import { Icon } from '../components/Icon';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { useTranslation } from '../i18n';
-import { colors, spacing, typography } from '../theme';
+import { colors, radius, spacing, typography } from '../theme';
 import { isBiometricLockEnabled } from './biometricPreference';
 
 const BACKGROUND_LOCK_DELAY_MS = 30_000;
@@ -68,8 +69,13 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
   if (locked) {
     return (
       <View style={styles.container}>
+        <View style={styles.badge}>
+          <Icon name="lock" size={34} color={colors.primary} />
+        </View>
         <Text style={styles.title}>{t('security.locked_title')}</Text>
-        <PrimaryButton label={t('security.unlock_button')} onPress={tryUnlock} />
+        <View style={styles.action}>
+          <PrimaryButton label={t('security.unlock_button')} onPress={tryUnlock} />
+        </View>
       </View>
     );
   }
@@ -78,6 +84,28 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
-  title: { fontSize: typography.title, fontWeight: '700', color: colors.text, marginBottom: spacing.lg },
+  container: {
+    flex: 1,
+    backgroundColor: colors.ground,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  badge: {
+    width: 84,
+    height: 84,
+    borderRadius: radius.xl,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+  },
+  title: {
+    fontSize: typography.title,
+    fontWeight: '700',
+    color: colors.text,
+    textAlign: 'center',
+    letterSpacing: -0.3,
+  },
+  action: { alignSelf: 'stretch', marginTop: spacing.lg },
 });

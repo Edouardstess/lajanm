@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { getHistory, WalletHistoryEntry } from '../api/wallet';
+import { EmptyState } from '../components/EmptyState';
+import { formatDateTime } from '../format';
+import { TransactionRow } from '../components/TransactionRow';
 import { useTranslation } from '../i18n';
-import { colors, spacing, typography } from '../theme';
+import { colors, spacing } from '../theme';
 
 export function HistoryScreen() {
   const { t } = useTranslation();
@@ -25,8 +28,6 @@ export function HistoryScreen() {
     load();
   }, [load]);
 
-  const typeLabel = (type: WalletHistoryEntry['operationType']) => t(`wallet.type_${type}`);
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -34,18 +35,16 @@ export function HistoryScreen() {
         keyExtractor={(item) => item.id}
         refreshing={loading}
         onRefresh={load}
-        ListEmptyComponent={<Text style={styles.empty}>{t('wallet.history_empty')}</Text>}
+        contentContainerStyle={styles.content}
+        ListEmptyComponent={loading ? null : <EmptyState title={t('wallet.history_empty')} />}
         renderItem={({ item }) => (
-          <View style={styles.row}>
-            <View>
-              <Text style={styles.type}>{typeLabel(item.operationType)}</Text>
-              <Text style={styles.date}>{new Date(item.createdAt).toLocaleString()}</Text>
-            </View>
-            <Text style={[styles.amount, item.direction === 'credit' ? styles.credit : styles.debit]}>
-              {item.direction === 'credit' ? '+' : '-'}
-              {(Number(item.amountMinor) / 100).toFixed(2)} {item.currency}
-            </Text>
-          </View>
+          <TransactionRow
+            title={t(`wallet.type_${item.operationType}`)}
+            date={formatDateTime(item.createdAt)}
+            amountMinor={item.amountMinor}
+            currency={item.currency}
+            direction={item.direction}
+          />
         )}
       />
     </View>
@@ -53,19 +52,6 @@ export function HistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  type: { fontSize: typography.body, color: colors.text, fontWeight: '600' },
-  date: { fontSize: typography.label, color: colors.muted },
-  amount: { fontSize: typography.body, fontWeight: '700' },
-  credit: { color: colors.success },
-  debit: { color: colors.text },
-  empty: { textAlign: 'center', color: colors.muted, marginTop: spacing.xl },
+  container: { flex: 1, backgroundColor: colors.ground },
+  content: { padding: spacing.lg, flexGrow: 1 },
 });

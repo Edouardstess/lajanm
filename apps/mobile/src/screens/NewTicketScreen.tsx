@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { createTicket, TicketCategory } from '../api/support';
+import { Chip } from '../components/Chip';
+import { Field } from '../components/Field';
+import { InfoNote } from '../components/InfoNote';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { useTranslation } from '../i18n';
-import { colors, spacing, touchTarget, typography } from '../theme';
+import { colors, spacing, typography } from '../theme';
 
 const CATEGORIES: TicketCategory[] = ['general', 'transaction', 'kyc', 'technical', 'other'];
 
@@ -16,8 +19,10 @@ export function NewTicketScreen({ navigation }: { navigation: { goBack: () => vo
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const ready = subject.trim().length > 0 && message.trim().length > 0;
+
   const onSubmit = async () => {
-    if (!subject.trim() || !message.trim()) return;
+    if (!ready) return;
 
     setSubmitting(true);
     setError(null);
@@ -33,76 +38,55 @@ export function NewTicketScreen({ navigation }: { navigation: { goBack: () => vo
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.label}>{t('support.subject_label')}</Text>
-      <TextInput style={styles.input} value={subject} onChangeText={setSubject} maxLength={255} />
+      <Field label={t('support.subject_label')} value={subject} onChangeText={setSubject} maxLength={255} />
 
-      <Text style={styles.label}>{t('support.category_label')}</Text>
-      <View style={styles.chips}>
-        {CATEGORIES.map((option) => (
-          <Pressable
-            key={option}
-            accessibilityRole="button"
-            accessibilityState={{ selected: category === option }}
-            style={[styles.chip, category === option && styles.chipSelected]}
-            onPress={() => setCategory(option)}
-          >
-            <Text style={[styles.chipLabel, category === option && styles.chipLabelSelected]}>
-              {t(`support.category_${option}`)}
-            </Text>
-          </Pressable>
-        ))}
+      <View style={styles.categoryBlock}>
+        <Text style={styles.categoryLabel}>{t('support.category_label')}</Text>
+        <View style={styles.categories}>
+          {CATEGORIES.map((option) => (
+            <Chip
+              key={option}
+              label={t(`support.category_${option}`)}
+              selected={category === option}
+              onPress={() => setCategory(option)}
+            />
+          ))}
+        </View>
       </View>
 
-      <Text style={styles.label}>{t('support.message_label')}</Text>
-      <TextInput
-        style={[styles.input, styles.textArea]}
+      <Field
+        label={t('support.message_label')}
         value={message}
         onChangeText={setMessage}
         multiline
         numberOfLines={6}
         textAlignVertical="top"
+        style={styles.textArea}
       />
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && <InfoNote tone="danger">{error}</InfoNote>}
 
       <PrimaryButton
+        icon="send"
         label={t('support.send_button')}
         onPress={onSubmit}
         loading={submitting}
-        disabled={!subject.trim() || !message.trim()}
+        disabled={!ready}
       />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg },
-  label: { fontSize: typography.label, color: colors.text, marginBottom: spacing.xs },
-  input: {
-    minHeight: touchTarget.minHeight,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    fontSize: typography.body,
+  container: { flex: 1, backgroundColor: colors.ground },
+  content: { padding: spacing.lg, paddingBottom: spacing.xl },
+  categoryBlock: { marginBottom: spacing.md },
+  categoryLabel: {
+    fontSize: typography.label,
+    fontWeight: '600',
     color: colors.text,
-    marginBottom: spacing.md,
-  },
-  textArea: { minHeight: 140, paddingTop: spacing.md },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.md },
-  chip: {
-    minHeight: touchTarget.minHeight,
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    marginRight: spacing.sm,
     marginBottom: spacing.sm,
   },
-  chipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipLabel: { fontSize: typography.label, color: colors.text },
-  chipLabelSelected: { color: colors.primaryText, fontWeight: '600' },
-  errorText: { color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
+  categories: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  textArea: { minHeight: 140, paddingTop: spacing.md, lineHeight: typography.body + 7 },
 });

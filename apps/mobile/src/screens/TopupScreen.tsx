@@ -1,18 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Linking, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Linking } from 'react-native';
 import { ApiError } from '../api/client';
-import { getTopupStatus, initiateTopup, TopupStatus } from '../api/topup';
+import { getTopupStatus, initiateTopup } from '../api/topup';
+import { AmountField } from '../components/AmountField';
+import { InfoNote } from '../components/InfoNote';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { SafetyNote } from '../components/SafetyNote';
+import { Screen } from '../components/Screen';
+import { StatusView } from '../components/StatusView';
 import { useTranslation } from '../i18n';
-import { colors, spacing, touchTarget, typography } from '../theme';
 
 type ScreenState = 'form' | 'pending' | 'completed' | 'failed';
+
+const MIN_AMOUNT_HTG = 25;
+const PRESETS = [500, 1000, 2000, 5000];
 
 /**
  * Three honest states, per the product requirement: réussi / en cours /
  * échoué. "pending" is shown both while waiting on MonCash's redirect
  * flow AND while our own initiation call is queued for retry — the user
  * never sees "success" before the webhook has actually confirmed it.
+ *
+ * L'attente a sa propre couleur (l'or) et sa propre icône : c'est le seul
+ * moyen qu'un client ne reparte pas en croyant son dépôt acquis.
  */
 export function TopupScreen() {
   const { t } = useTranslation();
@@ -45,10 +55,12 @@ export function TopupScreen() {
     }, 4000);
   };
 
+  const amountHTG = parseInt(amount, 10);
+  const ready = Number.isFinite(amountHTG) && amountHTG >= MIN_AMOUNT_HTG;
+
   const onSubmit = async () => {
     setError(null);
-    const amountHTG = parseInt(amount, 10);
-    if (!amountHTG || amountHTG < 25) return;
+    if (!ready) return;
 
     setSubmitting(true);
     try {
@@ -68,67 +80,65 @@ export function TopupScreen() {
 
   if (screenState === 'pending') {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>{t('topup.status_pending')}</Text>
-      </View>
+      <Screen>
+        <StatusView tone="waiting" title={t('topup.status_pending')} />
+      </Screen>
     );
   }
 
   if (screenState === 'completed') {
     return (
-      <View style={styles.container}>
-        <Text style={[styles.title, styles.success]}>{t('topup.status_completed')}</Text>
-      </View>
+      <Screen>
+        <StatusView tone="success" title={t('topup.status_completed')} />
+      </Screen>
     );
   }
 
   if (screenState === 'failed') {
     return (
-      <View style={styles.container}>
-        <Text style={[styles.title, styles.errorText]}>{t('topup.status_failed')}</Text>
-        <PrimaryButton
-          label={t('common.retry')}
-          onPress={() => {
-            setScreenState('form');
-            setTransactionId(null);
-          }}
+      <Screen>
+        <StatusView
+          tone="danger"
+          title={t('topup.status_failed')}
+          action={
+            <PrimaryButton
+              label={t('common.retry')}
+              onPress={() => {
+                setScreenState('form');
+                setTransactionId(null);
+              }}
+            />
+          }
         />
-      </View>
+      </Screen>
     );
   }
 
+  const footer = (
+    <>
+      <PrimaryButton
+        iconAfter
+        icon="arrow-right"
+        label={t('topup.submit_button')}
+        onPress={onSubmit}
+        loading={submitting}
+        disabled={!ready}
+      />
+      <SafetyNote>{t('topup.safety')}</SafetyNote>
+    </>
+  );
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{t('topup.title')}</Text>
-      <Text style={styles.label}>{t('topup.amount_label')}</Text>
-      <TextInput
-        style={styles.input}
+    <Screen scroll footer={footer}>
+      <AmountField
+        label={t('topup.amount_label')}
         value={amount}
         onChangeText={setAmount}
-        keyboardType="number-pad"
-        placeholder="500"
-        accessibilityLabel={t('topup.amount_label')}
+        presets={PRESETS}
+        error={error ?? undefined}
       />
-      {error && <Text style={styles.errorText}>{error}</Text>}
-      <PrimaryButton label={t('topup.submit_button')} onPress={onSubmit} loading={submitting} />
-    </View>
+
+      <InfoNote tone="waiting">{t('topup.status_pending')}</InfoNote>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg, justifyContent: 'center' },
-  title: { fontSize: typography.title, fontWeight: '700', color: colors.text, marginBottom: spacing.lg, textAlign: 'center' },
-  success: { color: colors.success },
-  label: { fontSize: typography.label, color: colors.text, marginBottom: spacing.xs },
-  input: {
-    minHeight: touchTarget.minHeight,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    fontSize: typography.body,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  errorText: { color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
-});

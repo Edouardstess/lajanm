@@ -18,7 +18,7 @@ import { TicketThreadScreen } from '../screens/TicketThreadScreen';
 import { TopupScreen } from '../screens/TopupScreen';
 import { TransferScreen } from '../screens/TransferScreen';
 import { AppLockGate } from '../security/AppLockGate';
-import { colors } from '../theme';
+import { colors, typography } from '../theme';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,8 +34,23 @@ function AuthStack() {
 function AppStack() {
   const { t } = useTranslation();
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Lajan’m' }} />
+    // L'en-tête natif reprend les couleurs de l'app : sans cela il reste
+    // blanc au-dessus d'un fond crème, et la couture se voit sur chaque
+    // écran. Le titre est aligné à gauche sur les deux plateformes, pour
+    // que l'écran commence au même endroit partout.
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.ground },
+        headerShadowVisible: false,
+        headerTintColor: colors.text,
+        headerTitleAlign: 'left',
+        headerTitleStyle: { fontSize: typography.heading, fontWeight: '700', color: colors.text },
+        contentStyle: { backgroundColor: colors.ground },
+      }}
+    >
+      {/* L'accueil porte son propre en-tête (avatar, salutation, aide) :
+          celui du navigateur ferait doublon. */}
+      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Transfer" component={TransferScreen} options={{ title: t('wallet.transfer_title') }} />
       <Stack.Screen name="History" component={HistoryScreen} options={{ title: t('wallet.history_title') }} />
       <Stack.Screen name="Topup" component={TopupScreen} options={{ title: t('topup.title') }} />
@@ -67,7 +82,7 @@ export function RootNavigator() {
 
   if (!isReady) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.ground }}>
         <ActivityIndicator color={colors.primary} />
       </View>
     );

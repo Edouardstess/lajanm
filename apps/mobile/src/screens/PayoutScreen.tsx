@@ -1,14 +1,22 @@
 import * as Crypto from 'expo-crypto';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { getPayoutLimit, initiatePayout } from '../api/payout';
+import { AmountField } from '../components/AmountField';
+import { Field } from '../components/Field';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { SafetyNote } from '../components/SafetyNote';
+import { Screen } from '../components/Screen';
+import { StatusView } from '../components/StatusView';
+import { formatRounded } from '../format';
 import { useOtpStep } from '../hooks/useOtpStep';
 import { useTranslation } from '../i18n';
-import { colors, spacing, touchTarget, typography } from '../theme';
+import { colors, radius, spacing, typography } from '../theme';
 
 type ScreenState = 'form' | 'completed' | 'failed' | 'unconfirmed';
+
+const PRESETS = [1000, 2500, 5000, 10000];
 
 export function PayoutScreen() {
   const { t } = useTranslation();
@@ -25,9 +33,12 @@ export function PayoutScreen() {
       .catch(() => {});
   }, []);
 
+  const amountHTG = parseInt(amount, 10);
+  const ready = Number.isFinite(amountHTG) && amountHTG >= 1;
+  const overLimit = ready && maxAmount !== null && amountHTG > maxAmount;
+
   const onSubmit = async () => {
-    const amountHTG = parseInt(amount, 10);
-    if (!amountHTG || amountHTG < 1) return;
+    if (!ready || overLimit) return;
 
     setSubmitting(true);
     setMessage(null);
@@ -60,89 +71,119 @@ export function PayoutScreen() {
 
   if (state === 'completed') {
     return (
-      <View style={styles.container}>
-        <Text style={[styles.title, styles.success]}>{t('payout.status_completed')}</Text>
-      </View>
+      <Screen>
+        <StatusView tone="success" title={t('payout.status_completed')} />
+      </Screen>
     );
   }
 
   if (state === 'unconfirmed') {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>{t('payout.status_unconfirmed')}</Text>
-        <PrimaryButton label={t('common.retry')} onPress={() => setState('form')} />
-      </View>
+      <Screen>
+        <StatusView
+          tone="waiting"
+          title={t('payout.status_unconfirmed')}
+          action={<PrimaryButton label={t('common.retry')} onPress={() => setState('form')} />}
+        />
+      </Screen>
     );
   }
 
   if (state === 'failed') {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>{t('payout.status_failed_refunded')}</Text>
-        {message && <Text style={styles.errorText}>{message}</Text>}
-        <PrimaryButton label={t('common.retry')} onPress={() => setState('form')} />
-      </View>
+      <Screen>
+        <StatusView
+          tone="danger"
+          title={t('payout.status_failed_refunded')}
+          message={message ?? undefined}
+          action={<PrimaryButton label={t('common.retry')} onPress={() => setState('form')} />}
+        />
+      </Screen>
     );
   }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{t('payout.title')}</Text>
-      {maxAmount !== null && (
-        <Text style={styles.limitText}>
-          {t('payout.limit_label')}: {maxAmount} HTG
-        </Text>
-      )}
+  const footer = (
+    <>
+      <PrimaryButton
+        icon={otp.needsOtp ? 'lock' : 'arrow-up'}
+        label={otp.needsOtp ? t('security.otp_submit') : t('payout.submit_button')}
+        onPress={onSubmit}
+        loading={submitting || otp.requesting}
+        disabled={otp.needsOtp ? otp.otpCode.length < 4 : !ready || overLimit}
+      />
+      <SafetyNote>{t('payout.safety')}</SafetyNote>
+    </>
+  );
 
-      <Text style={styles.label}>{t('payout.amount_label')}</Text>
-      <TextInput
-        style={styles.input}
+  return (
+    <Screen scroll footer={footer}>
+      <AmountField
+        label={t('payout.amount_label')}
         value={amount}
         onChangeText={setAmount}
-        keyboardType="number-pad"
-        placeholder="500"
+        presets={PRESETS}
         editable={!otp.needsOtp}
+        error={overLimit ? t('payout.over_limit') : undefined}
       />
 
       {otp.needsOtp && (
-        <>
-          <Text style={styles.label}>{t('security.otp_label')}</Text>
-          <TextInput
-            style={styles.input}
+        <View style={styles.otp}>
+          <Field
+            label={t('security.otp_label')}
             value={otp.otpCode}
             onChangeText={otp.setOtpCode}
             keyboardType="number-pad"
             maxLength={6}
             placeholder="123456"
           />
-        </>
+        </View>
       )}
 
-      <PrimaryButton
-        label={otp.needsOtp ? t('security.otp_submit') : t('payout.submit_button')}
-        onPress={onSubmit}
-        loading={submitting || otp.requesting}
-        disabled={otp.needsOtp && otp.otpCode.length < 4}
-      />
-    </View>
+      {/*
+        Le plafond vient du serveur (Circulaire BRH n°121) et n'est jamais
+        codé en dur ici. La jauge le rend tangible avant la saisie plutôt
+        qu'après un refus : un rejet qu'on pouvait voir venir est un rejet
+        de trop.
+      */}
+      {maxAmount !== null && (
+        <View style={styles.limitCard}>
+          <View style={styles.limitHeader}>
+            <Text style={styles.limitLabel}>{t('payout.limit_label')}</Text>
+            <Text style={styles.limitValue}>{formatRounded(maxAmount, 'HTG')}</Text>
+          </View>
+          <View style={styles.track}>
+            <View
+              style={[
+                styles.fill,
+                { width: `${Math.min(100, ((ready ? amountHTG : 0) / maxAmount) * 100)}%` },
+                overLimit && styles.fillOver,
+              ]}
+            />
+          </View>
+          <Text style={styles.limitFoot}>
+            {t('payout.limit_used')} {formatRounded(ready ? amountHTG : 0)} / {formatRounded(maxAmount, 'HTG')}
+          </Text>
+        </View>
+      )}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg, justifyContent: 'center' },
-  title: { fontSize: typography.title, fontWeight: '700', color: colors.text, marginBottom: spacing.md, textAlign: 'center' },
-  success: { color: colors.success },
-  limitText: { fontSize: typography.label, color: colors.muted, marginBottom: spacing.lg, textAlign: 'center' },
-  label: { fontSize: typography.label, color: colors.text, marginBottom: spacing.xs },
-  input: {
-    minHeight: touchTarget.minHeight,
+  otp: { marginTop: spacing.lg },
+  limitCard: {
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    fontSize: typography.body,
-    color: colors.text,
-    marginBottom: spacing.md,
+    borderRadius: radius.md,
+    padding: spacing.md - 1,
+    marginTop: spacing.lg,
   },
-  errorText: { color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
+  limitHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm + 2 },
+  limitLabel: { flex: 1, fontSize: typography.caption, color: colors.muted },
+  limitValue: { fontSize: typography.caption, fontWeight: '700', color: colors.text },
+  track: { height: 7, borderRadius: radius.pill, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
+  fill: { height: '100%', borderRadius: radius.pill, backgroundColor: colors.primary },
+  fillOver: { backgroundColor: colors.danger },
+  limitFoot: { fontSize: typography.overline, color: colors.muted, marginTop: spacing.sm + 1 },
 });

@@ -1,11 +1,14 @@
 import { useRoute } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { addMessage, getTicket, SupportMessage, SupportTicket } from '../api/support';
+import { Field } from '../components/Field';
+import { InfoNote } from '../components/InfoNote';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { formatDateTime } from '../format';
 import { useTranslation } from '../i18n';
-import { colors, spacing, touchTarget, typography } from '../theme';
+import { colors, radius, spacing, typography } from '../theme';
 
 export function TicketThreadScreen() {
   // The stack navigator is untyped (see RootNavigator), so params arrive as
@@ -58,74 +61,83 @@ export function TicketThreadScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {ticket && (
-        <>
+        <View style={styles.header}>
           <Text style={styles.subject}>{ticket.subject}</Text>
-          <Text style={styles.status}>{t(`support.status_${ticket.status}`)}</Text>
-        </>
+          <View style={styles.statusPill}>
+            <Text style={styles.statusLabel}>{t(`support.status_${ticket.status}`)}</Text>
+          </View>
+        </View>
       )}
 
       {messages.map((item) => {
         const fromSupport = item.senderType === 'admin';
         return (
-          <View key={item.id} style={[styles.bubble, fromSupport ? styles.fromSupport : styles.fromUser]}>
-            <Text style={styles.sender}>
+          <View
+            key={item.id}
+            style={[styles.bubble, fromSupport ? styles.fromSupport : styles.fromUser]}
+          >
+            <Text style={[styles.sender, fromSupport && styles.senderSupport]}>
               {fromSupport ? t('support.sender_support') : t('support.sender_you')}
             </Text>
             <Text style={styles.body}>{item.body}</Text>
-            <Text style={styles.time}>{new Date(item.createdAt).toLocaleString()}</Text>
+            <Text style={styles.time}>{formatDateTime(item.createdAt)}</Text>
           </View>
         );
       })}
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && <InfoNote tone="danger">{error}</InfoNote>}
 
       {isClosed ? (
-        <Text style={styles.closedNotice}>{t('support.closed_notice')}</Text>
+        <View style={styles.closed}>
+          <InfoNote>{t('support.closed_notice')}</InfoNote>
+        </View>
       ) : (
-        <>
-          <Text style={styles.label}>{t('support.reply_label')}</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
+        <View style={styles.replyBlock}>
+          <Field
+            label={t('support.reply_label')}
             value={reply}
             onChangeText={setReply}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
+            style={styles.textArea}
           />
           <PrimaryButton
+            icon="send"
             label={t('support.reply_button')}
             onPress={onSend}
             loading={sending}
             disabled={!reply.trim()}
           />
-        </>
+        </View>
       )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg },
-  subject: { fontSize: typography.title, fontWeight: '700', color: colors.text },
-  status: { fontSize: typography.label, color: colors.muted, marginBottom: spacing.lg },
-  bubble: { borderRadius: 12, padding: spacing.md, marginBottom: spacing.md },
-  fromUser: { backgroundColor: '#EFEFEF', alignSelf: 'flex-end', maxWidth: '90%' },
-  fromSupport: { backgroundColor: '#E4F1EC', alignSelf: 'flex-start', maxWidth: '90%' },
-  sender: { fontSize: typography.label, color: colors.muted, marginBottom: spacing.xs },
-  body: { fontSize: typography.body, color: colors.text, lineHeight: 24 },
-  time: { fontSize: typography.label, color: colors.muted, marginTop: spacing.xs },
-  label: { fontSize: typography.label, color: colors.text, marginBottom: spacing.xs, marginTop: spacing.md },
-  input: {
-    minHeight: touchTarget.minHeight,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    fontSize: typography.body,
-    color: colors.text,
+  container: { flex: 1, backgroundColor: colors.ground },
+  content: { padding: spacing.lg, paddingBottom: spacing.xl },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg },
+  subject: { flex: 1, fontSize: typography.heading, fontWeight: '700', color: colors.text, letterSpacing: -0.2 },
+  statusPill: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 5,
   },
-  textArea: { minHeight: 100, paddingTop: spacing.md },
-  closedNotice: { fontSize: typography.body, color: colors.muted, marginTop: spacing.md, lineHeight: 24 },
-  errorText: { color: colors.danger, marginTop: spacing.md, textAlign: 'center' },
+  statusLabel: { fontSize: 11, fontWeight: '600', color: colors.muted },
+  // Le fil respecte la convention universelle des messageries : ce que
+  // l'utilisateur a écrit à droite, la réponse du support à gauche. Sur
+  // un écran d'aide, reconnaître qui parle doit être immédiat.
+  bubble: { borderRadius: radius.md, padding: spacing.md - 2, marginBottom: spacing.sm + 2, maxWidth: '90%' },
+  fromUser: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignSelf: 'flex-end' },
+  fromSupport: { backgroundColor: colors.primarySoft, alignSelf: 'flex-start' },
+  sender: { fontSize: typography.overline, fontWeight: '600', color: colors.muted, marginBottom: spacing.xs },
+  senderSupport: { color: colors.primary },
+  body: { fontSize: typography.label, color: colors.text, lineHeight: 23 },
+  time: { fontSize: 11, color: colors.muted, marginTop: spacing.sm - 2 },
+  closed: { marginTop: spacing.md },
+  replyBlock: { marginTop: spacing.lg },
+  textArea: { minHeight: 110, paddingTop: spacing.md, lineHeight: typography.body + 7 },
 });

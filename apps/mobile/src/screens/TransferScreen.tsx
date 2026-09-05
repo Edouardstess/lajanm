@@ -1,17 +1,27 @@
 import * as Crypto from 'expo-crypto';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { View } from 'react-native';
 import { ApiError } from '../api/client';
 import { transfer } from '../api/wallet';
+import { AmountField } from '../components/AmountField';
+import { Field } from '../components/Field';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { Recap } from '../components/Recap';
+import { SafetyNote } from '../components/SafetyNote';
+import { Screen } from '../components/Screen';
+import { StatusView } from '../components/StatusView';
+import { formatAmount, formatMinor } from '../format';
+import { useBalance } from '../hooks/useBalance';
 import { useOtpStep } from '../hooks/useOtpStep';
 import { useTranslation } from '../i18n';
-import { colors, spacing, touchTarget, typography } from '../theme';
 
 type ScreenState = 'form' | 'sent' | 'offline' | 'error';
 
+const PRESETS = [100, 250, 500, 1000];
+
 export function TransferScreen() {
   const { t } = useTranslation();
+  const { snapshot } = useBalance();
   const [recipientPhone, setRecipientPhone] = useState('');
   const [amount, setAmount] = useState('');
   const [state, setState] = useState<ScreenState>('form');
@@ -19,9 +29,11 @@ export function TransferScreen() {
   const [submitting, setSubmitting] = useState(false);
   const otp = useOtpStep('transfer');
 
+  const amountHTG = parseInt(amount, 10);
+  const ready = Number.isFinite(amountHTG) && amountHTG >= 1 && recipientPhone.trim().length > 0;
+
   const onSubmit = async () => {
-    const amountHTG = parseInt(amount, 10);
-    if (!amountHTG || amountHTG < 1 || !recipientPhone) return;
+    if (!ready) return;
 
     setSubmitting(true);
     const clientRequestId = Crypto.randomUUID();
@@ -55,28 +67,41 @@ export function TransferScreen() {
 
   if (state === 'sent') {
     return (
-      <View style={styles.container}>
-        <Text style={[styles.title, styles.success]}>{t('wallet.transfer_sent')}</Text>
-      </View>
+      <Screen>
+        <StatusView tone="success" title={t('wallet.transfer_sent')} />
+      </Screen>
     );
   }
 
   if (state === 'offline') {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>{t('wallet.transfer_offline')}</Text>
-        <PrimaryButton label={t('common.retry')} onPress={() => setState('form')} />
-      </View>
+      <Screen>
+        <StatusView
+          tone="waiting"
+          title={t('wallet.transfer_offline')}
+          action={<PrimaryButton label={t('common.retry')} onPress={() => setState('form')} />}
+        />
+      </Screen>
     );
   }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{t('wallet.transfer_title')}</Text>
+  const footer = (
+    <>
+      <PrimaryButton
+        icon={otp.needsOtp ? 'lock' : 'send'}
+        label={otp.needsOtp ? t('security.otp_submit') : t('wallet.transfer_submit')}
+        onPress={onSubmit}
+        loading={submitting || otp.requesting}
+        disabled={otp.needsOtp ? otp.otpCode.length < 4 : !ready}
+      />
+      <SafetyNote>{t('wallet.transfer_safety')}</SafetyNote>
+    </>
+  );
 
-      <Text style={styles.label}>{t('wallet.recipient_label')}</Text>
-      <TextInput
-        style={styles.input}
+  return (
+    <Screen scroll footer={footer}>
+      <Field
+        label={t('wallet.recipient_label')}
         value={recipientPhone}
         onChangeText={setRecipientPhone}
         keyboardType="phone-pad"
@@ -84,56 +109,46 @@ export function TransferScreen() {
         editable={!otp.needsOtp}
       />
 
-      <Text style={styles.label}>{t('wallet.amount_label')}</Text>
-      <TextInput
-        style={styles.input}
+      <AmountField
+        label={t('wallet.amount_label')}
         value={amount}
         onChangeText={setAmount}
-        keyboardType="number-pad"
-        placeholder="100"
+        presets={PRESETS}
         editable={!otp.needsOtp}
+        error={state === 'error' && message ? message : undefined}
       />
 
       {otp.needsOtp && (
-        <>
-          <Text style={styles.label}>{t('security.otp_label')}</Text>
-          <TextInput
-            style={styles.input}
+        <View style={{ marginTop: 24 }}>
+          <Field
+            label={t('security.otp_label')}
             value={otp.otpCode}
             onChangeText={otp.setOtpCode}
             keyboardType="number-pad"
             maxLength={6}
             placeholder="123456"
           />
-        </>
+        </View>
       )}
 
-      {state === 'error' && message && <Text style={styles.errorText}>{message}</Text>}
+      {ready && (
+        <Recap
+          lines={[
+            {
+              label: t('wallet.balance_title'),
+              value: snapshot ? formatMinor(snapshot.balanceMinor, snapshot.currency) : '—',
+            },
+            {
+              // Libellé sans l'unité : elle est déjà dans la valeur, et
+              // « Montan an (HTG) — 750,00 HTG » se lit deux fois.
+              label: t('wallet.amount_short'),
+              value: formatAmount(amountHTG, snapshot?.currency ?? 'HTG'),
+              total: true,
+            },
+          ]}
+        />
+      )}
 
-      <PrimaryButton
-        label={otp.needsOtp ? t('security.otp_submit') : t('wallet.transfer_submit')}
-        onPress={onSubmit}
-        loading={submitting || otp.requesting}
-        disabled={otp.needsOtp && otp.otpCode.length < 4}
-      />
-    </View>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg, justifyContent: 'center' },
-  title: { fontSize: typography.title, fontWeight: '700', color: colors.text, marginBottom: spacing.lg, textAlign: 'center' },
-  success: { color: colors.success },
-  label: { fontSize: typography.label, color: colors.text, marginBottom: spacing.xs },
-  input: {
-    minHeight: touchTarget.minHeight,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    fontSize: typography.body,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  errorText: { color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
-});

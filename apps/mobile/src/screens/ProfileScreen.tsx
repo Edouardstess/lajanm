@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Switch, Text, View } from 'react-native';
 import { ApiError } from '../api/client';
+import { Card } from '../components/Card';
+import { Chip } from '../components/Chip';
+import { Field } from '../components/Field';
+import { Icon } from '../components/Icon';
+import { InfoNote } from '../components/InfoNote';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { Screen } from '../components/Screen';
+import { SectionHeader } from '../components/SectionHeader';
 import { useAuth } from '../context/AuthContext';
 import { SUPPORTED_LOCALES, useTranslation } from '../i18n';
 import { isBiometricLockEnabled, setBiometricLockEnabled } from '../security/biometricPreference';
-import { colors, spacing, touchTarget, typography } from '../theme';
+import { colors, radius, spacing, typography } from '../theme';
 
 // Endonyms, deliberately untranslated: someone looking for their own
 // language finds it faster by its own name than by its name in a language
@@ -31,6 +38,8 @@ export function ProfileScreen({ navigation }: { navigation: { navigate: (screen:
 
   if (!user) return null;
 
+  const verified = user.tier === 'verified';
+
   const onSave = async () => {
     setSaving(true);
     setError(null);
@@ -49,95 +58,98 @@ export function ProfileScreen({ navigation }: { navigation: { navigate: (screen:
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{t('profile.title')}</Text>
-      <Text style={styles.tier}>
-        {user.tier === 'verified' ? t('profile.tier_verified') : t('profile.tier_basic')}
-      </Text>
+    <Screen scroll>
+      {/* L'identité et le niveau de compte d'abord : c'est ce qui décide
+          des plafonds, donc la première chose à vérifier ici. */}
+      <Card style={styles.identity}>
+        <View style={[styles.badge, verified && styles.badgeVerified]}>
+          <Icon name={verified ? 'check' : 'person'} size={22} color={verified ? colors.success : colors.muted} />
+        </View>
+        <View style={styles.identityBody}>
+          <Text style={styles.phone}>{user.phone}</Text>
+          <Text style={[styles.tier, verified && styles.tierVerified]}>
+            {verified ? t('profile.tier_verified') : t('profile.tier_basic')}
+          </Text>
+        </View>
+      </Card>
 
-      <Text style={styles.label}>{t('profile.full_name_label')}</Text>
-      <TextInput style={styles.input} value={fullName} onChangeText={setFullName} />
+      {!verified && (
+        <View style={styles.upsell}>
+          <InfoNote>{t('kyc.explanation')}</InfoNote>
+          <PrimaryButton
+            variant="secondary"
+            label={t('kyc.title')}
+            onPress={() => navigation.navigate('Kyc')}
+          />
+        </View>
+      )}
 
-      <Text style={styles.label}>{t('profile.email_label')}</Text>
-      <TextInput
-        style={styles.input}
+      <SectionHeader title={t('profile.details_title')} />
+      <Field label={t('profile.full_name_label')} value={fullName} onChangeText={setFullName} />
+      <Field
+        label={t('profile.email_label')}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
       />
-
-      {error && <Text style={styles.error}>{error}</Text>}
-
+      {error && <InfoNote tone="danger">{error}</InfoNote>}
       <PrimaryButton label={t('common.save')} onPress={onSave} loading={saving} />
 
-      <View style={styles.toggleRow}>
+      <SectionHeader title={t('profile.security_title')} />
+      <Card flat style={styles.toggleRow}>
         <Text style={styles.toggleLabel}>{t('security.biometric_toggle')}</Text>
-        <Switch value={biometricEnabled} onValueChange={onToggleBiometric} />
-      </View>
+        <Switch
+          value={biometricEnabled}
+          onValueChange={onToggleBiometric}
+          trackColor={{ true: colors.primary, false: colors.borderStrong }}
+          thumbColor={colors.surface}
+        />
+      </Card>
+      <PrimaryButton
+        variant="quiet"
+        icon="lock"
+        label={t('profile.devices_title')}
+        onPress={() => navigation.navigate('Devices')}
+      />
 
-      <Text style={styles.label}>{t('profile.language_label')}</Text>
-      <View style={styles.localeRow}>
+      <SectionHeader title={t('profile.language_label')} />
+      <View style={styles.locales}>
         {SUPPORTED_LOCALES.map((option) => (
-          <Pressable
+          <Chip
             key={option}
-            accessibilityRole="button"
-            accessibilityState={{ selected: locale === option }}
-            style={[styles.localeChip, locale === option && styles.localeChipSelected]}
+            label={LOCALE_LABELS[option] ?? option}
+            selected={locale === option}
             onPress={() => setLocale(option)}
-          >
-            <Text style={[styles.localeLabel, locale === option && styles.localeLabelSelected]}>
-              {LOCALE_LABELS[option] ?? option}
-            </Text>
-          </Pressable>
+          />
         ))}
       </View>
 
-      <PrimaryButton
-        label={t('profile.devices_title')}
-        variant="secondary"
-        onPress={() => navigation.navigate('Devices')}
-      />
-      <PrimaryButton label={t('profile.logout')} variant="secondary" onPress={logout} />
-    </View>
+      <View style={styles.logout}>
+        <PrimaryButton variant="secondary" label={t('profile.logout')} onPress={logout} />
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
-  title: { fontSize: typography.title, fontWeight: '700', color: colors.text },
-  tier: { fontSize: typography.label, color: colors.muted, marginBottom: spacing.lg },
-  label: { fontSize: typography.label, color: colors.text, marginTop: spacing.md, marginBottom: spacing.xs },
-  input: {
-    minHeight: touchTarget.minHeight,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    fontSize: typography.body,
-    color: colors.text,
-  },
-  error: { color: colors.danger, marginTop: spacing.md },
-  toggleRow: {
-    flexDirection: 'row',
+  identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.md - 2 },
+  badge: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.sm + 2,
+    backgroundColor: colors.surfaceAlt,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    marginTop: spacing.sm,
-  },
-  toggleLabel: { fontSize: typography.body, color: colors.text, flex: 1, marginRight: spacing.md },
-  localeRow: { flexDirection: 'row', flexWrap: 'wrap' },
-  localeChip: {
-    minHeight: touchTarget.minHeight,
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    marginRight: spacing.sm,
-    marginBottom: spacing.sm,
   },
-  localeChipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
-  localeLabel: { fontSize: typography.body, color: colors.text },
-  localeLabelSelected: { color: colors.primaryText, fontWeight: '600' },
+  badgeVerified: { backgroundColor: colors.successSoft },
+  identityBody: { flex: 1 },
+  phone: { fontSize: typography.body, fontWeight: '700', color: colors.text },
+  tier: { fontSize: typography.caption, color: colors.muted, marginTop: 3 },
+  tierVerified: { color: colors.success, fontWeight: '600' },
+  upsell: { marginTop: spacing.md, gap: spacing.xs },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  toggleLabel: { flex: 1, fontSize: typography.label, color: colors.text },
+  locales: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  logout: { marginTop: spacing.xl },
 });

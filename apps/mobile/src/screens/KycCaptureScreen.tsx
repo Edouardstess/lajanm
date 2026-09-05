@@ -1,11 +1,15 @@
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { ApiError } from '../api/client';
 import { submitKyc } from '../api/kyc';
+import { Icon } from '../components/Icon';
+import { InfoNote } from '../components/InfoNote';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { Screen } from '../components/Screen';
+import { StatusView } from '../components/StatusView';
 import { useTranslation } from '../i18n';
-import { colors, spacing, typography } from '../theme';
+import { colors, radius, spacing, typography } from '../theme';
 
 /**
  * Captures and submits the two KYC photos. There is no object-storage
@@ -31,6 +35,14 @@ export function KycCaptureScreen() {
     }
   };
 
+  if (status === 'submitted') {
+    return (
+      <Screen>
+        <StatusView tone="waiting" title={t('kyc.status_pending')} />
+      </Screen>
+    );
+  }
+
   const onSubmit = async () => {
     if (!idDocumentUri || !selfieUri) return;
     setSubmitting(true);
@@ -46,54 +58,71 @@ export function KycCaptureScreen() {
     }
   };
 
-  if (status === 'submitted') {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>{t('kyc.status_pending')}</Text>
-      </View>
-    );
-  }
-
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{t('kyc.title')}</Text>
-      <Text style={styles.explanation}>{t('kyc.explanation')}</Text>
-
-      <View style={styles.captureRow}>
-        {idDocumentUri && <Image source={{ uri: idDocumentUri }} style={styles.preview} />}
+    <Screen
+      scroll
+      subtitle={t('kyc.explanation')}
+      footer={
         <PrimaryButton
-          label={t('kyc.id_document_button')}
-          variant={idDocumentUri ? 'secondary' : 'primary'}
-          onPress={() => capture(setIdDocumentUri)}
+          label={t('kyc.submit_button')}
+          onPress={onSubmit}
+          loading={submitting}
+          disabled={!idDocumentUri || !selfieUri}
         />
-      </View>
-
-      <View style={styles.captureRow}>
-        {selfieUri && <Image source={{ uri: selfieUri }} style={styles.preview} />}
-        <PrimaryButton
-          label={t('kyc.selfie_button')}
-          variant={selfieUri ? 'secondary' : 'primary'}
-          onPress={() => capture(setSelfieUri)}
-        />
-      </View>
-
-      {error && <Text style={styles.error}>{error}</Text>}
-
-      <PrimaryButton
-        label={t('kyc.submit_button')}
-        onPress={onSubmit}
-        loading={submitting}
-        disabled={!idDocumentUri || !selfieUri}
+      }
+    >
+      <CaptureSlot
+        label={t('kyc.id_document_button')}
+        uri={idDocumentUri}
+        onPress={() => capture(setIdDocumentUri)}
       />
-    </ScrollView>
+      <CaptureSlot label={t('kyc.selfie_button')} uri={selfieUri} onPress={() => capture(setSelfieUri)} />
+
+      {error && <InfoNote tone="danger">{error}</InfoNote>}
+    </Screen>
+  );
+}
+
+/**
+ * Un emplacement par photo, qui montre la photo prise plutôt que de se
+ * contenter de changer la couleur d'un bouton : l'utilisateur doit voir
+ * ce qu'il envoie, une pièce d'identité floue étant la première cause de
+ * refus de vérification.
+ */
+function CaptureSlot({ label, uri, onPress }: { label: string; uri: string | null; onPress: () => void }) {
+  return (
+    <View style={styles.slot}>
+      {uri ? (
+        <Image source={{ uri }} style={styles.preview} accessibilityIgnoresInvertColors />
+      ) : (
+        <View style={styles.placeholder}>
+          <Icon name="card" size={28} color={colors.placeholder} />
+          <Text style={styles.placeholderLabel}>{label}</Text>
+        </View>
+      )}
+      <PrimaryButton label={label} variant={uri ? 'quiet' : 'secondary'} onPress={onPress} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, backgroundColor: colors.background, padding: spacing.lg },
-  title: { fontSize: typography.title, fontWeight: '700', color: colors.text, marginBottom: spacing.sm },
-  explanation: { fontSize: typography.body, color: colors.muted, marginBottom: spacing.lg },
-  captureRow: { marginBottom: spacing.lg },
-  preview: { width: '100%', height: 180, borderRadius: 12, marginBottom: spacing.sm, backgroundColor: colors.border },
-  error: { color: colors.danger, marginBottom: spacing.md },
+  slot: { marginBottom: spacing.lg },
+  preview: {
+    width: '100%',
+    height: 180,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt,
+  },
+  placeholder: {
+    height: 180,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  placeholderLabel: { fontSize: typography.caption, color: colors.muted },
 });

@@ -1,9 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { DeviceSession, listDevices, revokeDevice } from '../api/auth';
+import { Card } from '../components/Card';
+import { EmptyState } from '../components/EmptyState';
+import { Icon } from '../components/Icon';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { formatDateTime } from '../format';
+import { colors, radius, spacing, typography } from '../theme';
 import { useTranslation } from '../i18n';
-import { colors, spacing, typography } from '../theme';
 
 export function DevicesScreen() {
   const { t } = useTranslation();
@@ -30,16 +34,26 @@ export function DevicesScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('profile.devices_title')}</Text>
       <FlatList
         data={devices}
         keyExtractor={(item) => item.id}
         refreshing={loading}
         onRefresh={load}
+        contentContainerStyle={styles.content}
+        ListEmptyComponent={loading ? null : <EmptyState icon="lock" title={t('profile.devices_empty')} />}
         renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Text style={styles.deviceName}>{item.deviceName ?? item.deviceId}</Text>
-            <Text style={styles.lastSeen}>{new Date(item.lastSeenAt).toLocaleString()}</Text>
+          <Card style={styles.card}>
+            <View style={styles.header}>
+              <View style={[styles.icon, item.revokedAt != null && styles.iconRevoked]}>
+                <Icon name="lock" size={18} color={item.revokedAt ? colors.muted : colors.primary} />
+              </View>
+              <View style={styles.body}>
+                <Text style={styles.name} numberOfLines={1}>
+                  {item.deviceName ?? item.deviceId}
+                </Text>
+                <Text style={styles.lastSeen}>{formatDateTime(item.lastSeenAt)}</Text>
+              </View>
+            </View>
             {!item.revokedAt && (
               <PrimaryButton
                 label={t('profile.revoke_device')}
@@ -47,7 +61,7 @@ export function DevicesScreen() {
                 onPress={() => onRevoke(item.id)}
               />
             )}
-          </View>
+          </Card>
         )}
       />
     </View>
@@ -55,9 +69,20 @@ export function DevicesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
-  title: { fontSize: typography.title, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
-  row: { paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border },
-  deviceName: { fontSize: typography.body, color: colors.text, fontWeight: '600' },
-  lastSeen: { fontSize: typography.label, color: colors.muted, marginBottom: spacing.xs },
+  container: { flex: 1, backgroundColor: colors.ground },
+  content: { padding: spacing.lg, flexGrow: 1 },
+  card: { marginBottom: spacing.sm + 2 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md - 3 },
+  icon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.sm,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconRevoked: { backgroundColor: colors.surfaceAlt },
+  body: { flex: 1 },
+  name: { fontSize: typography.label, fontWeight: '600', color: colors.text },
+  lastSeen: { fontSize: typography.overline, color: colors.muted, marginTop: 3 },
 });
