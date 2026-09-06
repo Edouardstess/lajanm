@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mêmes rôles, adaptés au thème sombre : les fonds s'assombrissent,
+         les teintes de marque s'éclaircissent pour rester lisibles. -->
+    <color name="vert_700">#FFA5D6A7</color>
+    <color name="vert_600">#FF81C784</color>
+    <color name="vert_100">#FF2C4A2E</color>
+    <color name="vert_50">#FF1C2A1D</color>
+    <color name="ocre_600">#FFBCAAA4</color>
+    <color name="ocre_100">#FF4A403C</color>
+    <color name="ocre_50">#FF2A2422</color>
+
+    <color name="fond">#FF11140F</color>
+    <color name="surface">#FF1A1D17</color>
+    <color name="surface_variante">#FF23271F</color>
+    <color name="contour">#FF3A4034</color>
+    <color name="texte">#FFE2E3DB</color>
+    <color name="texte_secondaire">#FFC0C8B6</color>
+    <color name="erreur">#FFF2B8B5</color>
+
+    <color name="blanc">#FFFFFFFF</color>
+    <color name="noir">#FF000000</color>
+</resources>

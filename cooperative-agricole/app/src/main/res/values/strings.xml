@@ -1,0 +1,111 @@
+<resources>
+    <string name="app_name">Coopérative Agricole</string>
+
+    <!-- Accueil -->
+    <string name="accueil_bienvenue">Coopérative agricole</string>
+    <string name="accueil_sous_titre">Gestion des planteurs et des pesées</string>
+    <string name="accueil_carte_planteurs">Planteurs</string>
+    <string name="accueil_carte_planteurs_description">Consulter, ajouter et modifier les fiches des planteurs</string>
+    <string name="accueil_carte_pesees">Pesées</string>
+    <string name="accueil_carte_pesees_description">Enregistrer les livraisons et suivre les poids</string>
+    <string name="accueil_statistiques">En bref</string>
+    <string name="accueil_nombre_planteurs">Planteurs</string>
+    <string name="accueil_nombre_pesees">Pesées</string>
+    <string name="accueil_poids_total">Poids total</string>
+
+    <!-- Planteurs -->
+    <string name="planteurs_titre">Planteurs</string>
+    <string name="planteurs_recherche">Rechercher un planteur</string>
+    <string name="planteurs_ajouter">Ajouter un planteur</string>
+    <string name="planteurs_vide_titre">Aucun planteur</string>
+    <string name="planteurs_vide_message">Appuyez sur + pour enregistrer le premier planteur de la coopérative.</string>
+    <string name="planteurs_recherche_vide_titre">Aucun résultat</string>
+    <string name="planteurs_recherche_vide_message">Aucun planteur ne correspond à cette recherche.</string>
+    <string name="planteur_nouveau">Nouveau planteur</string>
+    <string name="planteur_modifier">Modifier le planteur</string>
+    <string name="planteur_detail">Fiche du planteur</string>
+
+    <!-- Formulaire planteur -->
+    <string name="champ_code">Code du planteur</string>
+    <string name="champ_code_aide">Exemple : PL-011 — lettres, chiffres et tirets</string>
+    <string name="champ_code_verrouille">Le code identifie le planteur : il n\'est pas modifiable.</string>
+    <string name="champ_nom">Nom</string>
+    <string name="champ_prenom">Prénom</string>
+    <string name="champ_sexe">Sexe</string>
+    <string name="champ_sexe_masculin">Masculin</string>
+    <string name="champ_sexe_feminin">Féminin</string>
+    <string name="champ_date_naissance">Date de naissance</string>
+    <string name="champ_localite">Localité</string>
+    <string name="action_enregistrer">Enregistrer</string>
+    <string name="action_annuler">Annuler</string>
+    <string name="action_modifier">Modifier</string>
+    <string name="action_supprimer">Supprimer</string>
+    <string name="action_retour">Retour</string>
+    <string name="action_options">Options</string>
+
+    <!-- Détail planteur -->
+    <string name="detail_informations">Informations</string>
+    <string name="detail_code">Code</string>
+    <string name="detail_nom_complet">Nom complet</string>
+    <string name="detail_localite">Localité</string>
+    <string name="detail_sexe">Sexe</string>
+    <string name="detail_date_naissance">Date de naissance</string>
+    <string name="detail_synthese">Synthèse des pesées</string>
+    <string name="detail_nombre_pesees">Nombre de pesées</string>
+    <string name="detail_poids_total">Poids total</string>
+    <string name="detail_derniere_pesee">Dernière pesée</string>
+    <string name="detail_historique">Historique des pesées</string>
+    <string name="detail_aucune_pesee">Aucune pesée enregistrée pour ce planteur.</string>
+    <string name="detail_ajouter_pesee">Ajouter une pesée</string>
+    <string name="detail_aucune_valeur">—</string>
+
+    <!-- Pesées -->
+    <string name="pesees_titre">Pesées</string>
+    <string name="pesees_ajouter">Enregistrer une pesée</string>
+    <string name="pesees_vide_titre">Aucune pesée</string>
+    <string name="pesees_vide_message">Appuyez sur + pour enregistrer la première pesée.</string>
+    <string name="pesee_nouvelle">Nouvelle pesée</string>
+    <string name="pesee_modifier">Modifier la pesée</string>
+    <string name="champ_planteur">Planteur</string>
+    <string name="champ_date_pesee">Date de la pesée</string>
+    <string name="champ_poids">Poids (kg)</string>
+    <string name="champ_observation">Observation (facultatif)</string>
+    <string name="pesee_aucun_planteur_titre">Aucun planteur enregistré</string>
+    <string name="pesee_aucun_planteur_message">Une pesée doit être rattachée à un planteur. Enregistrez d\'abord un planteur.</string>
+    <string name="pesee_aucun_planteur_action">Ajouter un planteur</string>
+
+    <!-- Formats -->
+    <string name="format_poids">%1$s kg</string>
+    <string name="format_code_planteur">Code : %1$s</string>
+    <string name="format_deux_valeurs">%1$s · %2$s</string>
+    <string name="format_age">%1$d ans</string>
+
+    <!-- Confirmations -->
+    <string name="confirmation_titre_suppression">Confirmer la suppression</string>
+    <string name="confirmation_supprimer_planteur">Supprimer « %1$s » ? Ses %2$d pesée(s) seront également supprimées. Cette action est irréversible.</string>
+    <string name="confirmation_supprimer_pesee">Supprimer la pesée du %1$s (%2$s) ? Cette action est irréversible.</string>
+    <string name="confirmation_quitter_titre">Abandonner la saisie ?</string>
+    <string name="confirmation_quitter_message">Les informations saisies ne seront pas enregistrées.</string>
+    <string name="confirmation_quitter_action">Abandonner</string>
+
+    <!-- Messages -->
+    <string name="message_planteur_enregistre">Planteur enregistré.</string>
+    <string name="message_planteur_modifie">Planteur modifié.</string>
+    <string name="message_planteur_supprime">Planteur supprimé.</string>
+    <string name="message_pesee_enregistree">Pesée enregistrée.</string>
+    <string name="message_pesee_modifiee">Pesée modifiée.</string>
+    <string name="message_pesee_supprimee">Pesée supprimée.</string>
+    <string name="message_echec">L\'opération a échoué. Réessayez.</string>
+
+    <!-- Erreurs de saisie -->
+    <string name="erreur_obligatoire">Ce champ est obligatoire.</string>
+    <string name="erreur_trop_court">Saisie trop courte.</string>
+    <string name="erreur_format_code">Lettres, chiffres, tiret ou souligné uniquement.</string>
+    <string name="erreur_code_deja_utilise">Ce code est déjà attribué à un autre planteur.</string>
+    <string name="erreur_date_future">La date ne peut pas être dans le futur.</string>
+    <string name="erreur_age">L\'âge doit être compris entre %1$d et %2$d ans.</string>
+    <string name="erreur_nombre">Saisissez un nombre valide.</string>
+    <string name="erreur_poids_positif">Le poids doit être supérieur à 0.</string>
+    <string name="erreur_poids_maximum">Le poids ne peut pas dépasser %1$s kg.</string>
+    <string name="erreur_planteur_obligatoire">Sélectionnez un planteur.</string>
+</resources>

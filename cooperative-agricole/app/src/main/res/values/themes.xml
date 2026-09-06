@@ -1,0 +1,57 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Thème unique : les couleurs sont définies deux fois (values/colors.xml
+         et values-night/colors.xml), le système choisit le jeu adapté au mode
+         clair ou sombre sans qu'il y ait deux thèmes à maintenir. -->
+    <style name="Theme.CooperativeAgricole" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/vert_600</item>
+        <item name="colorOnPrimary">@color/blanc</item>
+        <item name="colorPrimaryContainer">@color/vert_100</item>
+        <item name="colorOnPrimaryContainer">@color/vert_700</item>
+
+        <item name="colorSecondary">@color/ocre_600</item>
+        <item name="colorOnSecondary">@color/blanc</item>
+        <item name="colorSecondaryContainer">@color/ocre_100</item>
+        <item name="colorOnSecondaryContainer">@color/texte</item>
+
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/texte</item>
+        <item name="colorSurfaceVariant">@color/surface_variante</item>
+        <item name="colorOnSurfaceVariant">@color/texte_secondaire</item>
+        <item name="colorOutline">@color/contour</item>
+        <item name="android:colorBackground">@color/fond</item>
+        <item name="colorError">@color/erreur</item>
+
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/fond</item>
+    </style>
+
+    <!-- Styles réutilisés par les écrans, pour ne pas répéter les mêmes
+         attributs dans chaque layout. -->
+    <style name="Texte.Titre" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textColor">@color/texte</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Texte.Section" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/texte</item>
+    </style>
+
+    <style name="Texte.Etiquette" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textColor">@color/texte_secondaire</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="Texte.Valeur" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/texte</item>
+    </style>
+
+    <style name="Carte" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="cardBackgroundColor">@color/surface</item>
+        <item name="strokeColor">@color/contour</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+</resources>

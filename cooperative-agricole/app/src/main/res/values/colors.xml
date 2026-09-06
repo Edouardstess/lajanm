@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Palette « agricole » : le vert porte l'identité, l'ocre sert
+         d'accent (récolte, terre), le reste est neutre. -->
+    <color name="vert_700">#FF1B5E20</color>
+    <color name="vert_600">#FF2E7D32</color>
+    <color name="vert_100">#FFC8E6C9</color>
+    <color name="vert_50">#FFE8F5E9</color>
+    <color name="ocre_600">#FF8D6E63</color>
+    <color name="ocre_100">#FFD7CCC8</color>
+    <color name="ocre_50">#FFEFEBE9</color>
+
+    <color name="fond">#FFFBFDF7</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="surface_variante">#FFEFF2E9</color>
+    <color name="contour">#FFD3DBC8</color>
+    <color name="texte">#FF1A1C18</color>
+    <color name="texte_secondaire">#FF54624D</color>
+    <color name="erreur">#FFB3261E</color>
+
+    <color name="blanc">#FFFFFFFF</color>
+    <color name="noir">#FF000000</color>
+</resources>
