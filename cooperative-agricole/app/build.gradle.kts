@@ -5,6 +5,16 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Le plugin Google Services n'est appliqué que si le fichier de configuration
+// Firebase est présent. Sans lui, il ferait échouer la compilation ; avec cette
+// garde, le projet se compile et s'exécute tel quel (mode local seul), et la
+// synchronisation distante s'active dès que google-services.json est déposé
+// dans app/. Voir README, section « Base distante Firebase ».
+val configurationFirebase = file("google-services.json")
+if (configurationFirebase.exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.example.cooperativeagricole"
     compileSdk = 36
@@ -68,6 +78,12 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
+    // Firebase — base distante. La dépendance est toujours compilée ; c'est
+    // l'absence de google-services.json qui décide, à l'exécution, que
+    // l'application reste en local seul.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

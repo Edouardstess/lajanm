@@ -45,11 +45,8 @@ class PlanteurAdapter(
             val contexte = root.context
             initiales.text = initialesDe(planteur.prenom, planteur.nom)
             nomComplet.text = planteur.nomComplet
-            sexeLocalite.text = contexte.getString(
-                R.string.format_deux_valeurs,
-                contexte.getString(libelleSexe(planteur.sexe)),
-                planteur.localite,
-            )
+            badgeSexe.setText(libelleSexe(planteur.sexe))
+            localite.text = planteur.localite
             code.text = contexte.getString(R.string.format_code_planteur, planteur.code)
             root.setOnClickListener { surClic(planteur) }
         }

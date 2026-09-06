@@ -34,3 +34,14 @@ Où chaque exigence du sujet est satisfaite dans le code.
 | Données de test suffisantes | `DonneesDemo` : 10 planteurs, 23 pesées, dont un planteur sans pesée |
 | `README.md` en 8 sections | `README.md` |
 | Copie du MCD | `docs/MCD.md` (joindre l'image fournie au dossier de remise) |
+
+## Au-delà du cahier des charges
+
+| Ajout | Réalisation |
+|---|---|
+| Base distante Firebase Firestore | `data/remote/`, `data/sync/` — facultative : sans `google-services.json`, l'application reste en local seul (`docs/firebase.md`) |
+| État de la liaison distante | `AccueilViewModel` + étiquette de l'accueil (base locale / synchronisé / envoi / hors ligne / erreur) |
+| Thème clair et sombre | `values/colors.xml` et `values-night/colors.xml`, un seul thème à maintenir |
+| Système de styles | Typographie et composants définis une fois dans `values/themes.xml`, jamais redéfinis dans les layouts |
+| Icône de l'application | Icône adaptative dessinée pour le projet (`ic_launcher_foreground.xml`) |
+| Compilation vérifiée en continu | Workflow GitHub Actions qui compile l'APK et exécute les tests à chaque envoi |

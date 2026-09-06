@@ -2,5 +2,5 @@
 <!-- Pastille ronde derrière les initiales d'un planteur. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="@color/vert_100" />
+    <solid android:color="@color/marque_conteneur" />
 </shape>

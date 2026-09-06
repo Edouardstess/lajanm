@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pastille arrondie derrière les icônes des cartes de navigation. -->
+<!-- Variante ocre, pour distinguer les pesées des planteurs d'un coup d'œil. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/marque_conteneur" />
+    <solid android:color="@color/accent_conteneur" />
     <corners android:radius="16dp" />
 </shape>

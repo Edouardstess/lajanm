@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 /**
  * Entité Pesee : une livraison pesée par un planteur à la coopérative.
@@ -30,7 +31,11 @@ import androidx.room.PrimaryKey
             onUpdate = ForeignKey.CASCADE,
         )
     ],
-    indices = [Index(value = ["planteurCode"]), Index(value = ["datePesee"])]
+    indices = [
+        Index(value = ["planteurCode"]),
+        Index(value = ["datePesee"]),
+        Index(value = ["cleDistante"], unique = true),
+    ]
 )
 data class Pesee(
     @PrimaryKey(autoGenerate = true)
@@ -43,4 +48,13 @@ data class Pesee(
     val poidsKg: Double,
     /** Observation libre (état du produit, remarque du peseur...). */
     val observation: String? = null,
+    /**
+     * Identifiant stable de la pesée dans la base distante.
+     *
+     * `id` est auto-incrémenté par SQLite : deux téléphones attribueraient le
+     * même `id` à deux pesées différentes. Cette clé, tirée au hasard à la
+     * création, identifie donc la pesée d'un appareil à l'autre ; `id` reste
+     * l'identifiant local, celui du MCD.
+     */
+    val cleDistante: String = UUID.randomUUID().toString(),
 )

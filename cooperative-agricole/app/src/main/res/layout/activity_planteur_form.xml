@@ -34,7 +34,7 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/bloc_code"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/ChampTexte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/champ_code"
@@ -51,7 +51,7 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/bloc_prenom"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/ChampTexte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -67,7 +67,7 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/bloc_nom"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/ChampTexte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -83,7 +83,7 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/bloc_localite"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/ChampTexte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -102,7 +102,7 @@
                  évite toute saisie de date invalide. -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/bloc_date_naissance"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/ChampTexte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -160,7 +160,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/bouton_annuler"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Bouton.Texte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"

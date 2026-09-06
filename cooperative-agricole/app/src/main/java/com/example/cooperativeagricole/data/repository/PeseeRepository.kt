@@ -3,6 +3,7 @@ package com.example.cooperativeagricole.data.repository
 import com.example.cooperativeagricole.data.local.dao.PeseeDao
 import com.example.cooperativeagricole.data.local.entity.Pesee
 import com.example.cooperativeagricole.data.local.entity.PeseeAvecPlanteur
+import com.example.cooperativeagricole.data.remote.SourceDistante
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -14,7 +15,10 @@ import kotlinx.coroutines.flow.map
  * sens à afficher. La conversion en 0.0 est faite ici, une seule fois, plutôt
  * que répétée dans chaque écran.
  */
-class PeseeRepository(private val peseeDao: PeseeDao) {
+class PeseeRepository(
+    private val peseeDao: PeseeDao,
+    private val sourceDistante: SourceDistante? = null,
+) {
 
     val toutesAvecPlanteur: Flow<List<PeseeAvecPlanteur>> = peseeDao.listerToutesAvecPlanteur()
 
@@ -33,9 +37,19 @@ class PeseeRepository(private val peseeDao: PeseeDao) {
 
     suspend fun trouver(id: Long): Pesee? = peseeDao.trouverParId(id)
 
-    suspend fun inserer(pesee: Pesee): Long = peseeDao.inserer(pesee)
+    suspend fun inserer(pesee: Pesee): Long {
+        val identifiant = peseeDao.inserer(pesee)
+        sourceDistante?.enregistrer(pesee)
+        return identifiant
+    }
 
-    suspend fun modifier(pesee: Pesee) = peseeDao.modifier(pesee)
+    suspend fun modifier(pesee: Pesee) {
+        peseeDao.modifier(pesee)
+        sourceDistante?.enregistrer(pesee)
+    }
 
-    suspend fun supprimer(pesee: Pesee) = peseeDao.supprimer(pesee)
+    suspend fun supprimer(pesee: Pesee) {
+        peseeDao.supprimer(pesee)
+        sourceDistante?.supprimerPesee(pesee.cleDistante)
+    }
 }

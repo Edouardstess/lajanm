@@ -71,4 +71,23 @@ interface PlanteurDao {
     /** Compte ponctuel, quand un écran doit décider immédiatement. */
     @Query("SELECT COUNT(*) FROM planteurs")
     suspend fun compterMaintenant(): Int
+
+    // --- Réservé à la synchronisation avec la base distante ---
+    //
+    // Ces trois opérations ne sont jamais appelées par l'interface : elles
+    // servent à recopier localement l'état du dépôt distant. `REPLACE` est ici
+    // volontaire — l'inverse d'`ABORT` utilisé à la saisie : un planteur déjà
+    // connu doit être mis à jour, pas refusé.
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insererOuRemplacer(planteurs: List<Planteur>)
+
+    @Query("DELETE FROM planteurs WHERE code NOT IN (:codesConserves)")
+    suspend fun supprimerHors(codesConserves: List<String>)
+
+    @Query("DELETE FROM planteurs")
+    suspend fun supprimerTout()
+
+    @Query("SELECT * FROM planteurs")
+    suspend fun listerToutMaintenant(): List<Planteur>
 }

@@ -33,7 +33,7 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/bloc_planteur"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                style="@style/ChampTexte.Liste"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/champ_planteur">
@@ -48,7 +48,7 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/bloc_date"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/ChampTexte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -69,7 +69,7 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/bloc_poids"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/ChampTexte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -86,7 +86,7 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/bloc_observation"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/ChampTexte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -111,7 +111,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/bouton_annuler"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Bouton.Texte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"

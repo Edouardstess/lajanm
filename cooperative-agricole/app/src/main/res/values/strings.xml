@@ -8,10 +8,19 @@
     <string name="accueil_carte_planteurs_description">Consulter, ajouter et modifier les fiches des planteurs</string>
     <string name="accueil_carte_pesees">Pesées</string>
     <string name="accueil_carte_pesees_description">Enregistrer les livraisons et suivre les poids</string>
-    <string name="accueil_statistiques">En bref</string>
+    <string name="accueil_vue_ensemble">Vue d\'ensemble</string>
+    <string name="accueil_gestion">Gestion</string>
     <string name="accueil_nombre_planteurs">Planteurs</string>
     <string name="accueil_nombre_pesees">Pesées</string>
     <string name="accueil_poids_total">Poids total</string>
+
+    <!-- État de la base distante -->
+    <string name="etat_locale">Base locale</string>
+    <string name="etat_connexion">Connexion…</string>
+    <string name="etat_synchronise">Synchronisé</string>
+    <string name="etat_envoi">Envoi en cours…</string>
+    <string name="etat_hors_ligne">Hors ligne</string>
+    <string name="etat_erreur">Synchronisation indisponible</string>
 
     <!-- Planteurs -->
     <string name="planteurs_titre">Planteurs</string>

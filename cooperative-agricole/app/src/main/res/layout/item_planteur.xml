@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Une ligne de la liste des planteurs : initiales, nom complet,
-     localité et sexe, comme demandé par le cahier des charges. -->
+<!--
+  Une ligne de la liste des planteurs.
+
+  Le cahier des charges demande le nom complet, la localité et le sexe. Les
+  trois n'ont pas le même poids : le nom identifie, la localité situe, le sexe
+  est une caractéristique. D'où la hiérarchie — nom en tête, localité en
+  dessous avec son repère, sexe réduit à une étiquette discrète.
+-->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -16,16 +22,16 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="14dp">
+        android:padding="16dp">
 
         <TextView
             android:id="@+id/initiales"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="@drawable/fond_cercle"
             android:gravity="center"
-            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            android:textColor="@color/vert_700"
+            android:textAppearance="@style/Texte.Section"
+            android:textColor="@color/marque"
             tools:text="MC" />
 
         <LinearLayout
@@ -35,36 +41,73 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/nom_complet"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textAppearance="@style/Texte.Section" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/sexe_localite"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                android:textColor="@color/texte_secondaire" />
+                <TextView
+                    android:id="@+id/nom_complet"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/Texte.Section"
+                    tools:text="Marie Carmelle Jean-Baptiste" />
 
-            <TextView
-                android:id="@+id/code"
+                <TextView
+                    android:id="@+id/badge_sexe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/fond_etiquette"
+                    android:paddingHorizontal="9dp"
+                    android:paddingVertical="3dp"
+                    android:textAppearance="@style/Texte.Detail"
+                    tools:text="Féminin" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                android:textColor="@color/texte_secondaire" />
+                android:layout_marginTop="5dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_localite"
+                    app:tint="@color/texte_secondaire" />
+
+                <TextView
+                    android:id="@+id/localite"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/Texte.Secondaire"
+                    tools:text="Kenscoff" />
+
+                <TextView
+                    android:id="@+id/code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textAppearance="@style/Texte.Detail"
+                    tools:text="PL-001" />
+            </LinearLayout>
         </LinearLayout>
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginStart="10dp"
             android:contentDescription="@null"
             android:src="@drawable/ic_suivant"
             app:tint="@color/texte_secondaire" />

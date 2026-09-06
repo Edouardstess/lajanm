@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Mêmes rôles, adaptés au thème sombre : les fonds s'assombrissent,
-         les teintes de marque s'éclaircissent pour rester lisibles. -->
-    <color name="vert_700">#FFA5D6A7</color>
-    <color name="vert_600">#FF81C784</color>
-    <color name="vert_100">#FF2C4A2E</color>
-    <color name="vert_50">#FF1C2A1D</color>
-    <color name="ocre_600">#FFBCAAA4</color>
-    <color name="ocre_100">#FF4A403C</color>
-    <color name="ocre_50">#FF2A2422</color>
+    <!--
+      Mêmes rôles, en mode sombre. Les teintes de marque s'éclaircissent (un
+      vert profond sur fond noir devient illisible) et les fonds s'assombrissent
+      sans jamais atteindre le noir pur, qui écrase les ombres et fatigue l'œil.
+    -->
 
-    <color name="fond">#FF11140F</color>
-    <color name="surface">#FF1A1D17</color>
-    <color name="surface_variante">#FF23271F</color>
-    <color name="contour">#FF3A4034</color>
-    <color name="texte">#FFE2E3DB</color>
-    <color name="texte_secondaire">#FFC0C8B6</color>
+    <color name="marque">#FF7FD1A0</color>
+    <color name="marque_sombre">#FFA8E3C1</color>
+    <color name="marque_conteneur">#FF1E4531</color>
+    <color name="marque_sur_conteneur">#FFC3EAD4</color>
+
+    <color name="accent">#FFD9B48C</color>
+    <color name="accent_conteneur">#FF43301C</color>
+    <color name="accent_sur_conteneur">#FFF0DCC4</color>
+
+    <color name="fond">#FF0F1411</color>
+    <color name="surface">#FF161D18</color>
+    <color name="surface_variante">#FF1E2721</color>
+    <color name="contour">#FF333D36</color>
+    <color name="texte">#FFE3E7E2</color>
+    <color name="texte_secondaire">#FFB6C2BA</color>
+
     <color name="erreur">#FFF2B8B5</color>
+    <color name="succes">#FF7FD1A0</color>
+    <color name="attention">#FFE8C169</color>
+    <color name="neutre">#FF98A39D</color>
 
     <color name="blanc">#FFFFFFFF</color>
     <color name="noir">#FF000000</color>

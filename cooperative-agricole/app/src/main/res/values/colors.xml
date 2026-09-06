@@ -1,22 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Palette « agricole » : le vert porte l'identité, l'ocre sert
-         d'accent (récolte, terre), le reste est neutre. -->
-    <color name="vert_700">#FF1B5E20</color>
-    <color name="vert_600">#FF2E7D32</color>
-    <color name="vert_100">#FFC8E6C9</color>
-    <color name="vert_50">#FFE8F5E9</color>
-    <color name="ocre_600">#FF8D6E63</color>
-    <color name="ocre_100">#FFD7CCC8</color>
-    <color name="ocre_50">#FFEFEBE9</color>
+    <!--
+      Palette de l'application, en mode clair.
 
-    <color name="fond">#FFFBFDF7</color>
+      Trois familles seulement : un vert de marque qui porte l'identité
+      agricole, un ocre « terre » réservé aux accents, et une gamme de neutres
+      légèrement verdis pour les fonds et les textes. Les noms disent le rôle,
+      pas la teinte : changer la marque revient à changer ce fichier.
+    -->
+
+    <!-- Marque -->
+    <color name="marque">#FF1F6F43</color>
+    <color name="marque_sombre">#FF0F4A2A</color>
+    <color name="marque_conteneur">#FFD3EBDD</color>
+    <color name="marque_sur_conteneur">#FF0A2E1B</color>
+
+    <!-- Accent -->
+    <color name="accent">#FF8A5A2B</color>
+    <color name="accent_conteneur">#FFF3E4D2</color>
+    <color name="accent_sur_conteneur">#FF3A2410</color>
+
+    <!-- Neutres -->
+    <color name="fond">#FFF7F9F5</color>
     <color name="surface">#FFFFFFFF</color>
-    <color name="surface_variante">#FFEFF2E9</color>
-    <color name="contour">#FFD3DBC8</color>
-    <color name="texte">#FF1A1C18</color>
-    <color name="texte_secondaire">#FF54624D</color>
+    <color name="surface_variante">#FFECF1E9</color>
+    <color name="contour">#FFDCE4D8</color>
+    <color name="texte">#FF171D1A</color>
+    <color name="texte_secondaire">#FF4E5A52</color>
+
+    <!-- États -->
     <color name="erreur">#FFB3261E</color>
+    <color name="succes">#FF1F6F43</color>
+    <color name="attention">#FF9A6700</color>
+    <color name="neutre">#FF6B7671</color>
 
     <color name="blanc">#FFFFFFFF</color>
     <color name="noir">#FF000000</color>
