@@ -1,0 +1,56 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{87B0C15F-04C9-435D-94A0-B0D6DC8F6DD7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C527F16F-510D-429F-8DFE-403D2EE4524C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CavalierNoir.Domain", "src\CavalierNoir.Domain\CavalierNoir.Domain.csproj", "{61A77E2D-FCEF-4063-BACA-9BBB7A759D58}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CavalierNoir.Application", "src\CavalierNoir.Application\CavalierNoir.Application.csproj", "{B3834EAB-EF14-4066-9D39-A7CC4340D0B9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CavalierNoir.Infrastructure", "src\CavalierNoir.Infrastructure\CavalierNoir.Infrastructure.csproj", "{836D895F-BBA5-48C9-87D1-E5FE05A45AB5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CavalierNoir.Web", "src\CavalierNoir.Web\CavalierNoir.Web.csproj", "{D77B3CCF-38FC-45EC-8AFD-242D1D7E3C3B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CavalierNoir.Tests.Unit", "tests\CavalierNoir.Tests.Unit\CavalierNoir.Tests.Unit.csproj", "{EE3FF6B8-03C5-44EB-91B3-70C57B30C70B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{61A77E2D-FCEF-4063-BACA-9BBB7A759D58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61A77E2D-FCEF-4063-BACA-9BBB7A759D58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61A77E2D-FCEF-4063-BACA-9BBB7A759D58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61A77E2D-FCEF-4063-BACA-9BBB7A759D58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3834EAB-EF14-4066-9D39-A7CC4340D0B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3834EAB-EF14-4066-9D39-A7CC4340D0B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3834EAB-EF14-4066-9D39-A7CC4340D0B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3834EAB-EF14-4066-9D39-A7CC4340D0B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{836D895F-BBA5-48C9-87D1-E5FE05A45AB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{836D895F-BBA5-48C9-87D1-E5FE05A45AB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{836D895F-BBA5-48C9-87D1-E5FE05A45AB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{836D895F-BBA5-48C9-87D1-E5FE05A45AB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D77B3CCF-38FC-45EC-8AFD-242D1D7E3C3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D77B3CCF-38FC-45EC-8AFD-242D1D7E3C3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D77B3CCF-38FC-45EC-8AFD-242D1D7E3C3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D77B3CCF-38FC-45EC-8AFD-242D1D7E3C3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE3FF6B8-03C5-44EB-91B3-70C57B30C70B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE3FF6B8-03C5-44EB-91B3-70C57B30C70B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE3FF6B8-03C5-44EB-91B3-70C57B30C70B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE3FF6B8-03C5-44EB-91B3-70C57B30C70B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{61A77E2D-FCEF-4063-BACA-9BBB7A759D58} = {87B0C15F-04C9-435D-94A0-B0D6DC8F6DD7}
+		{B3834EAB-EF14-4066-9D39-A7CC4340D0B9} = {87B0C15F-04C9-435D-94A0-B0D6DC8F6DD7}
+		{836D895F-BBA5-48C9-87D1-E5FE05A45AB5} = {87B0C15F-04C9-435D-94A0-B0D6DC8F6DD7}
+		{D77B3CCF-38FC-45EC-8AFD-242D1D7E3C3B} = {87B0C15F-04C9-435D-94A0-B0D6DC8F6DD7}
+		{EE3FF6B8-03C5-44EB-91B3-70C57B30C70B} = {C527F16F-510D-429F-8DFE-403D2EE4524C}
+	EndGlobalSection
+EndGlobal

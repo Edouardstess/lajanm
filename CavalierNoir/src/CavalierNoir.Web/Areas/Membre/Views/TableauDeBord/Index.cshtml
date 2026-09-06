@@ -1,0 +1,158 @@
+@model MemberDashboard
+<section class="section">
+    <div class="conteneur">
+        <div class="section__entete">
+            <div>
+                <h1>Bonjour @Model.DisplayName</h1>
+                <p>
+                    Classement : <strong>@Model.Elo</strong> · Niveau : @Model.LevelLabel
+                    @if (Model.UnreadNotifications > 0)
+                    {
+                        <text> · </text>
+                        <a asp-area="" asp-controller="Notifications" asp-action="Index">
+                            @Model.UnreadNotifications notification(s) non lue(s)
+                        </a>
+                    }
+                </p>
+            </div>
+            <a class="bouton bouton--contour" asp-area="Membre" asp-controller="Profil" asp-action="Index">Mon profil</a>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <span class="stat__valeur">@Model.Progress.TotalAttempts</span>
+                <span class="stat__libelle">Exercices tentés</span>
+            </div>
+            <div class="stat stat--succes">
+                <span class="stat__valeur">@Model.Progress.SuccessRate %</span>
+                <span class="stat__libelle">Taux de réussite</span>
+            </div>
+            <div class="stat stat--info">
+                <span class="stat__valeur">@Model.Progress.CurrentStreak</span>
+                <span class="stat__libelle">Jours d'affilée</span>
+            </div>
+            <div class="stat">
+                <span class="stat__valeur">@Model.Progress.LongestStreak</span>
+                <span class="stat__libelle">Meilleure série</span>
+            </div>
+        </div>
+
+        <div class="grille grille--2">
+            <div>
+                <div class="panneau">
+                    <h2 class="panneau__titre">
+                        <span>Exercice du jour</span>
+                        @if (Model.DailyExerciseSolved)
+                        {
+                            <span class="etiq etiq--vert">Résolu</span>
+                        }
+                    </h2>
+
+                    @if (Model.DailyExercise is { } exercice)
+                    {
+                        <div style="max-width:340px;margin-inline:auto;">
+                            <partial name="_Echiquier" model="EchiquierModel.Pour(exercice.Fen, false, "echiquier-jour")" />
+                        </div>
+                        <p style="text-align:center;margin-top:1rem;">
+                            <span class="etiq etiq--neutre">@exercice.Theme</span>
+                            <span class="etiq etiq--or">Difficulté @((int)exercice.Difficulty)/5</span>
+                        </p>
+                        <a class="bouton bouton--primaire bouton--bloc"
+                           asp-area="" asp-controller="Exercices" asp-action="Details" asp-route-id="@exercice.Id">
+                            @(Model.DailyExerciseSolved ? "Revoir la correction" : "Résoudre l'exercice")
+                        </a>
+                    }
+                    else
+                    {
+                        <p>Aucun exercice programmé aujourd'hui.</p>
+                    }
+                </div>
+
+                @if (Model.Badges.Count > 0)
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre"><span>Mes badges</span></h2>
+                        <p>
+                            @foreach (var badge in Model.Badges)
+                            {
+                                <span class="etiq etiq--or">🏅 @badge</span>
+                            }
+                        </p>
+                        <a asp-area="Membre" asp-controller="Exercices" asp-action="Historique">Voir toute ma progression →</a>
+                    </div>
+                }
+            </div>
+
+            <div>
+                <div class="panneau">
+                    <h2 class="panneau__titre"><span>Mon adhésion</span></h2>
+
+                    @if (Model.Membership is { } adhesion)
+                    {
+                        <p>
+                            <strong>@adhesion.TypeName</strong> — n° @adhesion.MemberNumber<br />
+                            <span class="etiq @(adhesion.Status == MembershipStatus.Active ? "etiq--vert" : "etiq--orange")">
+                                @adhesion.Status
+                            </span>
+                        </p>
+                        <p>
+                            Valable du @adhesion.Start.ToString("dd/MM/yyyy") au @adhesion.End.ToString("dd/MM/yyyy")
+                            @if (adhesion.DaysRemaining >= 0)
+                            {
+                                <text> — il reste @adhesion.DaysRemaining jour(s).</text>
+                            }
+                        </p>
+
+                        @if (adhesion.NeedsRenewal)
+                        {
+                            <div class="alerte alerte--attention">
+                                <span aria-hidden="true">⏳</span>
+                                <span>Votre adhésion arrive à échéance : pensez à la renouveler.</span>
+                            </div>
+                        }
+
+                        <a class="bouton bouton--contour" asp-area="Membre" asp-controller="Adhesion" asp-action="Index">
+                            Gérer mon adhésion
+                        </a>
+                    }
+                    else
+                    {
+                        <p>Vous n'avez pas encore d'adhésion active.</p>
+                        <a class="bouton bouton--primaire" asp-area="" asp-controller="Adherer" asp-action="Index">
+                            Déposer une demande
+                        </a>
+                    }
+                </div>
+
+                <div class="panneau">
+                    <h2 class="panneau__titre"><span>Prochains tournois</span></h2>
+
+                    @if (Model.UpcomingTournaments.Count == 0)
+                    {
+                        <p>Aucun tournoi programmé pour l'instant.</p>
+                    }
+                    else
+                    {
+                        <ul class="liste-nue">
+                            @foreach (var tournoi in Model.UpcomingTournaments)
+                            {
+                                <li style="padding:.5rem 0;border-bottom:1px solid var(--bordure);">
+                                    <a asp-area="" asp-controller="Tournois" asp-action="Details" asp-route-slug="@tournoi.Slug">
+                                        <strong>@tournoi.Title</strong>
+                                    </a><br />
+                                    <span class="carte__meta">
+                                        @tournoi.StartDate.ToString("dddd d MMMM") · @tournoi.ConfirmedPlayers inscrit(s)
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/chessboard.js" asp-append-version="true"></script>
+}

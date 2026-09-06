@@ -1,0 +1,55 @@
+@model IReadOnlyList<MembershipTypeDto>
+<section class="section">
+    <div class="conteneur">
+        <h1>Rejoindre le Cavalier Noir</h1>
+        <p class="prose">
+            L'adhésion est ouverte à partir de six ans, sans niveau minimum requis. Elle donne accès
+            aux entraînements encadrés, aux tournois du club, à la bibliothèque d'exercices complète,
+            aux forums et à l'ensemble des ressources pédagogiques.
+        </p>
+
+        <h2>Les formules</h2>
+        <div class="grille grille--3">
+            @foreach (var formule in Model)
+            {
+                <article class="carte">
+                    <div class="carte__corps">
+                        <h3 class="carte__titre">@formule.Name</h3>
+                        <p style="font-family:var(--serif);font-size:2rem;color:var(--or);margin:.25rem 0;">
+                            @formule.Price.ToString("N0") <span style="font-size:1rem;">@formule.Currency</span>
+                        </p>
+                        <p class="carte__meta">pour @formule.DurationDays jours</p>
+                        <p>@formule.Description</p>
+                        @if (formule.RequiresProof)
+                        {
+                            <p class="aide">Un justificatif vous sera demandé.</p>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+
+        <h2 style="margin-top:2.5rem;">Comment ça se passe</h2>
+        <ol class="prose">
+            <li><strong>Créez votre compte</strong> — deux minutes, sans engagement.</li>
+            <li><strong>Déposez votre demande</strong> en choisissant une formule et en indiquant votre niveau.</li>
+            <li><strong>Le secrétariat instruit le dossier</strong> et le responsable pédagogique évalue votre niveau
+                afin de vous placer dans le bon groupe d'entraînement.</li>
+            <li><strong>Réglez votre cotisation</strong> auprès du trésorier ou en ligne.</li>
+            <li><strong>Votre compte est activé</strong> : vous recevez votre numéro d'adhérent et votre attestation.</li>
+        </ol>
+
+        <div class="actions-formulaire">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="bouton bouton--primaire" asp-action="Demande">Déposer ma demande d'adhésion</a>
+            }
+            else
+            {
+                <a class="bouton bouton--primaire" asp-controller="Compte" asp-action="Inscription">Créer mon compte</a>
+                <a class="bouton bouton--contour" asp-controller="Compte" asp-action="Connexion">J'ai déjà un compte</a>
+            }
+            <a class="bouton bouton--contour" asp-controller="Infos" asp-action="Faq">Questions fréquentes</a>
+        </div>
+    </div>
+</section>

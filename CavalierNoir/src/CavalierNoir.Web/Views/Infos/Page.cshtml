@@ -1,0 +1,13 @@
+@model CavalierNoir.Domain.Club.StaticPage
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>@Model.Title</h1>
+        <div class="prose">
+            @Html.Raw(Model.Content)
+        </div>
+        @if (Model.UpdatedAt is { } maj)
+        {
+            <p class="aide" style="margin-top:2rem;">Dernière mise à jour : @maj.ToLocalTime().ToString("d MMMM yyyy")</p>
+        }
+    </div>
+</section>

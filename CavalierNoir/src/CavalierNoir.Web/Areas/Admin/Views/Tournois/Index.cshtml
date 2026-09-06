@@ -1,0 +1,45 @@
+@model List<CavalierNoir.Domain.Tournaments.Tournament>
+<div class="section__entete">
+    <h1>Tournois</h1>
+    <a class="bouton bouton--primaire" asp-action="Creer">Nouveau tournoi</a>
+</div>
+
+<div class="panneau">
+    @if (Model.Count == 0)
+    {
+        <p>Aucun tournoi créé.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Formule</th>
+                    <th scope="col">Dates</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col" class="nombre">Rondes</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var tournoi in Model)
+                {
+                    <tr>
+                        <td>@tournoi.Title<br /><span class="carte__meta">/@tournoi.Slug</span></td>
+                        <td>@tournoi.Type</td>
+                        <td>@tournoi.StartDate.ToString("dd/MM/yyyy")</td>
+                        <td><span class="etiq etiq--neutre">@tournoi.Status</span></td>
+                        <td class="nombre">@tournoi.PlannedRounds</td>
+                        <td>
+                            <a class="bouton bouton--contour bouton--petit"
+                               asp-action="Details" asp-route-id="@tournoi.Id">Piloter</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

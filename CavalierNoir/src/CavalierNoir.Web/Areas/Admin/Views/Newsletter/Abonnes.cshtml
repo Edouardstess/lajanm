@@ -1,0 +1,68 @@
+@model List<CavalierNoir.Domain.Communication.NewsletterSubscriber>
+@{
+    var page = (int)(ViewData["Page"] ?? 1);
+}
+<div class="section__entete">
+    <h1>Abonnés</h1>
+    <a class="bouton bouton--contour" asp-action="Exporter">Exporter en CSV</a>
+</div>
+
+<div class="panneau">
+    @if (Model.Count == 0)
+    {
+        <p>Aucun abonné sur cette page.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Courriel</th>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Inscrit le</th>
+                    <th scope="col">État</th>
+                    <th scope="col">Exercice du jour</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var abonne in Model)
+                {
+                    <tr>
+                        <td>@abonne.Email</td>
+                        <td>@(abonne.Name ?? "—")</td>
+                        <td>@abonne.SubscribedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @if (!abonne.IsActive)
+                            {
+                                <span class="etiq etiq--rouge">Désabonné</span>
+                            }
+                            else if (abonne.IsConfirmed)
+                            {
+                                <span class="etiq etiq--vert">Confirmé</span>
+                            }
+                            else
+                            {
+                                <span class="etiq etiq--orange">En attente</span>
+                            }
+                        </td>
+                        <td>@(abonne.WantsDailyExercise ? "Oui" : "Non")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <nav class="pagination" aria-label="Pagination">
+            @if (page > 1)
+            {
+                <a asp-action="Abonnes" asp-route-page="@(page - 1)">‹ Précédent</a>
+            }
+            <span class="actuelle">@page</span>
+            @if (Model.Count == 50)
+            {
+                <a asp-action="Abonnes" asp-route-page="@(page + 1)">Suivant ›</a>
+            }
+        </nav>
+    }
+</div>

@@ -1,0 +1,14 @@
+@{
+    var succes = (bool)(ViewData["Succes"] ?? false);
+    var message = ViewData["Message"] as string;
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit" style="text-align:center;">
+        <p style="font-size:3rem;margin:0;" aria-hidden="true">@(succes ? "✔" : "⚠")</p>
+        <h1>@ViewData["Title"]</h1>
+        <p>@message</p>
+        <div class="hero__actions" style="justify-content:center;">
+            <a class="bouton bouton--primaire" asp-controller="Home" asp-action="Index">Retour à l'accueil</a>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,142 @@
+@model BlogPostFormViewModel
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Modifier l'article" : "Nouvel article";
+}
+<p class="fil"><a asp-action="Index">Articles</a> › @ViewData["Title"]</p>
+
+<div class="section__entete">
+    <h1>@ViewData["Title"]</h1>
+    <span class="etiq etiq--or">@Model.Status</span>
+</div>
+
+<form method="post" asp-action="Enregistrer">
+    <div asp-validation-summary="All" class="resume-erreurs"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <div class="grille grille--2">
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Contenu</span></h2>
+
+            <div class="champ">
+                <label asp-for="Title"></label>
+                <input asp-for="Title" required />
+                <span asp-validation-for="Title" class="erreur-champ"></span>
+            </div>
+
+            <div class="champ">
+                <label asp-for="Slug"></label>
+                <input asp-for="Slug" placeholder="généré automatiquement à partir du titre" />
+                <span class="aide">Ne le modifiez plus après publication : les liens existants seraient cassés.</span>
+            </div>
+
+            <div class="champ">
+                <label asp-for="Summary"></label>
+                <textarea asp-for="Summary" required maxlength="500" style="min-height:5rem;"></textarea>
+                <span asp-validation-for="Summary" class="erreur-champ"></span>
+            </div>
+
+            <div class="champ">
+                <label asp-for="Content"></label>
+                <textarea asp-for="Content" required style="min-height:24rem;font-family:var(--mono);font-size:.9rem;"></textarea>
+                <span class="aide">HTML accepté : titres, paragraphes, listes, images, citations.</span>
+                <span asp-validation-for="Content" class="erreur-champ"></span>
+            </div>
+        </div>
+
+        <div>
+            <div class="panneau">
+                <h2 class="panneau__titre"><span>Classement</span></h2>
+
+                <div class="champ">
+                    <label asp-for="CategoryId"></label>
+                    <select asp-for="CategoryId">
+                        <option value="">Aucune rubrique</option>
+                        @foreach (var rubrique in Model.Categories)
+                        {
+                            <option value="@rubrique.Id" selected="@(Model.CategoryId == rubrique.Id)">@rubrique.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="TagIds"></label>
+                    <select asp-for="TagIds" multiple size="6">
+                        @foreach (var etiquette in Model.Tags)
+                        {
+                            <option value="@etiquette.Id" selected="@(Model.TagIds.Contains(etiquette.Id))">@etiquette.Name</option>
+                        }
+                    </select>
+                    <span class="aide">Maintenez Ctrl (ou ⌘) pour en sélectionner plusieurs.</span>
+                </div>
+            </div>
+
+            <div class="panneau">
+                <h2 class="panneau__titre"><span>Présentation</span></h2>
+
+                <div class="champ">
+                    <label asp-for="FeaturedImageUrl"></label>
+                    <input asp-for="FeaturedImageUrl" />
+                </div>
+                <div class="champ">
+                    <label asp-for="FeaturedImageAlt"></label>
+                    <input asp-for="FeaturedImageAlt" />
+                    <span class="aide">Obligatoire pour l'accessibilité dès qu'une image est renseignée.</span>
+                </div>
+                <div class="champ">
+                    <label asp-for="MetaDescription"></label>
+                    <textarea asp-for="MetaDescription" maxlength="320" style="min-height:4rem;"></textarea>
+                </div>
+                <div class="champ champ--case">
+                    <input asp-for="AllowComments" type="checkbox" />
+                    <label asp-for="AllowComments"></label>
+                </div>
+                <div class="champ champ--case">
+                    <input asp-for="IsFeatured" type="checkbox" />
+                    <label asp-for="IsFeatured"></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton--primaire">Enregistrer</button>
+        <a class="bouton bouton--contour" asp-action="Index">Retour à la liste</a>
+    </div>
+</form>
+
+@if (Model.Id > 0)
+{
+    <div class="panneau">
+        <h2 class="panneau__titre"><span>Workflow de publication</span></h2>
+
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+            @if (Model.Status == BlogStatus.Brouillon)
+            {
+                <form method="post" asp-action="SoumettreRelecture" asp-route-id="@Model.Id">
+                    <button type="submit" class="bouton bouton--contour">Soumettre à relecture</button>
+                </form>
+            }
+
+            @if (Model.Status is BlogStatus.Brouillon or BlogStatus.EnRelecture)
+            {
+                <form method="post" asp-action="Publier" asp-route-id="@Model.Id" style="display:flex;gap:.5rem;align-items:end;">
+                    <div class="champ" style="margin:0;">
+                        <label for="programmePour">Publier le (facultatif)</label>
+                        <input type="datetime-local" id="programmePour" name="programmePour" />
+                    </div>
+                    <button type="submit" class="bouton bouton--succes">Publier</button>
+                </form>
+            }
+
+            @if (Model.Status is BlogStatus.Publie or BlogStatus.Programme)
+            {
+                <form method="post" asp-action="Depublier" asp-route-id="@Model.Id"
+                      data-confirmer="Retirer cet article du site ?">
+                    <button type="submit" class="bouton bouton--danger">Dépublier</button>
+                </form>
+                <a class="bouton bouton--contour" asp-area="" asp-controller="Blog" asp-action="Details"
+                   asp-route-slug="@Model.Slug" target="_blank" rel="noopener">Voir en ligne</a>
+            }
+        </div>
+    </div>
+}

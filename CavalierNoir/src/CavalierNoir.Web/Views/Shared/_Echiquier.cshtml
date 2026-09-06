@@ -1,0 +1,18 @@
+@model CavalierNoir.Web.Models.EchiquierModel
+<div>
+    <div class="echiquier"
+         id="@Model.Id"
+         data-echiquier
+         data-fen="@Model.Fen"
+         data-interactif="@(Model.Interactif ? "true" : "false")"
+         data-retourne="@(Model.Retourne ? "true" : "false")"
+         data-champ-coups="@Model.ChampCoups"
+         data-affichage-coups="@Model.AffichageCoups"
+         role="grid"
+         aria-label="Échiquier — position @Model.Fen">
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Model.Legende))
+    {
+        <p class="echiquier-legende"><span>@Model.Legende</span><span>@(Model.Retourne ? "Vue des noirs" : "Vue des blancs")</span></p>
+    }
+</div>

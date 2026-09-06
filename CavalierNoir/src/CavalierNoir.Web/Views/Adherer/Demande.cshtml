@@ -1,0 +1,67 @@
+@model MembershipRequestViewModel
+@{
+    ViewData["Title"] = "Demande d'adhésion";
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>Demande d'adhésion</h1>
+        <p>
+            Votre demande sera instruite par le secrétariat, puis votre niveau sera évalué par le
+            responsable pédagogique. Vous serez informé par courriel à chaque étape.
+        </p>
+
+        <div class="panneau">
+            <form method="post">
+                <div asp-validation-summary="All" class="resume-erreurs"></div>
+
+                <div class="champ">
+                    <label asp-for="MembershipTypeId"></label>
+                    <select asp-for="MembershipTypeId" required>
+                        <option value="0">— Choisissez une formule —</option>
+                        @foreach (var formule in Model.Types)
+                        {
+                            <option value="@formule.Id">
+                                @formule.Name — @formule.Price.ToString("N0") @formule.Currency
+                            </option>
+                        }
+                    </select>
+                    <span asp-validation-for="MembershipTypeId" class="erreur-champ"></span>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="DeclaredElo"></label>
+                    <input asp-for="DeclaredElo" type="number" min="200" max="1600" step="50" />
+                    <span class="aide">
+                        Débutant : 1200 · Amateur : 1400 · Confirmé : 1600. Sans justificatif officiel,
+                        le classement déclaré est plafonné à 1600 ; il sera ajusté après évaluation.
+                    </span>
+                    <span asp-validation-for="DeclaredElo" class="erreur-champ"></span>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="Motivation"></label>
+                    <textarea asp-for="Motivation" maxlength="2000"
+                              placeholder="Quelques lignes suffisent : ce que vous cherchez au club, votre expérience du jeu…"></textarea>
+                    <span asp-validation-for="Motivation" class="erreur-champ"></span>
+                </div>
+
+                <fieldset style="border:1px solid var(--bordure);border-radius:var(--rayon-petit);padding:1rem;">
+                    <legend>Candidat mineur</legend>
+                    <div class="champ champ--case">
+                        <input asp-for="ParentalConsent" type="checkbox" />
+                        <label asp-for="ParentalConsent"></label>
+                    </div>
+                    <div class="champ">
+                        <label asp-for="ParentContact"></label>
+                        <input asp-for="ParentContact" placeholder="Nom et téléphone ou courriel du responsable légal" />
+                    </div>
+                </fieldset>
+
+                <div class="actions-formulaire">
+                    <button type="submit" class="bouton bouton--primaire">Envoyer ma demande</button>
+                    <a class="bouton bouton--contour" asp-action="Index">Retour aux formules</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,41 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Connexion";
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>Connexion</h1>
+        <p>Accédez à votre espace membre : exercices, tournois, forums et suivi d'adhésion.</p>
+
+        <div class="panneau">
+            <form method="post" asp-action="Connexion">
+                <div asp-validation-summary="All" class="resume-erreurs"></div>
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                <div class="champ">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" type="email" autocomplete="email" required autofocus />
+                    <span asp-validation-for="Email" class="erreur-champ"></span>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="Password"></label>
+                    <input asp-for="Password" type="password" autocomplete="current-password" required />
+                    <span asp-validation-for="Password" class="erreur-champ"></span>
+                </div>
+
+                <div class="champ champ--case">
+                    <input asp-for="RememberMe" type="checkbox" />
+                    <label asp-for="RememberMe"></label>
+                </div>
+
+                <div class="actions-formulaire">
+                    <button type="submit" class="bouton bouton--primaire">Se connecter</button>
+                    <a class="bouton bouton--contour" asp-action="MotDePasseOublie">Mot de passe oublié</a>
+                </div>
+            </form>
+        </div>
+
+        <p>Pas encore de compte ? <a asp-action="Inscription">Créez-en un en deux minutes</a>.</p>
+    </div>
+</section>

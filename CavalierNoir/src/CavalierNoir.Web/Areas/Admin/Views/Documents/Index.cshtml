@@ -1,0 +1,133 @@
+@model PagedList<CavalierNoir.Domain.Club.Document>
+@{
+    var categorie = ViewData["Categorie"] as DocumentCategoryCode?;
+}
+<h1>Documents</h1>
+
+<div class="panneau">
+    <h2 class="panneau__titre"><span>Publier un document</span></h2>
+    <form method="post" asp-action="Televerser" enctype="multipart/form-data">
+        <div class="formulaire-grille">
+            <div class="champ">
+                <label for="titre">Titre</label>
+                <input type="text" id="titre" name="titre" required />
+            </div>
+            <div class="champ">
+                <label for="fichier">Fichier</label>
+                <input type="file" id="fichier" name="fichier" required
+                       accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.txt,.csv" />
+            </div>
+        </div>
+
+        <div class="champ">
+            <label for="description">Description</label>
+            <input type="text" id="description" name="description" />
+        </div>
+
+        <div class="formulaire-grille">
+            <div class="champ">
+                <label for="categorie2">Catégorie</label>
+                <select id="categorie2" name="categorie">
+                    @foreach (var valeur in Enum.GetValues<DocumentCategoryCode>())
+                    {
+                        <option value="@valeur">@valeur</option>
+                    }
+                </select>
+            </div>
+            <div class="champ">
+                <label for="visibilite">Visibilité</label>
+                <select id="visibilite" name="visibilite">
+                    @foreach (var valeur in Enum.GetValues<Visibility>())
+                    {
+                        <option value="@valeur" selected="@(valeur == Visibility.Membres)">@valeur</option>
+                    }
+                </select>
+            </div>
+            <div class="champ">
+                <label for="classification">Classification</label>
+                <select id="classification" name="classification">
+                    @foreach (var valeur in Enum.GetValues<DataClassification>())
+                    {
+                        <option value="@valeur" selected="@(valeur == DataClassification.Interne)">@valeur</option>
+                    }
+                </select>
+            </div>
+            <div class="champ">
+                <label for="versionDe">Nouvelle version de (identifiant)</label>
+                <input type="number" id="versionDe" name="versionDe" min="1" />
+                <span class="aide">Laissez vide pour un nouveau document.</span>
+            </div>
+        </div>
+
+        <button type="submit" class="bouton bouton--primaire">Publier</button>
+    </form>
+</div>
+
+<div class="panneau">
+    <h2 class="panneau__titre">
+        <span>Bibliothèque</span>
+        <span>
+            <a class="etiq @(categorie is null ? "etiq--or" : "etiq--neutre")" asp-action="Index">Toutes</a>
+            @foreach (var valeur in Enum.GetValues<DocumentCategoryCode>())
+            {
+                <a class="etiq @(categorie == valeur ? "etiq--or" : "etiq--neutre")"
+                   asp-action="Index" asp-route-categorie="@valeur">@valeur</a>
+            }
+        </span>
+    </h2>
+
+    @if (Model.Items.Count == 0)
+    {
+        <p>Aucun document.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col" class="nombre">Id</th>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Catégorie</th>
+                    <th scope="col">Visibilité</th>
+                    <th scope="col" class="nombre">Version</th>
+                    <th scope="col" class="nombre">Téléch.</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var document in Model.Items)
+                {
+                    <tr style="@(document.IsArchived ? "opacity:.6;" : "")">
+                        <td class="nombre">@document.Id</td>
+                        <td>
+                            @document.Title
+                            @if (document.IsArchived)
+                            {
+                                <span class="etiq etiq--neutre">Archivé</span>
+                            }
+                        </td>
+                        <td>@document.Category</td>
+                        <td>@document.Visibility</td>
+                        <td class="nombre">v@document.Version</td>
+                        <td class="nombre">@document.DownloadCount</td>
+                        <td style="display:flex;gap:.3rem;">
+                            <a class="bouton bouton--contour bouton--petit"
+                               asp-action="Versions" asp-route-id="@document.Id">Versions</a>
+                            @if (!document.IsArchived)
+                            {
+                                <form method="post" asp-action="Archiver" asp-route-id="@document.Id"
+                                      data-confirmer="Archiver ce document ?">
+                                    <button type="submit" class="bouton bouton--danger bouton--petit">Archiver</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+    }
+</div>

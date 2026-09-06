@@ -1,0 +1,39 @@
+@model CavalierNoir.Web.Models.PaginationModel
+@if (Model.TotalPages > 1)
+{
+    <nav class="pagination" aria-label="Pagination">
+        @if (Model.HasPrevious)
+        {
+            <a href="@Model.UrlPour(Model.PageNumber - 1)" rel="prev">‹ Précédent</a>
+        }
+        else
+        {
+            <span class="desactive">‹ Précédent</span>
+        }
+
+        @foreach (var numero in Model.PagesAffichees())
+        {
+            if (numero == Model.PageNumber)
+            {
+                <span class="actuelle" aria-current="page">@numero</span>
+            }
+            else
+            {
+                <a href="@Model.UrlPour(numero)">@numero</a>
+            }
+        }
+
+        @if (Model.HasNext)
+        {
+            <a href="@Model.UrlPour(Model.PageNumber + 1)" rel="next">Suivant ›</a>
+        }
+        else
+        {
+            <span class="desactive">Suivant ›</span>
+        }
+
+        <span class="pagination__info">
+            @Model.FirstItemIndex–@Model.LastItemIndex sur @Model.TotalCount
+        </span>
+    </nav>
+}

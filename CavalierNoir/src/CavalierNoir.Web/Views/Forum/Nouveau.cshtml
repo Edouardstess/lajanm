@@ -1,0 +1,42 @@
+@model NewTopicViewModel
+@{
+    ViewData["Title"] = "Nouveau sujet";
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <p class="fil"><a asp-action="Index">Forums</a> › @Model.CategoryName › Nouveau sujet</p>
+        <h1>Ouvrir un sujet</h1>
+
+        <div class="panneau">
+            <form method="post">
+                <div asp-validation-summary="All" class="resume-erreurs"></div>
+                <input type="hidden" asp-for="CategoryId" />
+
+                <div class="champ">
+                    <label asp-for="Title"></label>
+                    <input asp-for="Title" required minlength="5" maxlength="200" autofocus />
+                    <span class="aide">Un titre précis reçoit davantage de réponses qu'un titre vague.</span>
+                    <span asp-validation-for="Title" class="erreur-champ"></span>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="Content"></label>
+                    <textarea asp-for="Content" required minlength="10" maxlength="8000"></textarea>
+                    <span asp-validation-for="Content" class="erreur-champ"></span>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="Fen"></label>
+                    <input asp-for="Fen" placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" />
+                    <span class="aide">Facultatif : la position sera affichée sous votre message.</span>
+                    <span asp-validation-for="Fen" class="erreur-champ"></span>
+                </div>
+
+                <div class="actions-formulaire">
+                    <button type="submit" class="bouton bouton--primaire">Publier le sujet</button>
+                    <a class="bouton bouton--contour" asp-action="Index">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

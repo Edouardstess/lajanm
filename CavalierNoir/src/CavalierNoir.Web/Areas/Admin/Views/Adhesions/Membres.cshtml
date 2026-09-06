@@ -1,0 +1,82 @@
+@model List<CavalierNoir.Domain.Memberships.Membership>
+@{
+    var statut = ViewData["Statut"] as MembershipStatus?;
+}
+<div class="section__entete">
+    <h1>Adhésions</h1>
+    <a class="bouton bouton--contour" asp-action="Exporter">Exporter en CSV</a>
+</div>
+
+<p>
+    <a class="etiq @(statut is null ? "etiq--or" : "etiq--neutre")" asp-action="Membres">Toutes</a>
+    @foreach (var valeur in Enum.GetValues<MembershipStatus>())
+    {
+        <a class="etiq @(statut == valeur ? "etiq--or" : "etiq--neutre")"
+           asp-action="Membres" asp-route-statut="@valeur">@valeur</a>
+    }
+</p>
+
+<div class="panneau">
+    @if (Model.Count == 0)
+    {
+        <p>Aucune adhésion pour ce filtre.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">N°</th>
+                    <th scope="col">Membre</th>
+                    <th scope="col">Formule</th>
+                    <th scope="col">Période</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col" class="nombre">Montant</th>
+                    <th scope="col">Encaissement</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var adhesion in Model)
+                {
+                    <tr>
+                        <td>@adhesion.MemberNumber</td>
+                        <td>
+                            <a asp-controller="Utilisateurs" asp-action="Details" asp-route-id="@adhesion.UserId">
+                                @adhesion.User.FullName
+                            </a>
+                        </td>
+                        <td>@adhesion.MembershipType?.Name</td>
+                        <td>@adhesion.Period.Start.ToString("dd/MM/yy") — @adhesion.Period.End.ToString("dd/MM/yy")</td>
+                        <td>
+                            <span class="etiq @(adhesion.Status == MembershipStatus.Active ? "etiq--vert" : "etiq--neutre")">
+                                @adhesion.Status
+                            </span>
+                        </td>
+                        <td class="nombre">@adhesion.Amount.Format()</td>
+                        <td>
+                            @if (adhesion.Status == MembershipStatus.EnAttentePaiement)
+                            {
+                                <form method="post" asp-action="EnregistrerPaiement" style="display:flex;gap:.3rem;">
+                                    <input type="hidden" name="adhesionId" value="@adhesion.Id" />
+                                    <select name="methode" aria-label="Moyen de paiement" style="width:auto;">
+                                        @foreach (var moyen in Enum.GetValues<PaymentMethod>())
+                                        {
+                                            <option value="@moyen">@moyen</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="bouton bouton--succes bouton--petit">Encaisser</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="carte__meta">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

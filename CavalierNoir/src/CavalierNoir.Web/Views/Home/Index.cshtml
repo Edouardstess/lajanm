@@ -1,0 +1,222 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = null;
+}
+
+<section class="hero">
+    <div class="conteneur">
+        <div class="hero__grille">
+            <div>
+                <h1>Le club d'échecs <em>Cavalier Noir</em></h1>
+                <p>
+                    Un club ouvert à tous, du débutant complet au joueur classé. Entraînements
+                    hebdomadaires, tournois officiels, exercice quotidien par courriel et une
+                    communauté qui progresse ensemble, à Port-au-Prince.
+                </p>
+                <div class="hero__actions">
+                    <a class="bouton bouton--primaire" asp-controller="Adherer" asp-action="Index">Devenir membre</a>
+                    <a class="bouton bouton--contour" asp-controller="Exercices" asp-action="Index"
+                       style="color:#ded8ce;border-color:#4a4a4a;">Découvrir les exercices</a>
+                </div>
+
+                <div class="chiffres">
+                    <div class="chiffre">
+                        <span class="chiffre__valeur">@Model.MemberCount</span>
+                        <span class="chiffre__libelle">Membres actifs</span>
+                    </div>
+                    <div class="chiffre">
+                        <span class="chiffre__valeur">@Model.ExerciseCount</span>
+                        <span class="chiffre__libelle">Exercices</span>
+                    </div>
+                    <div class="chiffre">
+                        <span class="chiffre__valeur">@Model.SolvedCount</span>
+                        <span class="chiffre__libelle">Résolutions</span>
+                    </div>
+                    <div class="chiffre">
+                        <span class="chiffre__valeur">@Model.TournamentCount</span>
+                        <span class="chiffre__libelle">Tournois joués</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                @if (Model.DailyExercise is { } exercice)
+                {
+                    <div class="carte">
+                        <div class="carte__corps">
+                            <p class="carte__meta">Exercice du jour · @exercice.Theme · difficulté @((int)exercice.Difficulty)/5</p>
+                            <partial name="_Echiquier" model="EchiquierModel.Pour(exercice.Fen, false, "echiquier-accueil")" />
+                        </div>
+                        <div class="carte__pied">
+                            <a class="bouton bouton--primaire bouton--bloc"
+                               asp-controller="Exercices" asp-action="Details" asp-route-id="@exercice.Id">
+                                Résoudre l'exercice
+                            </a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="carte">
+                        <div class="carte__corps">
+                            <p>L'exercice du jour sera publié prochainement.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (Model.UpcomingTournaments.Count > 0 || Model.UpcomingEvents.Count > 0)
+{
+    <section class="section">
+        <div class="conteneur">
+            <div class="section__entete">
+                <h2>Prochains rendez-vous</h2>
+                <a asp-controller="Evenements" asp-action="Index">Voir tout l'agenda →</a>
+            </div>
+
+            <div class="grille grille--3">
+                @foreach (var tournoi in Model.UpcomingTournaments)
+                {
+                    <article class="carte">
+                        <div class="carte__corps">
+                            <p class="carte__meta">
+                                <span class="etiq etiq--or">Tournoi</span>
+                                @tournoi.StartDate.ToString("dddd d MMMM yyyy")
+                            </p>
+                            <h3 class="carte__titre">
+                                <a asp-controller="Tournois" asp-action="Details" asp-route-slug="@tournoi.Slug">@tournoi.Title</a>
+                            </h3>
+                            <p class="carte__meta">
+                                @tournoi.Location · @tournoi.ConfirmedPlayers inscrit(s)
+                                @if (tournoi.MaxPlayers is { } max)
+                                {
+                                    <text> sur @max</text>
+                                }
+                            </p>
+                        </div>
+                    </article>
+                }
+
+                @foreach (var evenement in Model.UpcomingEvents)
+                {
+                    <article class="carte">
+                        <div class="carte__corps">
+                            <p class="carte__meta">
+                                <span class="etiq">@evenement.Type</span>
+                                @evenement.StartDate.ToString("dddd d MMMM yyyy à HH\\hmm")
+                            </p>
+                            <h3 class="carte__titre">
+                                <a asp-controller="Evenements" asp-action="Details" asp-route-slug="@evenement.Slug">@evenement.Title</a>
+                            </h3>
+                            @if (!string.IsNullOrWhiteSpace(evenement.Location))
+                            {
+                                <p class="carte__meta">@evenement.Location</p>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (Model.LatestPosts.Count > 0)
+{
+    <section class="section section--alt">
+        <div class="conteneur">
+            <div class="section__entete">
+                <h2>Dernières actualités</h2>
+                <a asp-controller="Blog" asp-action="Index">Tous les articles →</a>
+            </div>
+
+            <div class="grille grille--3">
+                @foreach (var article in Model.LatestPosts)
+                {
+                    <article class="carte">
+                        @if (!string.IsNullOrWhiteSpace(article.FeaturedImageUrl))
+                        {
+                            <img class="carte__image" src="@article.FeaturedImageUrl" alt="" loading="lazy" />
+                        }
+                        <div class="carte__corps">
+                            <p class="carte__meta">
+                                @if (article.CategoryName is not null)
+                                {
+                                    <span class="etiq etiq--neutre">@article.CategoryName</span>
+                                }
+                                @article.PublishedAt?.ToString("d MMMM yyyy") · @article.ReadingTimeMinutes min de lecture
+                            </p>
+                            <h3 class="carte__titre">
+                                <a asp-controller="Blog" asp-action="Details" asp-route-slug="@article.Slug">@article.Title</a>
+                            </h3>
+                            <p>@article.Summary</p>
+                        </div>
+                        <div class="carte__pied">
+                            <span class="carte__meta">Par @article.AuthorName</span>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<section class="section">
+    <div class="conteneur">
+        <div class="grille grille--3">
+            <div>
+                <h2>Apprendre</h2>
+                <p>
+                    Une bibliothèque d'exercices classés par thème et par niveau, un exercice
+                    différent envoyé chaque matin à 6 h, une correction détaillée et des indices
+                    progressifs pour ne jamais rester bloqué.
+                </p>
+                <a asp-controller="Exercices" asp-action="Index">Voir la bibliothèque →</a>
+            </div>
+            <div>
+                <h2>Jouer</h2>
+                <p>
+                    Des tournois au système suisse avec appariements automatiques, saisie des
+                    résultats en direct et classement ELO interne mis à jour partie après partie.
+                </p>
+                <a asp-controller="Tournois" asp-action="Index">Voir les tournois →</a>
+            </div>
+            <div>
+                <h2>Échanger</h2>
+                <p>
+                    Un forum réservé aux membres pour analyser ses parties, poser ses questions et
+                    organiser la vie du club — les débutants y sont particulièrement bienvenus.
+                </p>
+                <a asp-controller="Adherer" asp-action="Index">Rejoindre le club →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (Model.Partners.Count > 0)
+{
+    <section class="section section--alt">
+        <div class="conteneur">
+            <h2>Ils soutiennent le club</h2>
+            <div class="grille grille--4">
+                @foreach (var partenaire in Model.Partners)
+                {
+                    <div class="carte">
+                        <div class="carte__corps" style="text-align:center;">
+                            @if (!string.IsNullOrWhiteSpace(partenaire.LogoUrl))
+                            {
+                                <img src="@partenaire.LogoUrl" alt="@partenaire.Name" style="max-height:70px;" loading="lazy" />
+                            }
+                            else
+                            {
+                                <strong>@partenaire.Name</strong>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}

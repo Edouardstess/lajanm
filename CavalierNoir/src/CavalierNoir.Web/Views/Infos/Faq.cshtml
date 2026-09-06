@@ -1,0 +1,22 @@
+@model List<CavalierNoir.Domain.Club.FaqItem>
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>Questions fréquentes</h1>
+
+        @foreach (var groupe in Model.GroupBy(f => f.Category))
+        {
+            <h2>@groupe.Key</h2>
+            @foreach (var item in groupe)
+            {
+                <details class="panneau" style="padding:1rem 1.25rem;">
+                    <summary style="font-weight:600;cursor:pointer;">@item.Question</summary>
+                    <div class="prose" style="margin-top:.75rem;">@Html.Raw(item.Answer)</div>
+                </details>
+            }
+        }
+
+        <p style="margin-top:2rem;">
+            Votre question n'est pas là ? <a asp-controller="Contact" asp-action="Index">Écrivez-nous</a>.
+        </p>
+    </div>
+</section>

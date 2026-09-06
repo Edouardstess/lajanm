@@ -1,0 +1,111 @@
+@model ExerciseFormViewModel
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Modifier un exercice" : "Nouvel exercice";
+}
+<p class="fil"><a asp-action="Index">Exercices</a> › @ViewData["Title"]</p>
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" asp-action="Enregistrer">
+    <div asp-validation-summary="All" class="resume-erreurs"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <div class="grille grille--2">
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Position et solution</span></h2>
+
+            <div class="champ">
+                <label asp-for="Title"></label>
+                <input asp-for="Title" required />
+                <span asp-validation-for="Title" class="erreur-champ"></span>
+            </div>
+
+            <div class="champ">
+                <label asp-for="Fen"></label>
+                <input asp-for="Fen" required spellcheck="false" />
+                <span class="aide">
+                    Format Forsyth-Edwards. Exemple : <code>6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1</code>
+                </span>
+                <span asp-validation-for="Fen" class="erreur-champ"></span>
+            </div>
+
+            <div class="champ">
+                <label asp-for="Solution"></label>
+                <input asp-for="Solution" required spellcheck="false" placeholder="a1a8" />
+                <span class="aide">
+                    Notation par coordonnées, un coup par paire de cases, séparés par des espaces
+                    (<code>e2e4 e7e5</code>). Ajoutez <code>q</code> pour une promotion : <code>a7a8q</code>.
+                </span>
+                <span asp-validation-for="Solution" class="erreur-champ"></span>
+            </div>
+
+            <div class="formulaire-grille">
+                <div class="champ">
+                    <label asp-for="Theme"></label>
+                    <select asp-for="Theme" asp-items="Html.GetEnumSelectList<ExerciseTheme>()"></select>
+                </div>
+                <div class="champ">
+                    <label asp-for="Difficulty"></label>
+                    <select asp-for="Difficulty" asp-items="Html.GetEnumSelectList<DifficultyLevel>()"></select>
+                </div>
+                <div class="champ">
+                    <label asp-for="EstimatedTimeSeconds"></label>
+                    <input asp-for="EstimatedTimeSeconds" type="number" min="0" max="3600" />
+                </div>
+            </div>
+
+            <div class="champ">
+                <label asp-for="CollectionId"></label>
+                <select asp-for="CollectionId">
+                    <option value="">Aucun recueil</option>
+                    @foreach (var recueil in Model.Collections)
+                    {
+                        <option value="@recueil.Id" selected="@(Model.CollectionId == recueil.Id)">@recueil.Title</option>
+                    }
+                </select>
+            </div>
+
+            <div class="champ">
+                <label asp-for="Source"></label>
+                <input asp-for="Source" />
+            </div>
+        </div>
+
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Accompagnement pédagogique</span></h2>
+
+            <div class="champ">
+                <label asp-for="Hint1"></label>
+                <input asp-for="Hint1" />
+                <span class="aide">Orientez sans dévoiler : « Le roi noir est enfermé par ses propres pions. »</span>
+            </div>
+            <div class="champ">
+                <label asp-for="Hint2"></label>
+                <input asp-for="Hint2" />
+            </div>
+            <div class="champ">
+                <label asp-for="Hint3"></label>
+                <input asp-for="Hint3" />
+            </div>
+
+            <div class="champ">
+                <label asp-for="Explanation"></label>
+                <textarea asp-for="Explanation" maxlength="4000"></textarea>
+                <span class="aide">Affichée après la tentative, réussie ou non.</span>
+            </div>
+
+            <div class="champ champ--case">
+                <input asp-for="IsPublished" type="checkbox" />
+                <label asp-for="IsPublished"></label>
+            </div>
+            <div class="champ champ--case">
+                <input asp-for="IsPublic" type="checkbox" />
+                <label asp-for="IsPublic"></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton--primaire">Enregistrer</button>
+        <a class="bouton bouton--contour" asp-action="Index">Annuler</a>
+    </div>
+</form>

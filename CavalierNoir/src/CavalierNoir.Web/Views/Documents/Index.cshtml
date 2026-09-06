@@ -1,0 +1,91 @@
+@model PagedList<CavalierNoir.Domain.Club.Document>
+@{
+    ViewData["Title"] = "Documents";
+    var categorie = ViewData["Categorie"] as DocumentCategoryCode?;
+}
+<section class="section">
+    <div class="conteneur">
+        <h1>Espace documentaire</h1>
+        <p>
+            Statuts, règlement intérieur, procès-verbaux et rapports d'activité. Certains documents
+            sont réservés aux membres ou au bureau.
+        </p>
+
+        <form method="get" class="panneau">
+            <div class="formulaire-grille">
+                <div class="champ">
+                    <label for="q">Rechercher</label>
+                    <input type="search" id="q" name="q" value="@(ViewData["Recherche"] as string)" />
+                </div>
+                <div class="champ">
+                    <label for="categorie">Catégorie</label>
+                    <select id="categorie" name="categorie">
+                        <option value="">Toutes</option>
+                        @foreach (var valeur in Enum.GetValues<DocumentCategoryCode>())
+                        {
+                            <option value="@valeur" selected="@(categorie == valeur)">@valeur</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="actions-formulaire">
+                <button type="submit" class="bouton bouton--primaire">Filtrer</button>
+                <a class="bouton bouton--contour" asp-action="Index">Réinitialiser</a>
+            </div>
+        </form>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="vide">
+                <span class="vide__piece" aria-hidden="true">&#9820;</span>
+                <p>Aucun document accessible avec votre niveau d'accès.</p>
+            </div>
+        }
+        else
+        {
+            <div class="tableau-defilant">
+                <table class="tableau">
+                    <thead>
+                    <tr>
+                        <th scope="col">Titre</th>
+                        <th scope="col">Catégorie</th>
+                        <th scope="col">Version</th>
+                        <th scope="col">Taille</th>
+                        <th scope="col">Accès</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var document in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@document.Title</strong>
+                                @if (!string.IsNullOrWhiteSpace(document.Description))
+                                {
+                                    <br />
+                                    <span class="carte__meta">@document.Description</span>
+                                }
+                            </td>
+                            <td><span class="etiq etiq--neutre">@document.Category</span></td>
+                            <td>v@document.Version</td>
+                            <td>@document.SizeLabel</td>
+                            <td>
+                                <span class="etiq @(document.Visibility == Visibility.Public ? "etiq--vert" : "etiq--neutre")">
+                                    @document.Visibility
+                                </span>
+                            </td>
+                            <td>
+                                <a class="bouton bouton--contour bouton--petit"
+                                   asp-action="Telecharger" asp-route-id="@document.Id">Télécharger</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+        }
+    </div>
+</section>

@@ -1,0 +1,79 @@
+@model PagedList<CavalierNoir.Domain.Identity.AuditLog>
+<div class="section__entete">
+    <h1>Journal d'audit</h1>
+    <a class="bouton bouton--contour" asp-action="Connexions">Historique des connexions</a>
+</div>
+
+<div class="alerte alerte--info">
+    <span aria-hidden="true">🔒</span>
+    <span>
+        Ce journal est alimenté automatiquement et n'est jamais modifiable. Il est conservé
+        365 jours (règle BR-11).
+    </span>
+</div>
+
+<form method="get" class="panneau">
+    <div class="formulaire-grille">
+        <div class="champ">
+            <label for="entite">Entité</label>
+            <input type="text" id="entite" name="entite" value="@(ViewData["Entite"] as string)"
+                   placeholder="Membership, Payment, Tournament…" />
+        </div>
+        <div class="champ">
+            <label for="action">Action</label>
+            <select id="action" name="action">
+                <option value="">Toutes</option>
+                <option value="Create" selected="@((ViewData["Action"] as string) == "Create")">Create</option>
+                <option value="Update" selected="@((ViewData["Action"] as string) == "Update")">Update</option>
+                <option value="Delete" selected="@((ViewData["Action"] as string) == "Delete")">Delete</option>
+            </select>
+        </div>
+        <div class="champ">
+            <label for="utilisateurId">Identifiant utilisateur</label>
+            <input type="number" id="utilisateurId" name="utilisateurId" value="@(ViewData["UtilisateurId"] as int?)" />
+        </div>
+    </div>
+    <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton--primaire">Filtrer</button>
+        <a class="bouton bouton--contour" asp-action="Index">Réinitialiser</a>
+    </div>
+</form>
+
+<div class="panneau">
+    @if (Model.Items.Count == 0)
+    {
+        <p>Aucune entrée pour ce filtre.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau tableau--compact">
+                <thead>
+                <tr>
+                    <th scope="col">Horodatage</th>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Entité</th>
+                    <th scope="col">Colonnes modifiées</th>
+                    <th scope="col">IP</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var entree in Model.Items)
+                {
+                    <tr>
+                        <td>@entree.Timestamp.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td>
+                        <td>@(entree.UserName ?? "système")</td>
+                        <td><span class="etiq etiq--neutre">@entree.Action</span></td>
+                        <td>@entree.EntityName #@entree.EntityId</td>
+                        <td><span class="carte__meta">@entree.AffectedColumns</span></td>
+                        <td><code>@entree.IpAddress</code></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+    }
+</div>

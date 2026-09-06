@@ -1,0 +1,84 @@
+@model ContactFormViewModel
+@using Microsoft.Extensions.Options
+@inject IOptions<SiteOptions> SiteOptions
+@{
+    var site = SiteOptions.Value;
+}
+<section class="section">
+    <div class="conteneur">
+        <div class="grille grille--2">
+            <div>
+                <h1>Nous contacter</h1>
+                <p>
+                    Une question sur l'adhésion, un partenariat, une demande de presse ? Écrivez-nous.
+                    Nous répondons sous 48 heures ouvrées.
+                </p>
+
+                <div class="panneau">
+                    <h2 class="panneau__titre"><span>Coordonnées</span></h2>
+                    <p><strong>@site.Name</strong><br />@site.Address</p>
+                    <p><a href="mailto:@site.ContactEmail">@site.ContactEmail</a></p>
+                    @if (!string.IsNullOrWhiteSpace(site.Phone))
+                    {
+                        <p>@site.Phone</p>
+                    }
+                </div>
+            </div>
+
+            <div>
+                <div class="panneau">
+                    <h2 class="panneau__titre"><span>Formulaire</span></h2>
+                    <form method="post">
+                        <div asp-validation-summary="All" class="resume-erreurs"></div>
+
+                        @* Champ leurre : masqué aux humains, rempli par les robots. *@
+                        <div aria-hidden="true" style="position:absolute;left:-9999px;">
+                            <label asp-for="Website">Ne remplissez pas ce champ</label>
+                            <input asp-for="Website" tabindex="-1" autocomplete="off" />
+                        </div>
+
+                        <div class="formulaire-grille">
+                            <div class="champ">
+                                <label asp-for="Name"></label>
+                                <input asp-for="Name" required autocomplete="name" />
+                                <span asp-validation-for="Name" class="erreur-champ"></span>
+                            </div>
+                            <div class="champ">
+                                <label asp-for="Email"></label>
+                                <input asp-for="Email" type="email" required autocomplete="email" />
+                                <span asp-validation-for="Email" class="erreur-champ"></span>
+                            </div>
+                        </div>
+
+                        <div class="champ">
+                            <label asp-for="Phone"></label>
+                            <input asp-for="Phone" type="tel" autocomplete="tel" />
+                        </div>
+
+                        <div class="champ">
+                            <label asp-for="Subject"></label>
+                            <input asp-for="Subject" required />
+                            <span asp-validation-for="Subject" class="erreur-champ"></span>
+                        </div>
+
+                        <div class="champ">
+                            <label asp-for="Message"></label>
+                            <textarea asp-for="Message" required minlength="10" maxlength="4000"></textarea>
+                            <span asp-validation-for="Message" class="erreur-champ"></span>
+                        </div>
+
+                        <div class="champ champ--case">
+                            <input asp-for="ConsentGiven" type="checkbox" required />
+                            <label asp-for="ConsentGiven"></label>
+                        </div>
+                        <span asp-validation-for="ConsentGiven" class="erreur-champ"></span>
+
+                        <div class="actions-formulaire">
+                            <button type="submit" class="bouton bouton--primaire">Envoyer le message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

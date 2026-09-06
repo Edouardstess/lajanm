@@ -1,0 +1,94 @@
+@model List<CavalierNoir.Domain.Tournaments.ClubEvent>
+@{
+    ViewData["Title"] = "Agenda du club";
+    var annee = (int)ViewData["Annee"]!;
+    var mois = (int)ViewData["Mois"]!;
+    var prochains = ViewData["Prochains"] as List<CavalierNoir.Domain.Tournaments.ClubEvent> ?? [];
+    var courant = new DateTime(annee, mois, 1);
+    var culture = System.Globalization.CultureInfo.GetCultureInfo("fr-FR");
+}
+<section class="section">
+    <div class="conteneur">
+        <h1>Agenda du club</h1>
+
+        <div class="section__entete">
+            <h2 style="text-transform:capitalize;">@courant.ToString("MMMM yyyy", culture)</h2>
+            <p>
+                <a class="bouton bouton--contour bouton--petit"
+                   asp-action="Index"
+                   asp-route-annee="@courant.AddMonths(-1).Year"
+                   asp-route-mois="@courant.AddMonths(-1).Month">‹ Mois précédent</a>
+                <a class="bouton bouton--contour bouton--petit"
+                   asp-action="Index"
+                   asp-route-annee="@courant.AddMonths(1).Year"
+                   asp-route-mois="@courant.AddMonths(1).Month">Mois suivant ›</a>
+            </p>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="vide">
+                <span class="vide__piece" aria-hidden="true">&#9816;</span>
+                <p>Aucun événement programmé ce mois-ci.</p>
+            </div>
+        }
+        else
+        {
+            <div class="tableau-defilant">
+                <table class="tableau">
+                    <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Événement</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Lieu</th>
+                        <th scope="col">Places</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var evenement in Model)
+                    {
+                        <tr>
+                            <td>@evenement.StartDate.ToString("ddd d MMM", culture)<br /><span class="carte__meta">@evenement.StartDate.ToString("HH\\hmm")</span></td>
+                            <td><a asp-action="Details" asp-route-slug="@evenement.Slug">@evenement.Title</a></td>
+                            <td><span class="etiq etiq--neutre">@evenement.Type</span></td>
+                            <td>@(evenement.Location ?? "—")</td>
+                            <td>
+                                @if (evenement.MaxParticipants is { } max)
+                                {
+                                    <text>@evenement.ConfirmedParticipants / @max</text>
+                                }
+                                else
+                                {
+                                    <text>Libre</text>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (prochains.Count > 0)
+        {
+            <h2 style="margin-top:2.5rem;">Prochainement</h2>
+            <div class="grille grille--3">
+                @foreach (var evenement in prochains)
+                {
+                    <article class="carte">
+                        <div class="carte__corps">
+                            <p class="carte__meta">
+                                <span class="etiq etiq--neutre">@evenement.Type</span>
+                                @evenement.StartDate.ToString("dddd d MMMM", culture)
+                            </p>
+                            <h3 class="carte__titre">
+                                <a asp-action="Details" asp-route-slug="@evenement.Slug">@evenement.Title</a>
+                            </h3>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+</section>

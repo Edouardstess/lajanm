@@ -1,0 +1,42 @@
+@model List<CavalierNoir.Domain.Communication.ForumCategory>
+@{
+    ViewData["Title"] = "Forums";
+}
+<section class="section">
+    <div class="conteneur">
+        <h1>Forums du club</h1>
+        <p>Un espace réservé aux membres pour poser ses questions, analyser ses parties et organiser la vie du club.</p>
+
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Sous-forum</th>
+                    <th scope="col" class="nombre">Sujets</th>
+                    <th scope="col" class="nombre">Messages</th>
+                    <th scope="col">Dernière activité</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var rubrique in Model)
+                {
+                    <tr>
+                        <td>
+                            <a asp-action="Rubrique" asp-route-slug="@rubrique.Slug"><strong>@rubrique.Name</strong></a>
+                            @if (rubrique.IsLocked)
+                            {
+                                <span class="etiq etiq--neutre">Lecture seule</span>
+                            }
+                            <br />
+                            <span class="carte__meta">@rubrique.Description</span>
+                        </td>
+                        <td class="nombre">@rubrique.TopicCount</td>
+                        <td class="nombre">@rubrique.PostCount</td>
+                        <td>@(rubrique.LastActivityAt?.ToLocalTime().ToString("dd/MM/yyyy HH\\hmm") ?? "—")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

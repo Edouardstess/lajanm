@@ -1,0 +1,90 @@
+@model ForumTopicViewModel
+@{
+    ViewData["Title"] = Model.Topic.Title;
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <p class="fil">
+            <a asp-action="Index">Forums</a> ›
+            <a asp-action="Rubrique" asp-route-slug="@Model.Topic.ForumCategory.Slug">@Model.Topic.ForumCategory.Name</a>
+            › @Model.Topic.Title
+        </p>
+
+        <div class="section__entete">
+            <h1>@Model.Topic.Title</h1>
+            @if (Model.CanModerate)
+            {
+                <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+                    <form method="post" asp-action="Moderer" asp-route-id="@Model.Topic.Id">
+                        <input type="hidden" name="action" value="epingler" />
+                        <button type="submit" class="bouton bouton--contour bouton--petit">
+                            @(Model.Topic.IsPinned ? "Désépingler" : "Épingler")
+                        </button>
+                    </form>
+                    <form method="post" asp-action="Moderer" asp-route-id="@Model.Topic.Id">
+                        <input type="hidden" name="action" value="fermer" />
+                        <button type="submit" class="bouton bouton--contour bouton--petit">
+                            @(Model.Topic.Status == TopicStatus.Ferme ? "Rouvrir" : "Fermer")
+                        </button>
+                    </form>
+                    <form method="post" asp-action="Moderer" asp-route-id="@Model.Topic.Id"
+                          data-confirmer="Supprimer définitivement ce sujet de l'affichage ?">
+                        <input type="hidden" name="action" value="supprimer" />
+                        <button type="submit" class="bouton bouton--danger bouton--petit">Supprimer</button>
+                    </form>
+                </div>
+            }
+        </div>
+
+        @foreach (var message in Model.Posts)
+        {
+            <article class="message-forum" id="message-@message.Id">
+                <span class="avatar" aria-hidden="true">@message.Author.Initials</span>
+                <div class="message-forum__corps">
+                    <div class="commentaire__entete">
+                        <span class="commentaire__auteur">@(message.Author.Pseudonym ?? message.Author.FullName)</span>
+                        <span class="etiq etiq--neutre">@message.Author.Elo</span>
+                        <span class="commentaire__date">@message.CreatedAt.ToLocalTime().ToString("d MMMM yyyy à HH\\hmm")</span>
+                    </div>
+
+                    <div class="prose" style="white-space:pre-line;">@message.Content</div>
+
+                    @if (!string.IsNullOrWhiteSpace(message.Fen))
+                    {
+                        <div style="max-width:320px;margin-top:1rem;">
+                            <partial name="_Echiquier" model="EchiquierModel.Pour(message.Fen, false, $"ech-msg-{message.Id}")" />
+                        </div>
+                    }
+                </div>
+            </article>
+        }
+
+        @if (Model.Topic.CanReply)
+        {
+            <div class="panneau" style="margin-top:2rem;">
+                <h2 class="panneau__titre"><span>Répondre</span></h2>
+                <form method="post" asp-action="Repondre">
+                    <input type="hidden" name="TopicId" value="@Model.Topic.Id" />
+                    <div class="champ">
+                        <label for="Content">Votre message</label>
+                        <textarea id="Content" name="Content" required minlength="2" maxlength="8000"></textarea>
+                    </div>
+                    <div class="champ">
+                        <label for="Fen">Position à joindre (FEN, facultatif)</label>
+                        <input type="text" id="Fen" name="Fen" placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" />
+                        <span class="aide">Collez une position au format FEN pour l'afficher sous votre message.</span>
+                    </div>
+                    <button type="submit" class="bouton bouton--primaire">Publier ma réponse</button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <p class="aide">Ce sujet est fermé : il n'accepte plus de nouvelle réponse.</p>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/chessboard.js" asp-append-version="true"></script>
+}

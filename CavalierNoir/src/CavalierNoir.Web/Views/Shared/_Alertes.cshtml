@@ -1,0 +1,25 @@
+@{
+    var succes = TempData["Succes"] as string;
+    var erreur = TempData["Erreur"] as string;
+}
+@if (!string.IsNullOrWhiteSpace(succes) || !string.IsNullOrWhiteSpace(erreur))
+{
+    <div class="conteneur" style="margin-top:1.25rem;">
+        @if (!string.IsNullOrWhiteSpace(succes))
+        {
+            <div class="alerte alerte--succes" role="status">
+                <span aria-hidden="true">✔</span>
+                <span>@succes</span>
+                <button type="button" class="alerte__fermer" data-fermer-alerte aria-label="Fermer">×</button>
+            </div>
+        }
+        @if (!string.IsNullOrWhiteSpace(erreur))
+        {
+            <div class="alerte alerte--erreur" role="alert">
+                <span aria-hidden="true">⚠</span>
+                <span>@erreur</span>
+                <button type="button" class="alerte__fermer" data-fermer-alerte aria-label="Fermer">×</button>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,71 @@
+@model CavalierNoir.Domain.Tournaments.ClubEvent
+@{
+    var inscrit = (bool)(ViewData["EstInscrit"] ?? false);
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <p class="fil"><a asp-action="Index">Agenda</a> › @Model.Title</p>
+
+        <h1>@Model.Title</h1>
+        <p>
+            <span class="etiq etiq--or">@Model.Type</span>
+            @if (Model.MembersOnly)
+            {
+                <span class="etiq etiq--neutre">Réservé aux membres</span>
+            }
+        </p>
+
+        <div class="panneau">
+            <div class="tableau-defilant">
+                <table class="tableau">
+                    <tbody>
+                    <tr><th scope="row">Début</th><td>@Model.StartDate.ToString("dddd d MMMM yyyy à HH\\hmm")</td></tr>
+                    <tr><th scope="row">Fin</th><td>@Model.EndDate.ToString("dddd d MMMM yyyy à HH\\hmm")</td></tr>
+                    <tr><th scope="row">Lieu</th><td>@(Model.Location ?? "À préciser")</td></tr>
+                    @if (!string.IsNullOrWhiteSpace(Model.Address))
+                    {
+                        <tr><th scope="row">Adresse</th><td>@Model.Address</td></tr>
+                    }
+                    <tr><th scope="row">Tarif</th><td>@(Model.EntryFee.IsZero ? "Gratuit" : Model.EntryFee.Format())</td></tr>
+                    @if (Model.MaxParticipants is { } max)
+                    {
+                        <tr><th scope="row">Places</th><td>@Model.ConfirmedParticipants inscrit(s) sur @max</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <div class="prose">@Html.Raw(Model.Description)</div>
+        }
+
+        @if (Model.IsRegistrationOpen && User.Identity?.IsAuthenticated == true)
+        {
+            <div class="actions-formulaire">
+                @if (inscrit)
+                {
+                    <form method="post" asp-action="Annulation" asp-route-id="@Model.Id" asp-route-slug="@Model.Slug"
+                          data-confirmer="Confirmez-vous l'annulation de votre inscription ?">
+                        <button type="submit" class="bouton bouton--contour">Annuler mon inscription</button>
+                    </form>
+                }
+                else
+                {
+                    <form method="post" asp-action="Inscription" asp-route-id="@Model.Id" asp-route-slug="@Model.Slug">
+                        <button type="submit" class="bouton bouton--primaire">Je participe</button>
+                    </form>
+                }
+            </div>
+        }
+        else if (Model.IsRegistrationOpen)
+        {
+            <p><a asp-controller="Compte" asp-action="Connexion">Connectez-vous</a> pour vous inscrire.</p>
+        }
+        else
+        {
+            <p class="aide">Les inscriptions à cet événement sont closes.</p>
+        }
+    </div>
+</section>

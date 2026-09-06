@@ -1,0 +1,102 @@
+@model ProfileViewModel
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>Mon profil</h1>
+
+        <nav class="fil">
+            <a asp-action="Index">Profil</a> ·
+            <a asp-action="Preferences">Préférences</a> ·
+            <a asp-action="MotDePasse">Mot de passe</a> ·
+            <a asp-action="Donnees">Mes données</a>
+        </nav>
+
+        <div class="panneau">
+            <form method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="All" class="resume-erreurs"></div>
+
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+                    @if (!string.IsNullOrWhiteSpace(Model.ProfilePictureUrl))
+                    {
+                        <img class="avatar avatar--grand" src="@Model.ProfilePictureUrl" alt="" />
+                    }
+                    else
+                    {
+                        <span class="avatar avatar--grand" aria-hidden="true">♞</span>
+                    }
+                    <div>
+                        <label for="photo">Photo de profil</label>
+                        <input type="file" id="photo" name="photo" accept="image/*" />
+                        <span class="aide">Format carré recommandé, 2 Mo maximum.</span>
+                    </div>
+                </div>
+
+                <div class="formulaire-grille">
+                    <div class="champ">
+                        <label asp-for="FirstName"></label>
+                        <input asp-for="FirstName" required />
+                        <span asp-validation-for="FirstName" class="erreur-champ"></span>
+                    </div>
+                    <div class="champ">
+                        <label asp-for="LastName"></label>
+                        <input asp-for="LastName" required />
+                        <span asp-validation-for="LastName" class="erreur-champ"></span>
+                    </div>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="Pseudonym"></label>
+                    <input asp-for="Pseudonym" />
+                    <span class="aide">Affiché sur le forum et dans les classements, à la place de votre nom.</span>
+                    <span asp-validation-for="Pseudonym" class="erreur-champ"></span>
+                </div>
+
+                <div class="formulaire-grille">
+                    <div class="champ">
+                        <label asp-for="BirthDate"></label>
+                        <input asp-for="BirthDate" type="date" />
+                    </div>
+                    <div class="champ">
+                        <label asp-for="PhoneNumber"></label>
+                        <input asp-for="PhoneNumber" type="tel" />
+                    </div>
+                    <div class="champ">
+                        <label asp-for="City"></label>
+                        <input asp-for="City" />
+                    </div>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="Bio"></label>
+                    <textarea asp-for="Bio" maxlength="2000"></textarea>
+                </div>
+
+                <fieldset style="border:1px solid var(--bordure);border-radius:var(--rayon-petit);padding:1rem;">
+                    <legend>Comptes de jeu</legend>
+                    <div class="formulaire-grille">
+                        <div class="champ">
+                            <label asp-for="LichessUsername"></label>
+                            <input asp-for="LichessUsername" />
+                        </div>
+                        <div class="champ">
+                            <label asp-for="ChessComUsername"></label>
+                            <input asp-for="ChessComUsername" />
+                        </div>
+                        <div class="champ">
+                            <label asp-for="FideId"></label>
+                            <input asp-for="FideId" />
+                        </div>
+                    </div>
+                </fieldset>
+
+                <p class="aide" style="margin-top:1rem;">
+                    Classement interne actuel : <strong>@Model.Elo</strong>. Il évolue automatiquement
+                    avec vos parties de tournoi et ne peut pas être modifié ici.
+                </p>
+
+                <div class="actions-formulaire">
+                    <button type="submit" class="bouton bouton--primaire">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

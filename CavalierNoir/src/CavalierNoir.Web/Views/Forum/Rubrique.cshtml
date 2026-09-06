@@ -1,0 +1,69 @@
+@model PagedList<ForumTopicCard>
+@{
+    var rubrique = (CavalierNoir.Domain.Communication.ForumCategory)ViewData["Rubrique"]!;
+    ViewData["Title"] = rubrique.Name;
+}
+<section class="section">
+    <div class="conteneur">
+        <p class="fil"><a asp-action="Index">Forums</a> › @rubrique.Name</p>
+
+        <div class="section__entete">
+            <div>
+                <h1>@rubrique.Name</h1>
+                <p>@rubrique.Description</p>
+            </div>
+            @if (!rubrique.IsLocked)
+            {
+                <a class="bouton bouton--primaire" asp-action="Nouveau" asp-route-categorieId="@rubrique.Id">Nouveau sujet</a>
+            }
+        </div>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="vide">
+                <span class="vide__piece" aria-hidden="true">&#9822;</span>
+                <p>Aucun sujet dans ce sous-forum. Lancez la discussion !</p>
+            </div>
+        }
+        else
+        {
+            <div class="tableau-defilant">
+                <table class="tableau">
+                    <thead>
+                    <tr>
+                        <th scope="col">Sujet</th>
+                        <th scope="col">Auteur</th>
+                        <th scope="col" class="nombre">Réponses</th>
+                        <th scope="col" class="nombre">Vues</th>
+                        <th scope="col">Dernier message</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var sujet in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                @if (sujet.IsPinned)
+                                {
+                                    <span class="etiq etiq--or">Épinglé</span>
+                                }
+                                @if (sujet.Status == TopicStatus.Ferme)
+                                {
+                                    <span class="etiq etiq--neutre">Fermé</span>
+                                }
+                                <a asp-action="Sujet" asp-route-id="@sujet.Id">@sujet.Title</a>
+                            </td>
+                            <td>@sujet.AuthorName</td>
+                            <td class="nombre">@sujet.ReplyCount</td>
+                            <td class="nombre">@sujet.ViewCount</td>
+                            <td>@(sujet.LastPostAt?.ToLocalTime().ToString("dd/MM/yyyy HH\\hmm") ?? "—")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+        }
+    </div>
+</section>

@@ -1,0 +1,58 @@
+@model PagedList<BlogPostCard>
+@{
+    var statut = ViewData["Statut"] as BlogStatus?;
+}
+<div class="section__entete">
+    <h1>Articles</h1>
+    <a class="bouton bouton--primaire" asp-action="Creer">Nouvel article</a>
+</div>
+
+<p>
+    @foreach (var valeur in Enum.GetValues<BlogStatus>())
+    {
+        <a class="etiq @(statut == valeur ? "etiq--or" : "etiq--neutre")"
+           asp-action="Index" asp-route-statut="@valeur">@valeur</a>
+    }
+</p>
+
+<div class="panneau">
+    @if (Model.Items.Count == 0)
+    {
+        <p>Aucun article pour ce filtre.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Rubrique</th>
+                    <th scope="col">Auteur</th>
+                    <th scope="col">Publication</th>
+                    <th scope="col" class="nombre">Vues</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var article in Model.Items)
+                {
+                    <tr>
+                        <td>@article.Title<br /><span class="carte__meta">/@article.Slug</span></td>
+                        <td>@(article.CategoryName ?? "—")</td>
+                        <td>@article.AuthorName</td>
+                        <td>@(article.PublishedAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td class="nombre">@article.ViewCount</td>
+                        <td>
+                            <a class="bouton bouton--contour bouton--petit"
+                               asp-action="Modifier" asp-route-id="@article.Id">Modifier</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+    }
+</div>

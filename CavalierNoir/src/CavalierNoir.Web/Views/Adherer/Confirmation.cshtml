@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Demande envoyée";
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit" style="text-align:center;">
+        <p style="font-size:3rem;margin:0;" aria-hidden="true">♞</p>
+        <h1>Votre demande est enregistrée</h1>
+        <p>
+            Le secrétariat en a été informé et l'instruira dans les prochains jours. Vous recevrez une
+            notification dès qu'une décision sera prise, et vous pouvez suivre l'avancement depuis
+            votre espace membre.
+        </p>
+        <div class="hero__actions" style="justify-content:center;">
+            <a class="bouton bouton--primaire" asp-area="Membre" asp-controller="Adhesion" asp-action="Index">Suivre ma demande</a>
+            <a class="bouton bouton--contour" asp-controller="Exercices" asp-action="Index">Découvrir les exercices</a>
+        </div>
+    </div>
+</section>

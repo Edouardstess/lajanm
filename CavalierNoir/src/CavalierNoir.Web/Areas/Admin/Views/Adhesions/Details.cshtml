@@ -1,0 +1,110 @@
+@model CavalierNoir.Domain.Memberships.MembershipApplication
+@{
+    var age = ViewData["Age"] as int?;
+}
+<p class="fil"><a asp-action="Index">Demandes d'adhésion</a> › Demande n° @Model.Id</p>
+
+<h1>@Model.User.FullName</h1>
+<p>
+    <span class="etiq etiq--or">@Model.Status</span>
+    @if (age is { } a)
+    {
+        <span class="etiq etiq--neutre">@a ans</span>
+    }
+</p>
+
+<div class="grille grille--2">
+    <div class="panneau">
+        <h2 class="panneau__titre"><span>Dossier</span></h2>
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <tbody>
+                <tr><th scope="row">Courriel</th><td>@Model.User.Email</td></tr>
+                <tr><th scope="row">Téléphone</th><td>@(Model.User.PhoneNumber ?? "—")</td></tr>
+                <tr><th scope="row">Date de naissance</th><td>@(Model.User.BirthDate?.ToString("dd/MM/yyyy") ?? "—")</td></tr>
+                <tr><th scope="row">Formule demandée</th><td>@Model.MembershipType.Name — @Model.MembershipType.Price.Format()</td></tr>
+                <tr><th scope="row">Classement déclaré</th><td>@Model.DeclaredElo</td></tr>
+                <tr><th scope="row">Déposée le</th><td>@(Model.SubmittedAt?.ToLocalTime().ToString("d MMMM yyyy à HH\\hmm") ?? "—")</td></tr>
+                @if (Model.ParentalConsent)
+                {
+                    <tr><th scope="row">Autorisation parentale</th><td>Oui — @Model.ParentContact</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Motivation))
+        {
+            <h3>Motivation</h3>
+            <p style="white-space:pre-line;">@Model.Motivation</p>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.ReviewComment))
+        {
+            <div class="alerte alerte--info">
+                <span aria-hidden="true">📝</span>
+                <span>@Model.ReviewComment</span>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.RejectionReason))
+        {
+            <div class="alerte alerte--erreur">
+                <span aria-hidden="true">✘</span>
+                <span>Motif du rejet : @Model.RejectionReason</span>
+            </div>
+        }
+    </div>
+
+    <div>
+        @if (Model.IsPending)
+        {
+            <div class="panneau">
+                <h2 class="panneau__titre"><span>Approuver</span></h2>
+                <form method="post" asp-action="Approuver" asp-route-id="@Model.Id">
+                    <div class="champ">
+                        <label for="eloEvalue">Classement retenu après évaluation</label>
+                        <input type="number" id="eloEvalue" name="eloEvalue" min="200" max="3000" step="10"
+                               value="@(Model.AssessedElo ?? Model.DeclaredElo)" />
+                        <span class="aide">
+                            Laissez la valeur déclarée si aucune évaluation n'a eu lieu. L'adhésion sera
+                            créée en attente de paiement.
+                        </span>
+                    </div>
+                    <button type="submit" class="bouton bouton--succes">Approuver la demande</button>
+                </form>
+            </div>
+
+            <div class="panneau">
+                <h2 class="panneau__titre"><span>Demander un complément</span></h2>
+                <form method="post" asp-action="DemanderComplement" asp-route-id="@Model.Id">
+                    <div class="champ">
+                        <label for="commentaire">Message au candidat</label>
+                        <textarea id="commentaire" name="commentaire" required
+                                  placeholder="Précisez la pièce ou l'information manquante."></textarea>
+                    </div>
+                    <button type="submit" class="bouton bouton--contour">Demander un complément</button>
+                </form>
+            </div>
+
+            <div class="panneau" style="border-color:var(--rouge);">
+                <h2 class="panneau__titre"><span>Rejeter</span></h2>
+                <form method="post" asp-action="Rejeter" asp-route-id="@Model.Id"
+                      data-confirmer="Confirmez-vous le rejet de cette demande ?">
+                    <div class="champ">
+                        <label for="motif">Motif du rejet (communiqué au candidat)</label>
+                        <textarea id="motif" name="motif" required></textarea>
+                    </div>
+                    <button type="submit" class="bouton bouton--danger">Rejeter la demande</button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <div class="panneau">
+                <p>Cette demande est close : elle n'accepte plus de décision.</p>
+                <a class="bouton bouton--contour" asp-action="Membres">Voir les adhésions</a>
+            </div>
+        }
+    </div>
+</div>

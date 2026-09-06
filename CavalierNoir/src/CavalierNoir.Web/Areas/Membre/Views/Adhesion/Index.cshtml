@@ -1,0 +1,114 @@
+@model MemberMembershipViewModel
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>Mon adhésion</h1>
+
+        @if (Model.PendingApplication is { } demande && demande.IsPending)
+        {
+            <div class="panneau">
+                <h2 class="panneau__titre"><span>Demande en cours</span></h2>
+                <p>
+                    Formule demandée : <strong>@demande.MembershipType?.Name</strong><br />
+                    Statut : <span class="etiq etiq--orange">@demande.Status</span><br />
+                    Déposée le @(demande.SubmittedAt?.ToLocalTime().ToString("d MMMM yyyy") ?? "—")
+                </p>
+
+                @if (demande.Status == ApplicationStatus.ComplementsDemandes && !string.IsNullOrWhiteSpace(demande.ReviewComment))
+                {
+                    <div class="alerte alerte--attention">
+                        <span aria-hidden="true">📝</span>
+                        <span><strong>Complément demandé :</strong> @demande.ReviewComment</span>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (Model.Current is { } adhesion)
+        {
+            <div class="panneau">
+                <h2 class="panneau__titre">
+                    <span>Adhésion @adhesion.MemberNumber</span>
+                    <span class="etiq @(adhesion.Status == MembershipStatus.Active ? "etiq--vert" : "etiq--orange")">@adhesion.Status</span>
+                </h2>
+
+                <div class="tableau-defilant">
+                    <table class="tableau">
+                        <tbody>
+                        <tr><th scope="row">Formule</th><td>@adhesion.MembershipType?.Name</td></tr>
+                        <tr><th scope="row">Période</th><td>@adhesion.Period.Start.ToString("dd/MM/yyyy") — @adhesion.Period.End.ToString("dd/MM/yyyy")</td></tr>
+                        <tr><th scope="row">Montant</th><td>@adhesion.Amount.Format()</td></tr>
+                        @if (adhesion.ActivatedAt is { } active)
+                        {
+                            <tr><th scope="row">Activée le</th><td>@active.ToLocalTime().ToString("d MMMM yyyy")</td></tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (adhesion.Status is MembershipStatus.Expiree or MembershipStatus.DelaiDeGrace or MembershipStatus.Active)
+                {
+                    <form method="post" asp-action="Renouveler" style="margin-top:1rem;">
+                        <button type="submit" class="bouton bouton--primaire">Demander le renouvellement</button>
+                    </form>
+                }
+                else if (adhesion.Status == MembershipStatus.EnAttentePaiement)
+                {
+                    <div class="alerte alerte--info">
+                        <span aria-hidden="true">💳</span>
+                        <span>
+                            Votre cotisation est en attente de règlement. Vous pouvez la régler auprès du
+                            trésorier lors d'une séance ; votre compte sera activé dès l'encaissement.
+                        </span>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="panneau">
+                <p>Vous n'avez pas encore d'adhésion.</p>
+                <a class="bouton bouton--primaire" asp-area="" asp-controller="Adherer" asp-action="Index">
+                    Découvrir les formules
+                </a>
+            </div>
+        }
+
+        @if (Model.Payments.Count > 0)
+        {
+            <div class="panneau">
+                <h2 class="panneau__titre"><span>Historique des paiements</span></h2>
+                <div class="tableau-defilant">
+                    <table class="tableau tableau--compact">
+                        <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Objet</th>
+                            <th scope="col">Moyen</th>
+                            <th scope="col" class="nombre">Montant</th>
+                            <th scope="col">Statut</th>
+                            <th scope="col">Reçu</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var paiement in Model.Payments)
+                        {
+                            <tr>
+                                <td>@(paiement.PaidAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? paiement.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy"))</td>
+                                <td>@paiement.Purpose</td>
+                                <td>@paiement.Method</td>
+                                <td class="nombre">@paiement.Amount.Format()</td>
+                                <td>
+                                    <span class="etiq @(paiement.Status == PaymentStatus.Paye ? "etiq--vert" : "etiq--neutre")">
+                                        @paiement.Status
+                                    </span>
+                                </td>
+                                <td>@(paiement.ReceiptNumber ?? "—")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</section>

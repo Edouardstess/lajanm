@@ -1,0 +1,41 @@
+@model List<CavalierNoir.Domain.Media.Album>
+<section class="section">
+    <div class="conteneur">
+        <h1>Galerie</h1>
+
+        @if (Model.Count == 0)
+        {
+            <div class="vide">
+                <span class="vide__piece" aria-hidden="true">&#9817;</span>
+                <p>Aucun album publié pour l'instant.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grille grille--3">
+                @foreach (var album in Model)
+                {
+                    <article class="carte">
+                        @if (album.CoverMedia is { } couverture)
+                        {
+                            <img class="carte__image" src="@couverture.Url" alt="@couverture.AltText" loading="lazy" />
+                        }
+                        <div class="carte__corps">
+                            <h2 class="carte__titre">
+                                <a asp-action="Album" asp-route-slug="@album.Slug">@album.Title</a>
+                            </h2>
+                            @if (album.TakenOn is { } date)
+                            {
+                                <p class="carte__meta">@date.ToString("d MMMM yyyy")</p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(album.Description))
+                            {
+                                <p>@album.Description</p>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+</section>

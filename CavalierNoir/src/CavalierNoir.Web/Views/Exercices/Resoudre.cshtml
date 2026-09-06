@@ -1,0 +1,207 @@
+@model ExerciseSolveViewModel
+@{
+    ViewData["Title"] = Model.Exercise.Title;
+    ViewData["MetaDescription"] = $"Exercice d'échecs : {Model.Exercise.Title} — thème {Model.Exercise.Theme}.";
+    var correction = Model.Correction;
+}
+<section class="section">
+    <div class="conteneur">
+        <p class="fil">
+            <a asp-action="Index">Exercices</a> › @Model.Exercise.Title
+        </p>
+
+        <h1>@Model.Exercise.Title</h1>
+        <p>
+            <span class="etiq etiq--neutre">@Model.Exercise.Theme</span>
+            <span class="etiq etiq--or">Difficulté @((int)Model.Exercise.Difficulty)/5</span>
+            @if (Model.Exercise.AttemptCount > 0)
+            {
+                <span class="etiq">@Model.Exercise.SuccessRate % de réussite</span>
+            }
+            @if (Model.AlreadySolved && correction is null)
+            {
+                <span class="etiq etiq--vert">Vous avez déjà résolu cet exercice</span>
+            }
+        </p>
+
+        <div class="echiquier-bloc">
+            <div>
+                <partial name="_Echiquier"
+                         model="new EchiquierModel {
+                             Fen = Model.Exercise.Fen,
+                             Id = "echiquier-exercice",
+                             Interactif = correction is null,
+                             Retourne = !Model.Exercise.WhiteToMove,
+                             ChampCoups = "champ-coups",
+                             AffichageCoups = "affichage-coups",
+                             Legende = Model.Exercise.SideToMoveLabel }" />
+
+                @if (correction is null)
+                {
+                    <div class="actions-formulaire">
+                        <button type="button" class="bouton bouton--contour bouton--petit"
+                                data-echiquier-action="annuler" data-echiquier-cible="echiquier-exercice">
+                            Annuler le dernier coup
+                        </button>
+                        <button type="button" class="bouton bouton--contour bouton--petit"
+                                data-echiquier-action="reinitialiser" data-echiquier-cible="echiquier-exercice">
+                            Recommencer
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <div>
+                @if (correction is not null)
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre">
+                            @if (correction.IsCorrect)
+                            {
+                                <span>✔ Bravo, c'est la bonne solution</span>
+                            }
+                            else
+                            {
+                                <span>✘ Ce n'est pas la solution attendue</span>
+                            }
+                        </h2>
+
+                        @if (correction.IsCorrect)
+                        {
+                            <p>
+                                Votre série d'entraînement est maintenant de
+                                <strong>@correction.NewStreak jour(s) consécutif(s)</strong>.
+                            </p>
+                        }
+                        else if (correction.CorrectPrefixLength > 0)
+                        {
+                            <p>
+                                Vos @correction.CorrectPrefixLength premier(s) demi-coup(s) étaient corrects :
+                                l'idée est là, la suite s'égare.
+                            </p>
+                        }
+
+                        <h3>Solution</h3>
+                        <p class="coups-saisis">@correction.ExpectedSolution</p>
+
+                        @if (!string.IsNullOrWhiteSpace(correction.Explanation))
+                        {
+                            <h3>Explication</h3>
+                            <p>@correction.Explanation</p>
+                        }
+
+                        @if (correction.BadgesEarned.Count > 0)
+                        {
+                            <div class="alerte alerte--succes">
+                                <span aria-hidden="true">🏅</span>
+                                <span>Badge obtenu : @string.Join(", ", correction.BadgesEarned)</span>
+                            </div>
+                        }
+
+                        <div class="actions-formulaire">
+                            <a class="bouton bouton--primaire" asp-action="Index">Un autre exercice</a>
+                            <a class="bouton bouton--contour" asp-action="Details" asp-route-id="@Model.Exercise.Id">Rejouer celui-ci</a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre">
+                            <span>Votre solution</span>
+                            <span class="carte__meta" data-chrono-affichage>00:00</span>
+                        </h2>
+
+                        <p>
+                            Déplacez les pièces sur l'échiquier : cliquez la case de départ, puis la case
+                            d'arrivée. Vous pouvez aussi saisir les coups au clavier, par exemple
+                            <code>e2e4 e7e5</code>.
+                        </p>
+
+                        <form method="post" asp-action="Soumettre">
+                            <input type="hidden" name="ExerciseId" value="@Model.Exercise.Id" />
+                            <input type="hidden" name="Token" value="@Model.Token" />
+                            <input type="hidden" name="TimeSpentSeconds" value="0" data-chrono />
+                            <input type="hidden" name="HintsUsed" value="@Model.HintsRevealed" data-indice-compteur />
+
+                            <div class="champ">
+                                <label for="champ-coups">Coups joués</label>
+                                <input type="text" id="champ-coups" name="Moves"
+                                       placeholder="e2e4 e7e5" autocomplete="off" spellcheck="false" />
+                                <span class="aide" id="affichage-coups">Aucun coup joué pour l’instant.</span>
+                            </div>
+
+                            <div class="actions-formulaire">
+                                <button type="submit" class="bouton bouton--primaire" disabled="@(!Model.CanSubmit)">
+                                    Valider ma solution
+                                </button>
+
+                                @if (Model.Exercise.HintCount > 0)
+                                {
+                                    <button type="button" class="bouton bouton--contour"
+                                            data-indice-bouton
+                                            data-indice-url="/Exercices/Indice/@Model.Exercise.Id">
+                                        Obtenir un indice
+                                    </button>
+                                }
+                            </div>
+
+                            @if (!Model.CanSubmit)
+                            {
+                                <p class="aide">
+                                    <a asp-controller="Compte" asp-action="Connexion">Connectez-vous</a>
+                                    pour enregistrer votre résultat et suivre votre progression.
+                                </p>
+                            }
+                        </form>
+
+                        <div data-indice-zone></div>
+                    </div>
+                }
+
+                @if (Model.PreviousAttempts.Count > 0)
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre"><span>Vos tentatives précédentes</span></h2>
+                        <div class="tableau-defilant">
+                            <table class="tableau tableau--compact">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Résultat</th>
+                                    <th scope="col" class="nombre">Temps</th>
+                                    <th scope="col" class="nombre">Indices</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var tentative in Model.PreviousAttempts)
+                                {
+                                    <tr>
+                                        <td>@tentative.AttemptedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            @if (tentative.IsCorrect)
+                                            {
+                                                <span class="etiq etiq--vert">Réussie</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="etiq etiq--rouge">Échouée</span>
+                                            }
+                                        </td>
+                                        <td class="nombre">@tentative.TimeSpentSeconds s</td>
+                                        <td class="nombre">@tentative.HintsUsed</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/chessboard.js" asp-append-version="true"></script>
+}

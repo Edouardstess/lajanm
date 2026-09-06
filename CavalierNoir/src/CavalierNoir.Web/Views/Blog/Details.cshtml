@@ -1,0 +1,144 @@
+@model BlogDetailsViewModel
+@{
+    var article = Model.Post;
+}
+<article class="section">
+    <div class="conteneur conteneur-etroit">
+        <p class="fil">
+            <a asp-action="Index">Actualités</a>
+            @if (article.Category is not null)
+            {
+                <text> › </text>
+                <a asp-action="Index" asp-route-rubrique="@article.Category.Slug">@article.Category.Name</a>
+            }
+        </p>
+
+        <h1>@article.Title</h1>
+
+        <p class="carte__meta">
+            Par @(article.Author.Pseudonym ?? article.Author.FullName)
+            · @article.PublishedAt?.ToString("d MMMM yyyy")
+            · @article.ReadingTimeMinutes min de lecture
+            · @article.ViewCount lecture(s)
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(article.FeaturedImageUrl))
+        {
+            <img src="@article.FeaturedImageUrl" alt="@article.FeaturedImageAlt" style="border-radius:var(--rayon);" />
+        }
+
+        <p style="font-size:1.1rem;color:var(--texte-doux);">@article.Summary</p>
+
+        <div class="prose">
+            @Html.Raw(article.Content)
+        </div>
+
+        @if (article.PostTags.Count > 0)
+        {
+            <p>
+                @foreach (var lien in article.PostTags)
+                {
+                    <a class="etiq etiq--neutre" asp-action="Index" asp-route-etiquette="@lien.BlogTag.Slug">#@lien.BlogTag.Name</a>
+                }
+            </p>
+        }
+
+        <hr />
+
+        <h2 id="commentaires">Commentaires (@Model.Comments.Count)</h2>
+
+        @if (Model.Comments.Count == 0)
+        {
+            <p>Aucun commentaire pour le moment. Soyez le premier à réagir.</p>
+        }
+
+        @foreach (var commentaire in Model.Comments.Where(c => c.ParentId is null))
+        {
+            <div class="commentaire" id="commentaire-@commentaire.Id">
+                <span class="avatar" aria-hidden="true">@commentaire.Author.Initials</span>
+                <div>
+                    <div class="commentaire__entete">
+                        <span class="commentaire__auteur">@(commentaire.Author.Pseudonym ?? commentaire.Author.FullName)</span>
+                        <span class="commentaire__date">@commentaire.CreatedAt.ToLocalTime().ToString("d MMMM yyyy à HH\\hmm")</span>
+                    </div>
+                    <p>@commentaire.Content</p>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <form method="post" asp-action="Signaler" asp-route-commentaireId="@commentaire.Id"
+                              data-confirmer="Signaler ce commentaire à la modération ?">
+                            <input type="hidden" name="motif" value="@ReportReason.Autre" />
+                            <button type="submit" class="bouton bouton--contour bouton--petit">Signaler</button>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            @foreach (var reponse in Model.Comments.Where(c => c.ParentId == commentaire.Id))
+            {
+                <div class="commentaire commentaire--reponse" id="commentaire-@reponse.Id">
+                    <span class="avatar" aria-hidden="true">@reponse.Author.Initials</span>
+                    <div>
+                        <div class="commentaire__entete">
+                            <span class="commentaire__auteur">@(reponse.Author.Pseudonym ?? reponse.Author.FullName)</span>
+                            <span class="commentaire__date">@reponse.CreatedAt.ToLocalTime().ToString("d MMMM yyyy à HH\\hmm")</span>
+                        </div>
+                        <p>@reponse.Content</p>
+                    </div>
+                </div>
+            }
+        }
+
+        @if (article.AllowComments)
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="panneau" style="margin-top:2rem;">
+                    <h3>Laisser un commentaire</h3>
+                    <form method="post" asp-action="Commenter">
+                        <input type="hidden" name="PostId" value="@article.Id" />
+                        <div class="champ">
+                            <label for="Content">Votre commentaire</label>
+                            <textarea id="Content" name="Content" required minlength="3" maxlength="4000"></textarea>
+                        </div>
+                        <button type="submit" class="bouton bouton--primaire">Publier</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <p>
+                    <a asp-controller="Compte" asp-action="Connexion">Connectez-vous</a>
+                    pour participer à la discussion.
+                </p>
+            }
+        }
+        else
+        {
+            <p class="aide">Les commentaires sont fermés sur cet article.</p>
+        }
+    </div>
+</article>
+
+@if (Model.Related.Count > 0)
+{
+    <section class="section section--alt">
+        <div class="conteneur">
+            <h2>À lire également</h2>
+            <div class="grille grille--3">
+                @foreach (var suggestion in Model.Related)
+                {
+                    <article class="carte">
+                        <div class="carte__corps">
+                            <p class="carte__meta">@suggestion.PublishedAt?.ToString("d MMMM yyyy")</p>
+                            <h3 class="carte__titre">
+                                <a asp-action="Details" asp-route-slug="@suggestion.Slug">@suggestion.Title</a>
+                            </h3>
+                            <p>@suggestion.Summary</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}

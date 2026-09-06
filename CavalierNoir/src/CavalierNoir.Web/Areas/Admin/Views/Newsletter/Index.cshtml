@@ -1,0 +1,76 @@
+@model List<CavalierNoir.Domain.Communication.NewsletterCampaign>
+<div class="section__entete">
+    <h1>Lettre d'information</h1>
+    <div style="display:flex;gap:.4rem;">
+        <a class="bouton bouton--contour" asp-action="Abonnes">Voir les abonnés</a>
+        <a class="bouton bouton--primaire" asp-action="Creer">Nouvelle campagne</a>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stat stat--succes">
+        <span class="stat__valeur">@ViewData["Abonnes"]</span>
+        <span class="stat__libelle">Abonnés confirmés</span>
+    </div>
+    <div class="stat">
+        <span class="stat__valeur">@ViewData["EnAttente"]</span>
+        <span class="stat__libelle">En attente de confirmation</span>
+    </div>
+    <div class="stat">
+        <span class="stat__valeur">@ViewData["Desabonnes"]</span>
+        <span class="stat__libelle">Désabonnés</span>
+    </div>
+</div>
+
+<div class="panneau">
+    <h2 class="panneau__titre"><span>Campagnes</span></h2>
+
+    @if (Model.Count == 0)
+    {
+        <p>Aucune campagne créée.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Objet</th>
+                    <th scope="col">Audience</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col" class="nombre">Envoyés</th>
+                    <th scope="col" class="nombre">Ouvertures</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var campagne in Model)
+                {
+                    <tr>
+                        <td>@campagne.Name</td>
+                        <td>@campagne.Subject</td>
+                        <td>@campagne.Audience</td>
+                        <td><span class="etiq etiq--neutre">@campagne.Status</span></td>
+                        <td class="nombre">@campagne.SentCount</td>
+                        <td class="nombre">@campagne.OpenRate %</td>
+                        <td>
+                            @if (campagne.Status == CampaignStatus.Brouillon)
+                            {
+                                <form method="post" asp-action="Envoyer" asp-route-id="@campagne.Id"
+                                      data-confirmer="Expédier cette campagne maintenant ? L'opération est irréversible.">
+                                    <button type="submit" class="bouton bouton--primaire bouton--petit">Expédier</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="carte__meta">@campagne.SentAt?.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

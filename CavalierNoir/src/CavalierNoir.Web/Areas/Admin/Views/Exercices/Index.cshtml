@@ -1,0 +1,74 @@
+@model PagedList<ExerciseCard>
+<div class="section__entete">
+    <h1>Exercices</h1>
+    <a class="bouton bouton--primaire" asp-action="Creer">Nouvel exercice</a>
+</div>
+
+<form method="get" class="panneau">
+    <div class="champ">
+        <label for="q">Rechercher</label>
+        <input type="search" id="q" name="q" value="@(ViewData["Recherche"] as string)" />
+    </div>
+    <button type="submit" class="bouton bouton--contour">Filtrer</button>
+</form>
+
+<div class="panneau">
+    @if (Model.Items.Count == 0)
+    {
+        <p>Aucun exercice.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Thème</th>
+                    <th scope="col" class="nombre">Diff.</th>
+                    <th scope="col" class="nombre">Tentatives</th>
+                    <th scope="col" class="nombre">Réussite</th>
+                    <th scope="col">État</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var exercice in Model.Items)
+                {
+                    <tr>
+                        <td>@exercice.Title</td>
+                        <td>@exercice.Theme</td>
+                        <td class="nombre">@((int)exercice.Difficulty)/5</td>
+                        <td class="nombre">@exercice.AttemptCount</td>
+                        <td class="nombre">@exercice.SuccessRate %</td>
+                        <td>
+                            @if (exercice.IsPublished)
+                            {
+                                <span class="etiq etiq--vert">Publié</span>
+                            }
+                            else
+                            {
+                                <span class="etiq etiq--neutre">Brouillon</span>
+                            }
+                            @if (exercice.IsPublic)
+                            {
+                                <span class="etiq etiq--bleu">Public</span>
+                            }
+                        </td>
+                        <td style="display:flex;gap:.3rem;">
+                            <a class="bouton bouton--contour bouton--petit"
+                               asp-action="Modifier" asp-route-id="@exercice.Id">Modifier</a>
+                            <form method="post" asp-action="Archiver" asp-route-id="@exercice.Id"
+                                  data-confirmer="Archiver cet exercice ? Il ne sera plus proposé aux membres.">
+                                <button type="submit" class="bouton bouton--danger bouton--petit">Archiver</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+    }
+</div>

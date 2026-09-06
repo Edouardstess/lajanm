@@ -1,0 +1,30 @@
+@model ForgotPasswordViewModel
+@{
+    ViewData["Title"] = "Mot de passe oublié";
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>Mot de passe oublié</h1>
+        <p>
+            Indiquez l'adresse électronique associée à votre compte. Si elle est connue du site,
+            vous recevrez un lien de réinitialisation valable une heure.
+        </p>
+
+        <div class="panneau">
+            <form method="post">
+                <div asp-validation-summary="All" class="resume-erreurs"></div>
+
+                <div class="champ">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" type="email" autocomplete="email" required autofocus />
+                    <span asp-validation-for="Email" class="erreur-champ"></span>
+                </div>
+
+                <div class="actions-formulaire">
+                    <button type="submit" class="bouton bouton--primaire">Envoyer le lien</button>
+                    <a class="bouton bouton--contour" asp-action="Connexion">Retour</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

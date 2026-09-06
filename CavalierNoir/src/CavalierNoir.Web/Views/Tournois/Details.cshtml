@@ -1,0 +1,193 @@
+@model TournamentDetailsViewModel
+@{
+    var tournoi = Model.Tournament;
+}
+<section class="section">
+    <div class="conteneur">
+        <p class="fil"><a asp-action="Index">Tournois</a> › @tournoi.Title</p>
+
+        <div class="section__entete">
+            <div>
+                <h1>@tournoi.Title</h1>
+                <p>
+                    <span class="etiq etiq--or">@tournoi.Status</span>
+                    <span class="etiq etiq--neutre">@tournoi.Type</span>
+                    <span class="etiq etiq--neutre">@tournoi.TimeControl@(string.IsNullOrWhiteSpace(tournoi.TimeControlLabel) ? "" : $" — {tournoi.TimeControlLabel}")</span>
+                    @if (tournoi.IsRated)
+                    {
+                        <span class="etiq etiq--bleu">Compte pour le classement</span>
+                    }
+                </p>
+            </div>
+
+            @if (Model.CanRegister && !Model.IsRegistered)
+            {
+                <form method="post" asp-action="Inscription" asp-route-id="@tournoi.Id">
+                    <button type="submit" class="bouton bouton--primaire">S'inscrire à ce tournoi</button>
+                </form>
+            }
+            else if (Model.IsRegistered)
+            {
+                <form method="post" asp-action="Desinscription" asp-route-id="@tournoi.Id"
+                      data-confirmer="Confirmez-vous l'annulation de votre inscription ?">
+                    <button type="submit" class="bouton bouton--contour">Annuler mon inscription</button>
+                </form>
+            }
+        </div>
+
+        <div class="grille grille--2">
+            <div>
+                <div class="panneau">
+                    <h2 class="panneau__titre"><span>Informations pratiques</span></h2>
+                    <div class="tableau-defilant">
+                        <table class="tableau">
+                            <tbody>
+                            <tr><th scope="row">Dates</th><td>@tournoi.StartDate.ToString("dddd d MMMM yyyy à HH\\hmm") — @tournoi.EndDate.ToString("dddd d MMMM yyyy à HH\\hmm")</td></tr>
+                            <tr><th scope="row">Lieu</th><td>@(tournoi.Location ?? "À préciser")</td></tr>
+                            @if (!string.IsNullOrWhiteSpace(tournoi.Address))
+                            {
+                                <tr><th scope="row">Adresse</th><td>@tournoi.Address</td></tr>
+                            }
+                            <tr><th scope="row">Rondes prévues</th><td>@tournoi.PlannedRounds</td></tr>
+                            <tr>
+                                <th scope="row">Frais d'inscription</th>
+                                <td>@(tournoi.EntryFee.IsZero ? "Gratuit" : tournoi.EntryFee.Format())</td>
+                            </tr>
+                            @if (tournoi.MaxPlayers is { } max)
+                            {
+                                <tr><th scope="row">Places</th><td>@tournoi.ConfirmedPlayers inscrit(s) sur @max</td></tr>
+                            }
+                            @if (tournoi.MinimumElo is { } min)
+                            {
+                                <tr><th scope="row">Classement minimum</th><td>@min</td></tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(tournoi.Description))
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre"><span>Présentation</span></h2>
+                        <div class="prose">@Html.Raw(tournoi.Description)</div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(tournoi.Regulations))
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre"><span>Règlement</span></h2>
+                        <div class="prose">@Html.Raw(tournoi.Regulations)</div>
+                    </div>
+                }
+            </div>
+
+            <div>
+                @if (Model.Standings.Count > 0)
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre"><span>Classement</span></h2>
+                        <div class="tableau-defilant">
+                            <table class="tableau tableau--compact">
+                                <thead>
+                                <tr>
+                                    <th scope="col" class="nombre">#</th>
+                                    <th scope="col">Joueur</th>
+                                    <th scope="col" class="nombre">Elo</th>
+                                    <th scope="col" class="nombre">Pts</th>
+                                    <th scope="col" class="nombre">Buch.</th>
+                                    <th scope="col" class="nombre">Δ Elo</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var ligne in Model.Standings)
+                                {
+                                    <tr>
+                                        <td class="nombre">@ligne.Rank</td>
+                                        <td>@ligne.PlayerName</td>
+                                        <td class="nombre">@ligne.Elo</td>
+                                        <td class="nombre"><strong>@ligne.Score.ToString("0.#")</strong></td>
+                                        <td class="nombre">@ligne.Buchholz.ToString("0.#")</td>
+                                        <td class="nombre">@(ligne.EloDelta > 0 ? "+" : "")@ligne.EloDelta</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.RoundCount > 0)
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre"><span>Appariements</span></h2>
+
+                        <p>
+                            @for (var r = 1; r <= Model.RoundCount; r++)
+                            {
+                                <a class="etiq @(Model.SelectedRound == r ? "etiq--or" : "etiq--neutre")"
+                                   asp-action="Details" asp-route-slug="@tournoi.Slug" asp-route-ronde="@r">Ronde @r</a>
+                            }
+                        </p>
+
+                        <div class="tableau-defilant">
+                            <table class="tableau tableau--compact">
+                                <thead>
+                                <tr>
+                                    <th scope="col" class="nombre">Éch.</th>
+                                    <th scope="col">Blancs</th>
+                                    <th scope="col">Noirs</th>
+                                    <th scope="col">Résultat</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var appariement in Model.Pairings)
+                                {
+                                    <tr>
+                                        <td class="nombre">@appariement.BoardNumber</td>
+                                        <td>@appariement.WhiteName <span class="carte__meta">(@appariement.WhiteElo)</span></td>
+                                        <td>
+                                            @if (appariement.IsBye)
+                                            {
+                                                <em>Exempt</em>
+                                            }
+                                            else
+                                            {
+                                                <text>@appariement.BlackName <span class="carte__meta">(@appariement.BlackElo)</span></text>
+                                            }
+                                        </td>
+                                        <td>
+                                            @switch (appariement.Result)
+                                            {
+                                                case GameResult.NonJouee:
+                                                    <span class="etiq etiq--neutre">En attente</span>
+                                                    break;
+                                                case GameResult.VictoireBlancs:
+                                                    <span>1 – 0</span>
+                                                    break;
+                                                case GameResult.VictoireNoirs:
+                                                    <span>0 – 1</span>
+                                                    break;
+                                                case GameResult.Nulle:
+                                                    <span>½ – ½</span>
+                                                    break;
+                                                case GameResult.Bye:
+                                                    <span>Point d'office</span>
+                                                    break;
+                                                default:
+                                                    <span>@appariement.Result</span>
+                                                    break;
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

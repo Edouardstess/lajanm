@@ -1,0 +1,131 @@
+@model ExerciseIndexViewModel
+@{
+    ViewData["Title"] = "Bibliothèque d'exercices";
+    ViewData["MetaDescription"] = "Exercices tactiques d'échecs classés par thème et par niveau, avec correction et indices.";
+}
+<section class="section">
+    <div class="conteneur">
+        <div class="section__entete">
+            <div>
+                <h1>Bibliothèque d'exercices</h1>
+                <p>
+                    @Model.Exercises.TotalCount exercice(s) disponible(s).
+                    @if (!Model.IsMember)
+                    {
+                        <text>Les visiteurs accèdent à une sélection ; l'ensemble est réservé aux membres.</text>
+                    }
+                </p>
+            </div>
+        </div>
+
+        <form method="get" class="panneau">
+            <div class="formulaire-grille">
+                <div class="champ">
+                    <label for="q">Recherche</label>
+                    <input type="search" id="q" name="q" value="@Model.Filter.Search" placeholder="Titre ou source" />
+                </div>
+
+                <div class="champ">
+                    <label for="theme">Thème</label>
+                    <select id="theme" name="theme">
+                        <option value="">Tous les thèmes</option>
+                        @foreach (var theme in Enum.GetValues<ExerciseTheme>())
+                        {
+                            <option value="@theme" selected="@(Model.Filter.Theme == theme)">@theme</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="champ">
+                    <label for="difficulte">Difficulté</label>
+                    <select id="difficulte" name="difficulte">
+                        <option value="">Toutes</option>
+                        @foreach (var niveau in Enum.GetValues<DifficultyLevel>())
+                        {
+                            <option value="@niveau" selected="@(Model.Filter.Difficulty == niveau)">@((int)niveau)/5 — @niveau</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="champ">
+                    <label for="tri">Tri</label>
+                    <select id="tri" name="tri">
+                        <option value="recent" selected="@(Model.Filter.Sort == "recent")">Les plus récents</option>
+                        <option value="difficulte" selected="@(Model.Filter.Sort == "difficulte")">Du plus facile au plus dur</option>
+                        <option value="populaire" selected="@(Model.Filter.Sort == "populaire")">Les plus tentés</option>
+                        <option value="reussite" selected="@(Model.Filter.Sort == "reussite")">Les mieux réussis</option>
+                    </select>
+                </div>
+            </div>
+
+            @if (Model.Collections.Count > 0)
+            {
+                <div class="champ">
+                    <label for="recueil">Recueil</label>
+                    <select id="recueil" name="recueil">
+                        <option value="">Tous les recueils</option>
+                        @foreach (var recueil in Model.Collections)
+                        {
+                            <option value="@recueil.Id" selected="@(Model.Filter.CollectionId == recueil.Id)">@recueil.Title</option>
+                        }
+                    </select>
+                </div>
+            }
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="champ champ--case">
+                    <input type="checkbox" id="nonResolus" name="nonResolus" value="true"
+                           checked="@(Model.Filter.UnsolvedByUserId is not null)" />
+                    <label for="nonResolus">Masquer les exercices que j'ai déjà réussis</label>
+                </div>
+            }
+
+            <div class="actions-formulaire">
+                <button type="submit" class="bouton bouton--primaire">Filtrer</button>
+                <a class="bouton bouton--contour" asp-action="Index">Réinitialiser</a>
+            </div>
+        </form>
+
+        @if (Model.Exercises.Items.Count == 0)
+        {
+            <div class="vide">
+                <span class="vide__piece" aria-hidden="true">&#9822;</span>
+                <p>Aucun exercice ne correspond à ces critères.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grille grille--3">
+                @foreach (var exercice in Model.Exercises.Items)
+                {
+                    <article class="carte">
+                        <div class="carte__corps">
+                            <partial name="_Echiquier" model="EchiquierModel.Pour(exercice.Fen, false, $"ech-{exercice.Id}")" />
+                            <h3 class="carte__titre" style="margin-top:.9rem;">
+                                <a asp-action="Details" asp-route-id="@exercice.Id">@exercice.Title</a>
+                            </h3>
+                            <p class="carte__meta">
+                                <span class="etiq etiq--neutre">@exercice.Theme</span>
+                                <span class="etiq etiq--or">Difficulté @((int)exercice.Difficulty)/5</span>
+                                @if (exercice.SolvedByCurrentUser)
+                                {
+                                    <span class="etiq etiq--vert">Réussi</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="carte__pied carte__meta">
+                            @exercice.AttemptCount tentative(s) · @exercice.SuccessRate % de réussite
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <partial name="_Pagination" model="PaginationModel.From(Model.Exercises, Context.Request)" />
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/chessboard.js" asp-append-version="true"></script>
+}

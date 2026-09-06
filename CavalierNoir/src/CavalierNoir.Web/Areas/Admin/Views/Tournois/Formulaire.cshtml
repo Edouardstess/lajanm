@@ -1,0 +1,115 @@
+@model TournamentFormViewModel
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Modifier le tournoi" : "Nouveau tournoi";
+}
+<p class="fil"><a asp-action="Index">Tournois</a> › @ViewData["Title"]</p>
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" asp-action="Enregistrer">
+    <div asp-validation-summary="All" class="resume-erreurs"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <div class="grille grille--2">
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Identité</span></h2>
+
+            <div class="champ">
+                <label asp-for="Title"></label>
+                <input asp-for="Title" required />
+                <span asp-validation-for="Title" class="erreur-champ"></span>
+            </div>
+
+            <div class="champ">
+                <label asp-for="Description"></label>
+                <textarea asp-for="Description" maxlength="4000"></textarea>
+            </div>
+
+            <div class="champ">
+                <label asp-for="Regulations"></label>
+                <textarea asp-for="Regulations" style="min-height:12rem;"></textarea>
+            </div>
+
+            <div class="formulaire-grille">
+                <div class="champ">
+                    <label asp-for="Type"></label>
+                    <select asp-for="Type" asp-items="Html.GetEnumSelectList<TournamentType>()"></select>
+                </div>
+                <div class="champ">
+                    <label asp-for="TimeControl"></label>
+                    <select asp-for="TimeControl" asp-items="Html.GetEnumSelectList<TimeControl>()"></select>
+                </div>
+                <div class="champ">
+                    <label asp-for="TimeControlLabel"></label>
+                    <input asp-for="TimeControlLabel" placeholder="15 min + 5 s" />
+                </div>
+            </div>
+        </div>
+
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Organisation</span></h2>
+
+            <div class="formulaire-grille">
+                <div class="champ">
+                    <label asp-for="StartDate"></label>
+                    <input asp-for="StartDate" type="datetime-local" required />
+                    <span asp-validation-for="StartDate" class="erreur-champ"></span>
+                </div>
+                <div class="champ">
+                    <label asp-for="EndDate"></label>
+                    <input asp-for="EndDate" type="datetime-local" required />
+                    <span asp-validation-for="EndDate" class="erreur-champ"></span>
+                </div>
+                <div class="champ">
+                    <label asp-for="RegistrationClosesAt"></label>
+                    <input asp-for="RegistrationClosesAt" type="datetime-local" />
+                </div>
+            </div>
+
+            <div class="champ">
+                <label asp-for="Location"></label>
+                <input asp-for="Location" />
+            </div>
+
+            <div class="formulaire-grille">
+                <div class="champ">
+                    <label asp-for="PlannedRounds"></label>
+                    <input asp-for="PlannedRounds" type="number" min="1" max="15" required />
+                    <span class="aide">5 rondes conviennent jusqu'à 32 joueurs.</span>
+                </div>
+                <div class="champ">
+                    <label asp-for="MaxPlayers"></label>
+                    <input asp-for="MaxPlayers" type="number" min="2" max="500" />
+                </div>
+                <div class="champ">
+                    <label asp-for="EntryFee"></label>
+                    <input asp-for="EntryFee" type="number" min="0" step="0.01" />
+                </div>
+            </div>
+
+            <div class="formulaire-grille">
+                <div class="champ">
+                    <label asp-for="MinimumElo"></label>
+                    <input asp-for="MinimumElo" type="number" min="200" max="3000" />
+                </div>
+                <div class="champ">
+                    <label asp-for="MaximumElo"></label>
+                    <input asp-for="MaximumElo" type="number" min="200" max="3000" />
+                </div>
+            </div>
+
+            <div class="champ champ--case">
+                <input asp-for="IsRated" type="checkbox" />
+                <label asp-for="IsRated"></label>
+            </div>
+            <div class="champ champ--case">
+                <input asp-for="MembersOnly" type="checkbox" />
+                <label asp-for="MembersOnly"></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton--primaire">Enregistrer</button>
+        <a class="bouton bouton--contour" asp-action="Index">Annuler</a>
+    </div>
+</form>

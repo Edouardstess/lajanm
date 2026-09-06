@@ -1,0 +1,85 @@
+@model PagedList<CavalierNoir.Domain.Identity.ApplicationUser>
+@{
+    var roles = ViewData["Roles"] as List<string> ?? [];
+}
+<h1>Utilisateurs</h1>
+
+<form method="get" class="panneau">
+    <div class="formulaire-grille">
+        <div class="champ">
+            <label for="q">Rechercher</label>
+            <input type="search" id="q" name="q" value="@(ViewData["Recherche"] as string)"
+                   placeholder="Nom, courriel, pseudonyme" />
+        </div>
+        <div class="champ">
+            <label for="role">Rôle</label>
+            <select id="role" name="role">
+                <option value="">Tous les rôles</option>
+                @foreach (var r in roles)
+                {
+                    <option value="@r" selected="@((ViewData["Role"] as string) == r)">@r</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton--primaire">Filtrer</button>
+        <a class="bouton bouton--contour" asp-action="Index">Réinitialiser</a>
+    </div>
+</form>
+
+<div class="panneau">
+    <div class="tableau-defilant">
+        <table class="tableau">
+            <thead>
+            <tr>
+                <th scope="col">Nom</th>
+                <th scope="col">Courriel</th>
+                <th scope="col" class="nombre">Elo</th>
+                <th scope="col">Inscrit le</th>
+                <th scope="col">Dernière connexion</th>
+                <th scope="col">État</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var utilisateur in Model.Items)
+            {
+                <tr>
+                    <td>
+                        @utilisateur.FullName
+                        @if (!string.IsNullOrWhiteSpace(utilisateur.Pseudonym))
+                        {
+                            <br /><span class="carte__meta">@utilisateur.Pseudonym</span>
+                        }
+                    </td>
+                    <td>@utilisateur.Email</td>
+                    <td class="nombre">@utilisateur.Elo</td>
+                    <td>@utilisateur.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                    <td>@(utilisateur.LastLoginAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? "—")</td>
+                    <td>
+                        @if (utilisateur.AnonymizedAt is not null)
+                        {
+                            <span class="etiq etiq--neutre">Anonymisé</span>
+                        }
+                        else if (utilisateur.IsActive)
+                        {
+                            <span class="etiq etiq--vert">Actif</span>
+                        }
+                        else
+                        {
+                            <span class="etiq etiq--rouge">Désactivé</span>
+                        }
+                    </td>
+                    <td>
+                        <a class="bouton bouton--contour bouton--petit"
+                           asp-action="Details" asp-route-id="@utilisateur.Id">Ouvrir</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+</div>

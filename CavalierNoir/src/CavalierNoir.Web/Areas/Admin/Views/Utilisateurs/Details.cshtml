@@ -1,0 +1,151 @@
+@model CavalierNoir.Domain.Identity.ApplicationUser
+@{
+    var rolesActuels = ViewData["Roles"] as IList<string> ?? new List<string>();
+    var tousRoles = ViewData["TousRoles"] as List<string> ?? [];
+    var connexions = ViewData["Connexions"] as List<CavalierNoir.Domain.Identity.LoginHistory> ?? [];
+    var adhesions = ViewData["Adhesions"] as List<CavalierNoir.Domain.Memberships.Membership> ?? [];
+}
+<p class="fil"><a asp-action="Index">Utilisateurs</a> › @Model.FullName</p>
+
+<div class="section__entete">
+    <div>
+        <h1>@Model.FullName</h1>
+        <p>
+            @Model.Email ·
+            <span class="etiq etiq--or">Elo @Model.Elo</span>
+            @if (Model.LockoutEnd is { } fin && fin > DateTimeOffset.UtcNow)
+            {
+                <span class="etiq etiq--rouge">Verrouillé jusqu'au @fin.LocalDateTime.ToString("dd/MM HH\\hmm")</span>
+            }
+        </p>
+    </div>
+    <div style="display:flex;gap:.4rem;">
+        <form method="post" asp-action="ChangerActivation" asp-route-id="@Model.Id"
+              data-confirmer="Confirmez-vous ce changement d'état du compte ?">
+            <button type="submit" class="bouton bouton--contour">
+                @(Model.IsActive ? "Désactiver" : "Réactiver")
+            </button>
+        </form>
+        <form method="post" asp-action="Deverrouiller" asp-route-id="@Model.Id">
+            <button type="submit" class="bouton bouton--contour">Déverrouiller</button>
+        </form>
+    </div>
+</div>
+
+<div class="grille grille--2">
+    <div>
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Rôles</span></h2>
+            <div class="tableau-defilant">
+                <table class="tableau tableau--compact">
+                    <tbody>
+                    @foreach (var role in tousRoles)
+                    {
+                        @{ var possede = rolesActuels.Contains(role); }
+                        <tr>
+                            <td>@role</td>
+                            <td>
+                                @if (possede)
+                                {
+                                    <span class="etiq etiq--vert">Accordé</span>
+                                }
+                            </td>
+                            <td style="text-align:right;">
+                                <form method="post" asp-action="ChangerRole" asp-route-id="@Model.Id">
+                                    <input type="hidden" name="role" value="@role" />
+                                    <input type="hidden" name="accorder" value="@((!possede).ToString().ToLowerInvariant())" />
+                                    <button type="submit" class="bouton bouton--contour bouton--petit">
+                                        @(possede ? "Retirer" : "Accorder")
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Ajuster le classement</span></h2>
+            <form method="post" asp-action="AjusterElo" asp-route-id="@Model.Id">
+                <div class="formulaire-grille">
+                    <div class="champ">
+                        <label for="nouvelElo">Nouveau classement</label>
+                        <input type="number" id="nouvelElo" name="nouvelElo" min="200" max="3000"
+                               value="@Model.Elo" required />
+                    </div>
+                    <div class="champ">
+                        <label for="motif">Motif (obligatoire)</label>
+                        <input type="text" id="motif" name="motif" required
+                               placeholder="Homologation FIDE, correction d'erreur…" />
+                    </div>
+                </div>
+                <button type="submit" class="bouton bouton--contour">Enregistrer l'ajustement</button>
+                <p class="aide">Toute modification manuelle est historisée et tracée dans le journal d'audit.</p>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Adhésions</span></h2>
+            @if (adhesions.Count == 0)
+            {
+                <p>Aucune adhésion.</p>
+            }
+            else
+            {
+                <div class="tableau-defilant">
+                    <table class="tableau tableau--compact">
+                        <thead>
+                        <tr><th scope="col">N°</th><th scope="col">Période</th><th scope="col">Statut</th></tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var adhesion in adhesions)
+                        {
+                            <tr>
+                                <td>@adhesion.MemberNumber</td>
+                                <td>@adhesion.Period.Start.ToString("dd/MM/yy") — @adhesion.Period.End.ToString("dd/MM/yy")</td>
+                                <td><span class="etiq etiq--neutre">@adhesion.Status</span></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Dernières connexions</span></h2>
+            @if (connexions.Count == 0)
+            {
+                <p>Aucune connexion enregistrée.</p>
+            }
+            else
+            {
+                <div class="tableau-defilant">
+                    <table class="tableau tableau--compact">
+                        <thead>
+                        <tr><th scope="col">Date</th><th scope="col">Résultat</th><th scope="col">Adresse IP</th></tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var connexion in connexions)
+                        {
+                            <tr>
+                                <td>@connexion.OccurredAt.ToLocalTime().ToString("dd/MM/yyyy HH\\hmm")</td>
+                                <td>
+                                    <span class="etiq @(connexion.IsSuccessful ? "etiq--vert" : "etiq--rouge")">
+                                        @(connexion.IsSuccessful ? "Réussie" : connexion.FailureReason ?? "Échec")
+                                    </span>
+                                </td>
+                                <td><code>@connexion.IpAddress</code></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

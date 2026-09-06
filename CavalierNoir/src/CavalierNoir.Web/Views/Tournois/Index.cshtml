@@ -1,0 +1,83 @@
+@model PagedList<TournamentCard>
+@{
+    ViewData["Title"] = "Tournois";
+    ViewData["MetaDescription"] = "Calendrier des tournois du club d'échecs Cavalier Noir : inscriptions, appariements et résultats.";
+    var statut = ViewData["Statut"] as TournamentStatus?;
+}
+<section class="section">
+    <div class="conteneur">
+        <h1>Tournois</h1>
+
+        <p>
+            <a class="etiq @(statut is null ? "etiq--or" : "etiq--neutre")" asp-action="Index">Tous</a>
+            @foreach (var valeur in new[]
+            {
+                TournamentStatus.InscriptionsOuvertes,
+                TournamentStatus.EnCours,
+                TournamentStatus.Termine,
+                TournamentStatus.Archive
+            })
+            {
+                <a class="etiq @(statut == valeur ? "etiq--or" : "etiq--neutre")"
+                   asp-action="Index" asp-route-statut="@valeur">@valeur</a>
+            }
+        </p>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="vide">
+                <span class="vide__piece" aria-hidden="true">&#9819;</span>
+                <p>Aucun tournoi à afficher pour l'instant.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grille grille--3">
+                @foreach (var tournoi in Model.Items)
+                {
+                    <article class="carte">
+                        @if (!string.IsNullOrWhiteSpace(tournoi.ImageUrl))
+                        {
+                            <img class="carte__image" src="@tournoi.ImageUrl" alt="" loading="lazy" />
+                        }
+                        <div class="carte__corps">
+                            <p class="carte__meta">
+                                <span class="etiq @(tournoi.Status == TournamentStatus.InscriptionsOuvertes ? "etiq--vert" : "etiq--neutre")">
+                                    @tournoi.Status
+                                </span>
+                                <span class="etiq etiq--neutre">@tournoi.Type</span>
+                            </p>
+                            <h2 class="carte__titre">
+                                <a asp-action="Details" asp-route-slug="@tournoi.Slug">@tournoi.Title</a>
+                            </h2>
+                            <p class="carte__meta">
+                                @tournoi.StartDate.ToString("dddd d MMMM yyyy")
+                                @if (tournoi.EndDate.Date != tournoi.StartDate.Date)
+                                {
+                                    <text> — @tournoi.EndDate.ToString("d MMMM yyyy")</text>
+                                }
+                            </p>
+                            @if (!string.IsNullOrWhiteSpace(tournoi.Location))
+                            {
+                                <p class="carte__meta">@tournoi.Location</p>
+                            }
+                        </div>
+                        <div class="carte__pied carte__meta">
+                            @tournoi.ConfirmedPlayers joueur(s)@(tournoi.MaxPlayers is { } max ? $" sur {max}" : "")
+                            @if (tournoi.EntryFee > 0)
+                            {
+                                <text> · @tournoi.EntryFee.ToString("N2") @tournoi.Currency</text>
+                            }
+                            else
+                            {
+                                <text> · gratuit</text>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+        }
+    </div>
+</section>

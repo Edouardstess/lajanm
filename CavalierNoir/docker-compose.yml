@@ -1,0 +1,64 @@
+# Pile complète de développement : application, base de données et proxy.
+# En production, remplacez le mot de passe SA et la clé de signature par des
+# secrets injectés (variables d'environnement ou coffre de secrets).
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cavaliernoir/web:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      Database__Provider: SqlServer
+      ConnectionStrings__Default: >-
+        Server=db,1433;Database=CavalierNoir;User Id=sa;Password=${SA_PASSWORD:?definir SA_PASSWORD};
+        TrustServerCertificate=True;Encrypt=False
+      Site__BaseUrl: ${SITE_BASE_URL:-http://localhost:8080}
+      Email__Provider: ${EMAIL_PROVIDER:-fichier}
+      Email__Host: ${SMTP_HOST:-}
+      Email__UserName: ${SMTP_USER:-}
+      Email__Password: ${SMTP_PASSWORD:-}
+      Tokens__SigningKey: ${TOKEN_SIGNING_KEY:?definir TOKEN_SIGNING_KEY}
+      Seed__AdminEmail: ${ADMIN_EMAIL:-admin@cavaliernoir.ht}
+      Seed__AdminPassword: ${ADMIN_PASSWORD:?definir ADMIN_PASSWORD}
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/app/wwwroot/uploads
+      - appdata:/app/App_Data
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:?definir SA_PASSWORD}
+      MSSQL_PID: Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  sqldata:
+  uploads:
+  appdata:

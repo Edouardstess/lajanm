@@ -1,0 +1,220 @@
+@model TournamentDetailsViewModel
+@{
+    var tournoi = Model.Tournament;
+    var inscriptions = ViewData["Inscriptions"] as List<CavalierNoir.Domain.Tournaments.TournamentRegistration> ?? [];
+}
+<p class="fil"><a asp-action="Index">Tournois</a> › @tournoi.Title</p>
+
+<div class="section__entete">
+    <div>
+        <h1>@tournoi.Title</h1>
+        <p>
+            <span class="etiq etiq--or">@tournoi.Status</span>
+            <span class="etiq etiq--neutre">@tournoi.Type</span>
+            <span class="etiq etiq--neutre">@tournoi.ConfirmedPlayers joueur(s) confirmé(s)</span>
+        </p>
+    </div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+        @if (tournoi.IsEditable)
+        {
+            <a class="bouton bouton--contour" asp-action="Modifier" asp-route-id="@tournoi.Id">Modifier</a>
+        }
+        <a class="bouton bouton--contour" asp-area="" asp-controller="Tournois" asp-action="Details"
+           asp-route-slug="@tournoi.Slug" target="_blank" rel="noopener">Voir en ligne</a>
+    </div>
+</div>
+
+<div class="panneau">
+    <h2 class="panneau__titre"><span>Pilotage</span></h2>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        @foreach (var (action, libelle, classe) in new[]
+        {
+            ("ouvrir", "Ouvrir les inscriptions", "bouton--contour"),
+            ("cloturer", "Clôturer les inscriptions", "bouton--contour"),
+            ("demarrer", "Démarrer le tournoi", "bouton--primaire"),
+            ("archiver", "Archiver", "bouton--contour"),
+            ("annuler", "Annuler le tournoi", "bouton--danger")
+        })
+        {
+            <form method="post" asp-action="ChangerStatut" asp-route-id="@tournoi.Id"
+                  data-confirmer="@(action == "annuler" ? "Confirmez-vous l'annulation du tournoi ?" : null)">
+                <input type="hidden" name="action" value="@action" />
+                <button type="submit" class="bouton @classe bouton--petit">@libelle</button>
+            </form>
+        }
+
+        <form method="post" asp-action="GenererRonde" asp-route-id="@tournoi.Id">
+            <button type="submit" class="bouton bouton--primaire bouton--petit">
+                Générer la ronde @(Model.RoundCount + 1)
+            </button>
+        </form>
+
+        <form method="post" asp-action="Cloturer" asp-route-id="@tournoi.Id"
+              data-confirmer="Clôturer définitivement le tournoi et publier le podium ?">
+            <button type="submit" class="bouton bouton--succes bouton--petit">Clôturer et publier</button>
+        </form>
+    </div>
+</div>
+
+<div class="grille grille--2">
+    <div class="panneau">
+        <h2 class="panneau__titre">
+            <span>Ronde @Model.SelectedRound</span>
+            <span>
+                @for (var r = 1; r <= Model.RoundCount; r++)
+                {
+                    <a class="etiq @(Model.SelectedRound == r ? "etiq--or" : "etiq--neutre")"
+                       asp-action="Details" asp-route-id="@tournoi.Id" asp-route-ronde="@r">@r</a>
+                }
+            </span>
+        </h2>
+
+        @if (Model.Pairings.Count == 0)
+        {
+            <p>Aucun appariement pour cette ronde.</p>
+        }
+        else
+        {
+            <div class="tableau-defilant">
+                <table class="tableau tableau--compact">
+                    <thead>
+                    <tr>
+                        <th scope="col" class="nombre">Éch.</th>
+                        <th scope="col">Blancs</th>
+                        <th scope="col">Noirs</th>
+                        <th scope="col">Résultat</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var partie in Model.Pairings)
+                    {
+                        <tr>
+                            <td class="nombre">@partie.BoardNumber</td>
+                            <td>@partie.WhiteName <span class="carte__meta">(@partie.WhiteElo)</span></td>
+                            <td>@(partie.IsBye ? "— exempt —" : partie.BlackName)</td>
+                            <td>
+                                @if (partie.IsBye)
+                                {
+                                    <span class="etiq etiq--neutre">Point d'office</span>
+                                }
+                                else
+                                {
+                                    <form method="post" asp-action="SaisirResultat" asp-route-id="@tournoi.Id"
+                                          style="display:flex;gap:.3rem;">
+                                        <input type="hidden" name="partieId" value="@partie.GameId" />
+                                        <input type="hidden" name="ronde" value="@Model.SelectedRound" />
+                                        <select name="resultat" aria-label="Résultat" style="width:auto;">
+                                            <option value="@GameResult.NonJouee" selected="@(partie.Result == GameResult.NonJouee)">—</option>
+                                            <option value="@GameResult.VictoireBlancs" selected="@(partie.Result == GameResult.VictoireBlancs)">1–0</option>
+                                            <option value="@GameResult.Nulle" selected="@(partie.Result == GameResult.Nulle)">½–½</option>
+                                            <option value="@GameResult.VictoireNoirs" selected="@(partie.Result == GameResult.VictoireNoirs)">0–1</option>
+                                            <option value="@GameResult.ForfaitBlancs" selected="@(partie.Result == GameResult.ForfaitBlancs)">Forfait blancs</option>
+                                            <option value="@GameResult.ForfaitNoirs" selected="@(partie.Result == GameResult.ForfaitNoirs)">Forfait noirs</option>
+                                        </select>
+                                        @if (partie.Result != GameResult.NonJouee)
+                                        {
+                                            <input type="text" name="justification" placeholder="Motif de correction"
+                                                   style="width:11rem;" required />
+                                        }
+                                        <button type="submit" class="bouton bouton--contour bouton--petit">OK</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="panneau">
+        <h2 class="panneau__titre"><span>Classement</span></h2>
+
+        @if (Model.Standings.Count == 0)
+        {
+            <p>Le classement apparaîtra dès la première ronde jouée.</p>
+        }
+        else
+        {
+            <div class="tableau-defilant">
+                <table class="tableau tableau--compact">
+                    <thead>
+                    <tr>
+                        <th scope="col" class="nombre">#</th>
+                        <th scope="col">Joueur</th>
+                        <th scope="col" class="nombre">Pts</th>
+                        <th scope="col" class="nombre">Buch.</th>
+                        <th scope="col" class="nombre">SB</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var ligne in Model.Standings)
+                    {
+                        <tr>
+                            <td class="nombre">@ligne.Rank</td>
+                            <td>@ligne.PlayerName</td>
+                            <td class="nombre">@ligne.Score.ToString("0.#")</td>
+                            <td class="nombre">@ligne.Buchholz.ToString("0.#")</td>
+                            <td class="nombre">@ligne.SonnebornBerger.ToString("0.#")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="panneau">
+    <h2 class="panneau__titre"><span>Inscriptions (@inscriptions.Count)</span></h2>
+
+    <div class="tableau-defilant">
+        <table class="tableau tableau--compact">
+            <thead>
+            <tr>
+                <th scope="col">Joueur</th>
+                <th scope="col" class="nombre">Elo</th>
+                <th scope="col">Statut</th>
+                <th scope="col" class="nombre">Absences</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var inscription in inscriptions)
+            {
+                <tr>
+                    <td>@inscription.User.FullName</td>
+                    <td class="nombre">@inscription.EloAtRegistration</td>
+                    <td>
+                        <span class="etiq @(inscription.Status == RegistrationStatus.Confirmee ? "etiq--vert" : "etiq--neutre")">
+                            @inscription.Status
+                        </span>
+                        @if (inscription.IsForfeited)
+                        {
+                            <span class="etiq etiq--rouge">Forfait général</span>
+                        }
+                    </td>
+                    <td class="nombre">@inscription.ConsecutiveAbsences</td>
+                    <td style="display:flex;gap:.3rem;">
+                        @foreach (var (action, libelle) in new[]
+                        {
+                            ("confirmer", "Confirmer"),
+                            ("pointer", "Présent"),
+                            ("absent", "Absent"),
+                            ("annuler", "Annuler")
+                        })
+                        {
+                            <form method="post" asp-action="GererInscription" asp-route-id="@tournoi.Id">
+                                <input type="hidden" name="inscriptionId" value="@inscription.Id" />
+                                <input type="hidden" name="action" value="@action" />
+                                <button type="submit" class="bouton bouton--contour bouton--petit">@libelle</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

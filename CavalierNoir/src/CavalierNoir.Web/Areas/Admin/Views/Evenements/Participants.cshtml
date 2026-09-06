@@ -1,0 +1,44 @@
+@model List<CavalierNoir.Domain.Tournaments.EventRegistration>
+@{
+    var evenement = ViewData["Evenement"] as CavalierNoir.Domain.Tournaments.ClubEvent;
+}
+<p class="fil"><a asp-action="Index">Événements</a> › @evenement?.Title › Participants</p>
+<h1>Participants — @evenement?.Title</h1>
+
+<div class="panneau">
+    @if (Model.Count == 0)
+    {
+        <p>Aucune inscription enregistrée.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Participant</th>
+                    <th scope="col">Inscrit le</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Pointage</th>
+                    <th scope="col">Jeton</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var inscription in Model)
+                {
+                    <tr>
+                        <td>
+                            @(inscription.User?.FullName ?? inscription.GuestName ?? "Invité")
+                            <br /><span class="carte__meta">@(inscription.User?.Email ?? inscription.GuestEmail)</span>
+                        </td>
+                        <td>@inscription.RegisteredAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                        <td><span class="etiq etiq--neutre">@inscription.Status</span></td>
+                        <td>@(inscription.CheckedInAt?.ToLocalTime().ToString("dd/MM HH\\hmm") ?? "—")</td>
+                        <td><code>@inscription.CheckInToken</code></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

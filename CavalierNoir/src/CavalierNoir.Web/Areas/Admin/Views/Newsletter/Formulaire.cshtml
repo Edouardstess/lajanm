@@ -1,0 +1,47 @@
+@model CavalierNoir.Domain.Communication.NewsletterCampaign
+@{
+    ViewData["Title"] = "Nouvelle campagne";
+}
+<p class="fil"><a asp-action="Index">Lettre d'information</a> › Nouvelle campagne</p>
+<h1>Nouvelle campagne</h1>
+
+<form method="post" asp-action="Enregistrer">
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <div class="panneau">
+        <div class="formulaire-grille">
+            <div class="champ">
+                <label for="nom">Nom interne</label>
+                <input type="text" id="nom" name="nom" required value="@Model.Name"
+                       placeholder="Lettre de septembre" />
+            </div>
+            <div class="champ">
+                <label for="audience">Audience</label>
+                <select id="audience" name="audience">
+                    <option value="abonnes">Abonnés à la lettre</option>
+                    <option value="membres">Membres du club</option>
+                    <option value="tous">Tous (abonnés et membres)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="champ">
+            <label for="objet">Objet du courriel</label>
+            <input type="text" id="objet" name="objet" required value="@Model.Subject" />
+        </div>
+
+        <div class="champ">
+            <label for="contenu">Contenu (HTML)</label>
+            <textarea id="contenu" name="contenu" required
+                      style="min-height:20rem;font-family:var(--mono);font-size:.9rem;">@Model.BodyHtml</textarea>
+            <span class="aide">
+                L'en-tête, le pied de page et le lien de désabonnement sont ajoutés automatiquement.
+            </span>
+        </div>
+    </div>
+
+    <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton--primaire">Enregistrer le brouillon</button>
+        <a class="bouton bouton--contour" asp-action="Index">Annuler</a>
+    </div>
+</form>

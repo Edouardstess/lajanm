@@ -1,0 +1,50 @@
+@model PagedList<StandingLine>
+<section class="section">
+    <div class="conteneur">
+        <h1>Classement du club</h1>
+        <p>
+            Classement ELO interne, calculé selon la formule de la FIDE à partir des parties jouées
+            au club. Les membres qui l'ont demandé dans leurs préférences n'y figurent pas.
+        </p>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="vide">
+                <span class="vide__piece" aria-hidden="true">&#9818;</span>
+                <p>Le classement sera publié dès les premières parties enregistrées.</p>
+            </div>
+        }
+        else
+        {
+            <div class="tableau-defilant">
+                <table class="tableau">
+                    <thead>
+                    <tr>
+                        <th scope="col" class="nombre">Rang</th>
+                        <th scope="col">Joueur</th>
+                        <th scope="col" class="nombre">Classement</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var ligne in Model.Items)
+                    {
+                        <tr>
+                            <td class="nombre">
+                                @if (ligne.Rank <= 3)
+                                {
+                                    <span aria-hidden="true">@(ligne.Rank == 1 ? "🥇" : ligne.Rank == 2 ? "🥈" : "🥉")</span>
+                                }
+                                @ligne.Rank
+                            </td>
+                            <td>@ligne.PlayerName</td>
+                            <td class="nombre"><strong>@ligne.Elo</strong></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+        }
+    </div>
+</section>

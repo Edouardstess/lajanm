@@ -1,0 +1,91 @@
+@model List<CavalierNoir.Domain.Learning.DailyExercise>
+@{
+    var aujourdhui = (DateOnly)ViewData["Aujourdhui"]!;
+}
+<div class="section__entete">
+    <h1>Exercice du jour</h1>
+    <form method="post" asp-action="Envoyer"
+          data-confirmer="Déclencher l'envoi de l'exercice du jour maintenant ?">
+        <button type="submit" class="bouton bouton--primaire">Envoyer maintenant</button>
+    </form>
+</div>
+
+<div class="alerte alerte--info">
+    <span aria-hidden="true">ℹ</span>
+    <span>
+        Sans planification manuelle, le système choisit chaque matin l'exercice publié le moins
+        utilisé et non envoyé depuis trente jours au moins (règle BR-08).
+    </span>
+</div>
+
+<div class="panneau">
+    <h2 class="panneau__titre"><span>Planifier une date</span></h2>
+    <form method="post" asp-action="Planifier" class="formulaire-grille">
+        <div class="champ">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" value="@aujourdhui.AddDays(1).ToString("yyyy-MM-dd")" required />
+        </div>
+        <div class="champ">
+            <label for="exerciceId">Identifiant de l'exercice</label>
+            <input type="number" id="exerciceId" name="exerciceId" min="1" required />
+            <span class="aide">Reprenez l'identifiant affiché dans la liste des exercices.</span>
+        </div>
+        <div class="champ" style="align-self:end;">
+            <button type="submit" class="bouton bouton--primaire">Planifier</button>
+        </div>
+    </form>
+</div>
+
+<div class="panneau">
+    <h2 class="panneau__titre"><span>Calendrier</span></h2>
+
+    @if (Model.Count == 0)
+    {
+        <p>Aucun exercice planifié sur la période.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Exercice</th>
+                    <th scope="col">Sélection</th>
+                    <th scope="col">Envoi</th>
+                    <th scope="col" class="nombre">Destinataires</th>
+                    <th scope="col" class="nombre">Ouvertures</th>
+                    <th scope="col" class="nombre">Résolutions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var jour in Model)
+                {
+                    <tr style="@(jour.ScheduledOn == aujourdhui ? "background:rgba(212,175,55,.12);" : "")">
+                        <td>@jour.ScheduledOn.ToString("ddd dd/MM/yyyy")</td>
+                        <td>@jour.Exercise.Title</td>
+                        <td>
+                            <span class="etiq etiq--neutre">
+                                @(jour.IsManualSelection ? "Manuelle" : "Automatique")
+                            </span>
+                        </td>
+                        <td>
+                            @if (jour.IsDispatched)
+                            {
+                                <span class="etiq etiq--vert">Envoyé</span>
+                            }
+                            else
+                            {
+                                <span class="etiq etiq--neutre">En attente</span>
+                            }
+                        </td>
+                        <td class="nombre">@jour.RecipientCount</td>
+                        <td class="nombre">@jour.OpenedCount</td>
+                        <td class="nombre">@jour.SolvedCount</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

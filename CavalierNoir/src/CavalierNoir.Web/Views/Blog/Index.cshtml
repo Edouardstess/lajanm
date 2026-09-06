@@ -1,0 +1,84 @@
+@model BlogIndexViewModel
+@{
+    ViewData["Title"] = "Actualités";
+    ViewData["MetaDescription"] = "Analyses de parties, comptes rendus de tournois et vie du club Cavalier Noir.";
+}
+<section class="section">
+    <div class="conteneur">
+        <h1>Actualités du club</h1>
+
+        <form method="get" class="panneau">
+            <div class="formulaire-grille">
+                <div class="champ">
+                    <label for="q">Rechercher</label>
+                    <input type="search" id="q" name="q" value="@Model.Search" placeholder="Mot-clé" />
+                </div>
+                <div class="champ">
+                    <label for="rubrique">Rubrique</label>
+                    <select id="rubrique" name="rubrique">
+                        <option value="">Toutes les rubriques</option>
+                        @foreach (var rubrique in Model.Categories)
+                        {
+                            <option value="@rubrique.Slug" selected="@(Model.CurrentCategory == rubrique.Slug)">@rubrique.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="actions-formulaire">
+                <button type="submit" class="bouton bouton--primaire">Filtrer</button>
+                <a class="bouton bouton--contour" asp-action="Index">Réinitialiser</a>
+            </div>
+        </form>
+
+        @if (Model.Tags.Count > 0)
+        {
+            <p>
+                @foreach (var etiquette in Model.Tags)
+                {
+                    <a class="etiq @(Model.CurrentTag == etiquette.Slug ? "etiq--or" : "etiq--neutre")"
+                       asp-action="Index" asp-route-etiquette="@etiquette.Slug">#@etiquette.Name</a>
+                }
+            </p>
+        }
+
+        @if (Model.Posts.Items.Count == 0)
+        {
+            <div class="vide">
+                <span class="vide__piece" aria-hidden="true">&#9822;</span>
+                <p>Aucun article ne correspond à cette recherche.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grille grille--3">
+                @foreach (var article in Model.Posts.Items)
+                {
+                    <article class="carte">
+                        @if (!string.IsNullOrWhiteSpace(article.FeaturedImageUrl))
+                        {
+                            <img class="carte__image" src="@article.FeaturedImageUrl" alt="" loading="lazy" />
+                        }
+                        <div class="carte__corps">
+                            <p class="carte__meta">
+                                @if (article.CategoryName is not null)
+                                {
+                                    <a class="etiq etiq--neutre" asp-action="Index" asp-route-rubrique="@article.CategorySlug">@article.CategoryName</a>
+                                }
+                                @article.PublishedAt?.ToString("d MMMM yyyy")
+                            </p>
+                            <h2 class="carte__titre">
+                                <a asp-action="Details" asp-route-slug="@article.Slug">@article.Title</a>
+                            </h2>
+                            <p>@article.Summary</p>
+                        </div>
+                        <div class="carte__pied carte__meta">
+                            @article.AuthorName · @article.ReadingTimeMinutes min · @article.CommentCount commentaire(s)
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <partial name="_Pagination" model="PaginationModel.From(Model.Posts, Context.Request)" />
+        }
+    </div>
+</section>

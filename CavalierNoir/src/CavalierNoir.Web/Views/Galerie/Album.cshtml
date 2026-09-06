@@ -1,0 +1,34 @@
+@model CavalierNoir.Domain.Media.Album
+<section class="section">
+    <div class="conteneur">
+        <p class="fil"><a asp-action="Index">Galerie</a> › @Model.Title</p>
+        <h1>@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p>@Model.Description</p>
+        }
+
+        <div class="grille grille--4">
+            @foreach (var media in Model.Items)
+            {
+                <figure class="carte" style="margin:0;">
+                    @if (media.Type == MediaType.Image)
+                    {
+                        <img class="carte__image" src="@media.Url" alt="@media.AltText" loading="lazy" />
+                    }
+                    else if (media.Type == MediaType.Video)
+                    {
+                        <video controls preload="none" poster="@media.ThumbnailUrl" style="width:100%;">
+                            <source src="@media.Url" type="@media.ContentType" />
+                            Votre navigateur ne prend pas en charge la lecture vidéo.
+                        </video>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(media.Caption))
+                    {
+                        <figcaption class="carte__pied carte__meta">@media.Caption</figcaption>
+                    }
+                </figure>
+            }
+        </div>
+    </div>
+</section>

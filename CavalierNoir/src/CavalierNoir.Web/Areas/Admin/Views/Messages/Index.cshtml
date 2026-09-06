@@ -1,0 +1,62 @@
+@model List<CavalierNoir.Domain.Club.ContactMessage>
+@{
+    var statut = ViewData["Statut"] as ContactMessageStatus?;
+}
+<h1>Messages reçus</h1>
+
+<p>
+    <a class="etiq @(statut is null ? "etiq--or" : "etiq--neutre")" asp-action="Index">Tous</a>
+    @foreach (var valeur in Enum.GetValues<ContactMessageStatus>())
+    {
+        <a class="etiq @(statut == valeur ? "etiq--or" : "etiq--neutre")"
+           asp-action="Index" asp-route-statut="@valeur">@valeur</a>
+    }
+</p>
+
+<div class="panneau">
+    @if (Model.Count == 0)
+    {
+        <p>Aucun message.</p>
+    }
+    else
+    {
+        @foreach (var message in Model)
+        {
+            <div class="commentaire">
+                <div style="flex:1;">
+                    <div class="commentaire__entete">
+                        <span class="commentaire__auteur">@message.Name</span>
+                        <span class="commentaire__date">@message.Email</span>
+                        @if (!string.IsNullOrWhiteSpace(message.Phone))
+                        {
+                            <span class="commentaire__date">@message.Phone</span>
+                        }
+                        <span class="etiq etiq--neutre">@message.Status</span>
+                        <span class="commentaire__date">@message.ReceivedAt.ToLocalTime().ToString("dd/MM/yyyy HH\\hmm")</span>
+                    </div>
+                    <p><strong>@message.Subject</strong></p>
+                    <p style="white-space:pre-line;">@message.Message</p>
+
+                    <form method="post" asp-action="Traiter" asp-route-id="@message.Id"
+                          style="display:flex;gap:.4rem;align-items:end;flex-wrap:wrap;">
+                        <div class="champ" style="margin:0;">
+                            <label for="statut-@message.Id">Statut</label>
+                            <select id="statut-@message.Id" name="statut" style="width:auto;">
+                                @foreach (var valeur in Enum.GetValues<ContactMessageStatus>())
+                                {
+                                    <option value="@valeur" selected="@(message.Status == valeur)">@valeur</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="champ" style="margin:0;flex:1;">
+                            <label for="note-@message.Id">Note interne</label>
+                            <input type="text" id="note-@message.Id" name="note" value="@message.InternalNote" />
+                        </div>
+                        <button type="submit" class="bouton bouton--contour">Enregistrer</button>
+                        <a class="bouton bouton--contour" href="mailto:@message.Email">Répondre par courriel</a>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+</div>

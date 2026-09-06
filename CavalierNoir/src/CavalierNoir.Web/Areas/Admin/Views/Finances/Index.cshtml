@@ -1,0 +1,94 @@
+@model List<CavalierNoir.Domain.Finance.Payment>
+@{
+    var annee = (int)ViewData["Annee"]!;
+    var devise = ViewData["Devise"] as string ?? "HTG";
+    var cotisations = (decimal)ViewData["Cotisations"]!;
+    var dons = (decimal)ViewData["Dons"]!;
+    var depenses = (decimal)ViewData["Depenses"]!;
+    var solde = cotisations + dons - depenses;
+}
+<div class="section__entete">
+    <h1>Finances @annee</h1>
+    <div style="display:flex;gap:.4rem;">
+        <a class="bouton bouton--contour" asp-action="Index" asp-route-annee="@(annee - 1)">‹ @(annee - 1)</a>
+        <a class="bouton bouton--contour" asp-action="Index" asp-route-annee="@(annee + 1)">@(annee + 1) ›</a>
+        <a class="bouton bouton--contour" asp-action="Depenses">Dépenses</a>
+        <a class="bouton bouton--contour" asp-action="Dons">Dons</a>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stat stat--succes">
+        <span class="stat__valeur">@cotisations.ToString("N0")</span>
+        <span class="stat__libelle">Cotisations (@devise)</span>
+    </div>
+    <div class="stat stat--info">
+        <span class="stat__valeur">@dons.ToString("N0")</span>
+        <span class="stat__libelle">Dons (@devise)</span>
+    </div>
+    <div class="stat stat--alerte">
+        <span class="stat__valeur">@depenses.ToString("N0")</span>
+        <span class="stat__libelle">Dépenses (@devise)</span>
+    </div>
+    <div class="stat">
+        <span class="stat__valeur">@solde.ToString("N0")</span>
+        <span class="stat__libelle">Solde (@devise)</span>
+    </div>
+</div>
+
+<div class="panneau">
+    <h2 class="panneau__titre"><span>Encaissements</span></h2>
+
+    @if (Model.Count == 0)
+    {
+        <p>Aucun encaissement sur l'exercice.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Membre</th>
+                    <th scope="col">Objet</th>
+                    <th scope="col">Moyen</th>
+                    <th scope="col" class="nombre">Montant</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Reçu</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var paiement in Model)
+                {
+                    <tr>
+                        <td>@(paiement.PaidAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? paiement.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy"))</td>
+                        <td>@paiement.User.FullName</td>
+                        <td>@paiement.Purpose</td>
+                        <td>@paiement.Method</td>
+                        <td class="nombre">@paiement.Amount.Format()</td>
+                        <td>
+                            <span class="etiq @(paiement.Status == PaymentStatus.Paye ? "etiq--vert" : "etiq--neutre")">
+                                @paiement.Status
+                            </span>
+                        </td>
+                        <td>@(paiement.ReceiptNumber ?? "—")</td>
+                        <td>
+                            @if (paiement.Status == PaymentStatus.Paye)
+                            {
+                                <form method="post" asp-action="Rembourser" asp-route-id="@paiement.Id"
+                                      style="display:flex;gap:.3rem;"
+                                      data-confirmer="Confirmez-vous ce remboursement ?">
+                                    <input type="text" name="motif" placeholder="Motif" required style="width:9rem;" />
+                                    <button type="submit" class="bouton bouton--danger bouton--petit">Rembourser</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

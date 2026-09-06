@@ -1,0 +1,105 @@
+name: Cavalier Noir (.NET)
+
+# Ce workflow ne concerne que le site du club (dossier CavalierNoir/).
+# Les filtres de chemin évitent de compiler le projet .NET lorsqu'une
+# modification ne touche que le monorepo Node.
+on:
+  pull_request:
+    paths:
+      - 'CavalierNoir/**'
+      - '.github/workflows/cavaliernoir.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'CavalierNoir/**'
+      - '.github/workflows/cavaliernoir.yml'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: CavalierNoir
+
+jobs:
+  build-test:
+    name: Compilation et tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer le SDK .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache des paquets NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('CavalierNoir/**/*.csproj', 'CavalierNoir/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restaurer les dépendances
+        run: dotnet restore CavalierNoir.sln
+
+      - name: Vérifier le formatage du code
+        run: dotnet format CavalierNoir.sln --verify-no-changes --no-restore
+        continue-on-error: true
+
+      - name: Compiler
+        run: dotnet build CavalierNoir.sln --configuration Release --no-restore
+
+      - name: Exécuter les tests
+        run: >-
+          dotnet test CavalierNoir.sln
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=resultats.trx"
+          --collect:"XPlat Code Coverage"
+          --results-directory ./artefacts-tests
+
+      - name: Publier les résultats de tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultats-tests
+          path: CavalierNoir/artefacts-tests/
+          retention-days: 14
+
+      - name: Publier l'application
+        run: >-
+          dotnet publish src/CavalierNoir.Web/CavalierNoir.Web.csproj
+          --configuration Release
+          --no-build
+          --output ./artefacts-publication
+
+      - name: Publier l'artefact de déploiement
+        uses: actions/upload-artifact@v4
+        with:
+          name: cavaliernoir-web
+          path: CavalierNoir/artefacts-publication/
+          retention-days: 7
+
+  docker:
+    name: Image Docker
+    runs-on: ubuntu-latest
+    needs: build-test
+    # L'image n'est construite que sur la branche principale : sur une
+    # pull request, la compilation et les tests suffisent.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurer Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construire l'image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./CavalierNoir
+          file: ./CavalierNoir/Dockerfile
+          push: false
+          tags: cavaliernoir/web:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

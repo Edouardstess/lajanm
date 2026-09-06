@@ -1,0 +1,60 @@
+@model List<CavalierNoir.Domain.Tournaments.ClubEvent>
+<div class="section__entete">
+    <h1>Événements</h1>
+    <a class="bouton bouton--primaire" asp-action="Creer">Nouvel événement</a>
+</div>
+
+<div class="panneau">
+    @if (Model.Count == 0)
+    {
+        <p>Aucun événement au calendrier.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Lieu</th>
+                    <th scope="col">État</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var evenement in Model)
+                {
+                    <tr>
+                        <td>@evenement.Title</td>
+                        <td><span class="etiq etiq--neutre">@evenement.Type</span></td>
+                        <td>@evenement.StartDate.ToString("dd/MM/yyyy HH\\hmm")</td>
+                        <td>@(evenement.Location ?? "—")</td>
+                        <td>
+                            @if (evenement.IsPublished)
+                            {
+                                <span class="etiq etiq--vert">Publié</span>
+                            }
+                            else
+                            {
+                                <span class="etiq etiq--neutre">Brouillon</span>
+                            }
+                            @if (evenement.IsRegistrationOpen)
+                            {
+                                <span class="etiq etiq--bleu">Inscriptions ouvertes</span>
+                            }
+                        </td>
+                        <td style="display:flex;gap:.3rem;">
+                            <a class="bouton bouton--contour bouton--petit"
+                               asp-action="Modifier" asp-route-id="@evenement.Id">Modifier</a>
+                            <a class="bouton bouton--contour bouton--petit"
+                               asp-action="Participants" asp-route-id="@evenement.Id">Participants</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

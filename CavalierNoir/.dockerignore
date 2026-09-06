@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+**/App_Data/
+**/wwwroot/uploads/*
+!**/wwwroot/uploads/.gitkeep
+**/.vs/
+**/.vscode/
+**/*.user
+**/.git/
+**/.github/
+docs/
+*.md

@@ -1,0 +1,99 @@
+@model List<CavalierNoir.Domain.Blog.BlogComment>
+@{
+    var statut = (CommentStatus)ViewData["Statut"]!;
+    var signalements = ViewData["Signalements"] as List<CavalierNoir.Domain.Blog.CommentReport> ?? [];
+}
+<h1>Modération</h1>
+
+<p>
+    @foreach (var valeur in Enum.GetValues<CommentStatus>())
+    {
+        <a class="etiq @(statut == valeur ? "etiq--or" : "etiq--neutre")"
+           asp-action="Index" asp-route-statut="@valeur">@valeur</a>
+    }
+</p>
+
+@if (signalements.Count > 0)
+{
+    <div class="panneau" style="border-left:4px solid var(--rouge);">
+        <h2 class="panneau__titre"><span>Signalements non traités (@signalements.Count)</span></h2>
+        <div class="tableau-defilant">
+            <table class="tableau tableau--compact">
+                <thead>
+                <tr>
+                    <th scope="col">Signalé par</th>
+                    <th scope="col">Motif</th>
+                    <th scope="col">Commentaire</th>
+                    <th scope="col">Date</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var signalement in signalements)
+                {
+                    <tr>
+                        <td>@signalement.Reporter.FullName</td>
+                        <td><span class="etiq etiq--rouge">@signalement.Reason</span></td>
+                        <td>
+                            @(signalement.BlogComment.Content.Length > 90
+                                ? signalement.BlogComment.Content[..90] + "…"
+                                : signalement.BlogComment.Content)
+                        </td>
+                        <td>@signalement.ReportedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <form method="post" asp-action="ClasserSignalement" asp-route-id="@signalement.Id">
+                                <button type="submit" class="bouton bouton--contour bouton--petit">Classer</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<div class="panneau">
+    <h2 class="panneau__titre"><span>Commentaires — @statut</span></h2>
+
+    @if (Model.Count == 0)
+    {
+        <p>Aucun commentaire dans cet état.</p>
+    }
+    else
+    {
+        @foreach (var commentaire in Model)
+        {
+            <div class="commentaire">
+                <span class="avatar" aria-hidden="true">@commentaire.Author.Initials</span>
+                <div style="flex:1;">
+                    <div class="commentaire__entete">
+                        <span class="commentaire__auteur">@commentaire.Author.FullName</span>
+                        <span class="commentaire__date">
+                            @commentaire.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH\\hmm")
+                            · sur « @commentaire.BlogPost.Title »
+                        </span>
+                        @if (commentaire.ReportCount > 0)
+                        {
+                            <span class="etiq etiq--rouge">@commentaire.ReportCount signalement(s)</span>
+                        }
+                    </div>
+                    <p>@commentaire.Content</p>
+                    <div style="display:flex;gap:.4rem;">
+                        <form method="post" asp-action="Traiter" asp-route-id="@commentaire.Id">
+                            <input type="hidden" name="approuver" value="true" />
+                            <button type="submit" class="bouton bouton--succes bouton--petit">Publier</button>
+                        </form>
+                        <form method="post" asp-action="Traiter" asp-route-id="@commentaire.Id">
+                            <input type="hidden" name="approuver" value="false" />
+                            <button type="submit" class="bouton bouton--danger bouton--petit">Masquer</button>
+                        </form>
+                        <a class="bouton bouton--contour bouton--petit" asp-area="" asp-controller="Blog"
+                           asp-action="Details" asp-route-slug="@commentaire.BlogPost.Slug"
+                           target="_blank" rel="noopener">Voir l'article</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

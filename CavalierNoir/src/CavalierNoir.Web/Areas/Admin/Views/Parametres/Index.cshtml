@@ -1,0 +1,58 @@
+@model IReadOnlyList<CavalierNoir.Domain.Club.SystemSetting>
+<h1>Paramètres du site</h1>
+
+<div class="alerte alerte--info">
+    <span aria-hidden="true">ℹ</span>
+    <span>
+        Ces valeurs sont modifiables sans redéploiement. Les secrets (clés d'API, mots de passe)
+        ne figurent pas ici : ils proviennent des variables d'environnement ou du coffre de secrets.
+    </span>
+</div>
+
+<form method="post" asp-action="Enregistrer">
+    @foreach (var groupe in Model.GroupBy(s => s.Group))
+    {
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>@groupe.Key</span></h2>
+
+            @foreach (var parametre in groupe)
+            {
+                <div class="champ">
+                    <label for="p-@parametre.Key">@parametre.Key</label>
+
+                    @if (parametre.DataType == "bool")
+                    {
+                        <select id="p-@parametre.Key" name="valeurs[@parametre.Key]">
+                            <option value="true" selected="@(parametre.Value == "true")">Activé</option>
+                            <option value="false" selected="@(parametre.Value != "true")">Désactivé</option>
+                        </select>
+                    }
+                    else if (parametre.DataType == "number")
+                    {
+                        <input type="number" id="p-@parametre.Key" name="valeurs[@parametre.Key]"
+                               value="@parametre.Value" />
+                    }
+                    else if (parametre.DataType == "time")
+                    {
+                        <input type="time" id="p-@parametre.Key" name="valeurs[@parametre.Key]"
+                               value="@parametre.Value" />
+                    }
+                    else
+                    {
+                        <input type="text" id="p-@parametre.Key" name="valeurs[@parametre.Key]"
+                               value="@parametre.Value" />
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(parametre.Description))
+                    {
+                        <span class="aide">@parametre.Description</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton--primaire">Enregistrer les paramètres</button>
+    </div>
+</form>

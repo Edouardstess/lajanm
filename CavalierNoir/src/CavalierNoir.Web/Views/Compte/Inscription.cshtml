@@ -1,0 +1,90 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Créer un compte";
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>Créer un compte</h1>
+        <p>
+            La création du compte est immédiate et gratuite. Elle vous permet ensuite de déposer
+            votre demande d'adhésion, que le secrétariat instruira.
+        </p>
+
+        <div class="panneau">
+            <form method="post" asp-action="Inscription">
+                <div asp-validation-summary="All" class="resume-erreurs"></div>
+
+                <div class="formulaire-grille">
+                    <div class="champ">
+                        <label asp-for="FirstName"></label>
+                        <input asp-for="FirstName" autocomplete="given-name" required />
+                        <span asp-validation-for="FirstName" class="erreur-champ"></span>
+                    </div>
+
+                    <div class="champ">
+                        <label asp-for="LastName"></label>
+                        <input asp-for="LastName" autocomplete="family-name" required />
+                        <span asp-validation-for="LastName" class="erreur-champ"></span>
+                    </div>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" type="email" autocomplete="email" required />
+                    <span asp-validation-for="Email" class="erreur-champ"></span>
+                </div>
+
+                <div class="formulaire-grille">
+                    <div class="champ">
+                        <label asp-for="BirthDate"></label>
+                        <input asp-for="BirthDate" type="date" autocomplete="bday" />
+                        <span class="aide">L'adhésion est ouverte à partir de six ans.</span>
+                        <span asp-validation-for="BirthDate" class="erreur-champ"></span>
+                    </div>
+
+                    <div class="champ">
+                        <label asp-for="PhoneNumber"></label>
+                        <input asp-for="PhoneNumber" type="tel" autocomplete="tel" />
+                        <span asp-validation-for="PhoneNumber" class="erreur-champ"></span>
+                    </div>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="Password"></label>
+                    <input asp-for="Password" type="password" autocomplete="new-password" required minlength="12" />
+                    <span class="aide">
+                        Douze caractères au minimum, avec majuscule, minuscule, chiffre et caractère spécial.
+                    </span>
+                    <span asp-validation-for="Password" class="erreur-champ"></span>
+                </div>
+
+                <div class="champ">
+                    <label asp-for="ConfirmPassword"></label>
+                    <input asp-for="ConfirmPassword" type="password" autocomplete="new-password" required />
+                    <span asp-validation-for="ConfirmPassword" class="erreur-champ"></span>
+                </div>
+
+                <div class="champ champ--case">
+                    <input asp-for="WantsDailyExercise" type="checkbox" />
+                    <label asp-for="WantsDailyExercise"></label>
+                </div>
+
+                <div class="champ champ--case">
+                    <input asp-for="AcceptsPrivacyPolicy" type="checkbox" required />
+                    <label asp-for="AcceptsPrivacyPolicy">
+                        J'ai lu et j'accepte la
+                        <a asp-controller="Infos" asp-action="Page" asp-route-slug="confidentialite" target="_blank" rel="noopener">
+                            politique de confidentialité
+                        </a>.
+                    </label>
+                </div>
+                <span asp-validation-for="AcceptsPrivacyPolicy" class="erreur-champ"></span>
+
+                <div class="actions-formulaire">
+                    <button type="submit" class="bouton bouton--primaire">Créer mon compte</button>
+                    <a class="bouton bouton--contour" asp-action="Connexion">J'ai déjà un compte</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

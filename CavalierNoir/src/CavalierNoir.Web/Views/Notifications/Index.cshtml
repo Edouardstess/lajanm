@@ -1,0 +1,50 @@
+@model List<CavalierNoir.Domain.Identity.Notification>
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <div class="section__entete">
+            <h1>Mes notifications</h1>
+            @if (Model.Any(n => !n.IsRead))
+            {
+                <form method="post" asp-action="ToutLire">
+                    <button type="submit" class="bouton bouton--contour bouton--petit">Tout marquer comme lu</button>
+                </form>
+            }
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="vide">
+                <span class="vide__piece" aria-hidden="true">&#9822;</span>
+                <p>Aucune notification pour l'instant.</p>
+            </div>
+        }
+        else
+        {
+            <ul class="liste-nue">
+                @foreach (var notification in Model)
+                {
+                    <li class="panneau" style="padding:1rem 1.25rem;@(notification.IsRead ? "opacity:.65;" : "border-left:4px solid var(--or);")">
+                        <div class="commentaire__entete">
+                            <strong>@notification.Title</strong>
+                            <span class="commentaire__date">@notification.CreatedAt.ToLocalTime().ToString("d MMMM yyyy à HH\\hmm")</span>
+                        </div>
+                        <p style="margin:.35rem 0;">@notification.Message</p>
+                        @if (!string.IsNullOrWhiteSpace(notification.Url))
+                        {
+                            <form method="post" asp-action="Lire" asp-route-id="@notification.Id">
+                                <input type="hidden" name="url" value="@notification.Url" />
+                                <button type="submit" class="bouton bouton--contour bouton--petit">Consulter</button>
+                            </form>
+                        }
+                        else if (!notification.IsRead)
+                        {
+                            <form method="post" asp-action="Lire" asp-route-id="@notification.Id">
+                                <button type="submit" class="bouton bouton--contour bouton--petit">Marquer comme lue</button>
+                            </form>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>

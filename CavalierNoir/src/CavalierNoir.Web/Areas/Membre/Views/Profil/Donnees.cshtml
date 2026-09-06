@@ -1,0 +1,57 @@
+@model PersonalDataViewModel
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>Mes données personnelles</h1>
+
+        <nav class="fil">
+            <a asp-action="Index">Profil</a> ·
+            <a asp-action="Preferences">Préférences</a> ·
+            <a asp-action="MotDePasse">Mot de passe</a> ·
+            <a asp-action="Donnees">Mes données</a>
+        </nav>
+
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Ce que nous conservons</span></h2>
+            <div class="tableau-defilant">
+                <table class="tableau">
+                    <tbody>
+                    <tr><th scope="row">Compte créé le</th><td>@Model.User.CreatedAt.ToLocalTime().ToString("d MMMM yyyy")</td></tr>
+                    <tr><th scope="row">Dernière connexion</th><td>@(Model.User.LastLoginAt?.ToLocalTime().ToString("d MMMM yyyy à HH\\hmm") ?? "—")</td></tr>
+                    <tr><th scope="row">Tentatives d'exercices</th><td>@Model.AttemptCount</td></tr>
+                    <tr><th scope="row">Parties de tournoi</th><td>@Model.GameCount</td></tr>
+                    <tr><th scope="row">Commentaires</th><td>@Model.CommentCount</td></tr>
+                    <tr><th scope="row">Paiements</th><td>@Model.PaymentCount</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panneau">
+            <h2 class="panneau__titre"><span>Exporter mes données</span></h2>
+            <p>
+                Téléchargez l'ensemble de vos données au format JSON : identité, adhésions, paiements,
+                exercices, historique de classement et commentaires.
+            </p>
+            <a class="bouton bouton--primaire" asp-action="Exporter">Télécharger mes données</a>
+        </div>
+
+        <div class="panneau" style="border-color:var(--rouge);">
+            <h2 class="panneau__titre"><span>Supprimer mon compte</span></h2>
+            <p>
+                Vos données personnelles seront effacées et votre compte fermé. Vos résultats sportifs
+                (parties de tournoi, classements) sont conservés sous forme anonymisée afin de ne pas
+                fausser l'historique des compétitions auxquelles vous avez participé.
+            </p>
+            <p><strong>Cette action est irréversible.</strong></p>
+
+            <form method="post" asp-action="Supprimer"
+                  data-confirmer="Cette action est irréversible. Confirmez-vous la suppression de votre compte ?">
+                <div class="champ">
+                    <label for="confirmation">Saisissez SUPPRIMER pour confirmer</label>
+                    <input type="text" id="confirmation" name="confirmation" autocomplete="off" required />
+                </div>
+                <button type="submit" class="bouton bouton--danger">Supprimer définitivement mon compte</button>
+            </form>
+        </div>
+    </div>
+</section>

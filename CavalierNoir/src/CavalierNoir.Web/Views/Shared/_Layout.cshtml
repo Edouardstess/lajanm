@@ -1,0 +1,177 @@
+@using Microsoft.Extensions.Options
+@using CavalierNoir.Application.Common.Interfaces
+@inject IOptions<SiteOptions> SiteOptions
+@inject INotificationService Notifications
+@inject ICurrentUser Utilisateur
+@{
+    var site = SiteOptions.Value;
+    var titre = ViewData["Title"] as string;
+    var titreComplet = string.IsNullOrWhiteSpace(titre) ? $"{site.Name} — {site.Tagline}" : $"{titre} — {site.Name}";
+    var description = ViewData["MetaDescription"] as string
+        ?? "Club d'échecs Cavalier Noir : tournois, exercices quotidiens, cours et communauté à Port-au-Prince.";
+    var controleur = ViewContext.RouteData.Values["controller"] as string;
+    var nonLues = Utilisateur.IsAuthenticated && Utilisateur.UserId is { } uid
+        ? await Notifications.CountUnreadAsync(uid)
+        : 0;
+}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@titreComplet</title>
+    <meta name="description" content="@description" />
+    <meta name="theme-color" content="#1a1a1a" />
+
+    <meta property="og:site_name" content="@site.Name" />
+    <meta property="og:title" content="@(titre ?? site.Name)" />
+    <meta property="og:description" content="@description" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    @if (ViewData["OgImage"] is string image && !string.IsNullOrWhiteSpace(image))
+    {
+        <meta property="og:image" content="@image" />
+    }
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="icon" href="~/img/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title="Actualités du @site.Name" href="/blog/rss" />
+</head>
+<body>
+<a class="saut-contenu" href="#contenu">Aller au contenu principal</a>
+
+<header class="entete">
+    <div class="conteneur entete__barre">
+        <a class="marque" asp-controller="Home" asp-action="Index">
+            <span class="marque__piece" aria-hidden="true">&#9822;</span>
+            <span>
+                <span class="marque__nom">@site.Name</span>
+                <span class="marque__slogan">@site.Tagline</span>
+            </span>
+        </a>
+
+        <button class="nav__bascule" type="button" data-nav-bascule aria-expanded="false" aria-controls="menu-principal">
+            <span aria-hidden="true">☰</span>
+            <span class="visuellement-cache">Ouvrir le menu</span>
+        </button>
+
+        <nav class="nav" id="menu-principal" data-nav aria-label="Navigation principale">
+            <ul class="nav__liste">
+                <li><a class="nav__lien @(controleur == "Home" ? "nav__lien--actif" : null)" asp-controller="Home" asp-action="Index">Accueil</a></li>
+                <li><a class="nav__lien @(controleur == "Exercices" ? "nav__lien--actif" : null)" asp-controller="Exercices" asp-action="Index">Exercices</a></li>
+                <li><a class="nav__lien @(controleur == "Tournois" ? "nav__lien--actif" : null)" asp-controller="Tournois" asp-action="Index">Tournois</a></li>
+                <li><a class="nav__lien @(controleur == "Evenements" ? "nav__lien--actif" : null)" asp-controller="Evenements" asp-action="Index">Agenda</a></li>
+                <li><a class="nav__lien @(controleur == "Blog" ? "nav__lien--actif" : null)" asp-controller="Blog" asp-action="Index">Actualités</a></li>
+                <li><a class="nav__lien @(controleur == "Classement" ? "nav__lien--actif" : null)" asp-controller="Classement" asp-action="Index">Classement</a></li>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li><a class="nav__lien @(controleur == "Forum" ? "nav__lien--actif" : null)" asp-controller="Forum" asp-action="Index">Forum</a></li>
+                }
+                <li><a class="nav__lien @(controleur == "Adherer" ? "nav__lien--actif" : null)" asp-controller="Adherer" asp-action="Index">Adhérer</a></li>
+            </ul>
+        </nav>
+
+        <div class="entete__actions">
+            <button type="button" class="cloche" data-theme-bascule aria-pressed="false" title="Basculer le thème">
+                <span aria-hidden="true">◐</span>
+                <span class="visuellement-cache">Basculer entre le thème clair et sombre</span>
+            </button>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="cloche" asp-controller="Notifications" asp-action="Index" title="Mes notifications">
+                    <span aria-hidden="true">🔔</span>
+                    <span class="visuellement-cache">Notifications</span>
+                    @if (nonLues > 0)
+                    {
+                        <span class="cloche__compteur">@(nonLues > 99 ? "99+" : nonLues.ToString())</span>
+                    }
+                </a>
+                <a class="bouton bouton--primaire bouton--petit" asp-area="Membre" asp-controller="TableauDeBord" asp-action="Index">Mon espace</a>
+                @if (CavalierNoir.Domain.Identity.Roles.StaffRoles.Split(',').Any(User.IsInRole))
+                {
+                    <a class="bouton bouton--contour bouton--petit" asp-area="Admin" asp-controller="TableauDeBord" asp-action="Index" style="color:#ded8ce;border-color:#4a4a4a;">Administration</a>
+                }
+                <form asp-controller="Compte" asp-action="Deconnexion" method="post" class="liste-nue">
+                    <button type="submit" class="bouton bouton--contour bouton--petit" style="color:#ded8ce;border-color:#4a4a4a;">Se déconnecter</button>
+                </form>
+            }
+            else
+            {
+                <a class="bouton bouton--contour bouton--petit" asp-controller="Compte" asp-action="Connexion" style="color:#ded8ce;border-color:#4a4a4a;">Connexion</a>
+                <a class="bouton bouton--primaire bouton--petit" asp-controller="Compte" asp-action="Inscription">Créer un compte</a>
+            }
+        </div>
+    </div>
+</header>
+
+<main id="contenu">
+    <partial name="_Alertes" />
+    @RenderBody()
+</main>
+
+<footer class="pied">
+    <div class="conteneur">
+        <div class="pied__grille">
+            <div>
+                <h2>@site.Name</h2>
+                <p>@site.Tagline</p>
+                <p>@site.Address</p>
+                @if (!string.IsNullOrWhiteSpace(site.Phone))
+                {
+                    <p>@site.Phone</p>
+                }
+                <p><a href="mailto:@site.ContactEmail">@site.ContactEmail</a></p>
+            </div>
+
+            <div>
+                <h2>Le club</h2>
+                <ul class="pied__liste">
+                    <li><a asp-controller="Infos" asp-action="Page" asp-route-slug="le-club">Présentation</a></li>
+                    <li><a asp-controller="Infos" asp-action="Page" asp-route-slug="palmares">Palmarès</a></li>
+                    <li><a asp-controller="Documents" asp-action="Index">Documents</a></li>
+                    <li><a asp-controller="Galerie" asp-action="Index">Galerie</a></li>
+                    <li><a asp-controller="Contact" asp-action="Index">Nous contacter</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h2>Pratiquer</h2>
+                <ul class="pied__liste">
+                    <li><a asp-controller="Exercices" asp-action="Index">Bibliothèque d'exercices</a></li>
+                    <li><a asp-controller="Tournois" asp-action="Index">Calendrier des tournois</a></li>
+                    <li><a asp-controller="Classement" asp-action="Index">Classement du club</a></li>
+                    <li><a asp-controller="Infos" asp-action="Faq">Questions fréquentes</a></li>
+                    <li><a href="/blog/rss">Flux RSS</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h2>Lettre d'information</h2>
+                <p>Un exercice chaque matin, et l'actualité du club une fois par mois.</p>
+                <form asp-controller="Newsletter" asp-action="Inscription" method="post">
+                    <div class="champ">
+                        <label for="newsletter-email" class="visuellement-cache">Adresse électronique</label>
+                        <input type="email" id="newsletter-email" name="Email" required
+                               placeholder="vous&#64;exemple.ht" autocomplete="email" />
+                    </div>
+                    <button type="submit" class="bouton bouton--primaire bouton--petit bouton--bloc">S'abonner</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="pied__bas">
+            <span>&copy; @DateTime.UtcNow.Year @site.Name. Tous droits réservés.</span>
+            <span>
+                <a asp-controller="Infos" asp-action="Page" asp-route-slug="mentions-legales">Mentions légales</a>
+                &nbsp;·&nbsp;
+                <a asp-controller="Infos" asp-action="Page" asp-route-slug="confidentialite">Confidentialité</a>
+            </span>
+        </div>
+    </div>
+</footer>
+
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

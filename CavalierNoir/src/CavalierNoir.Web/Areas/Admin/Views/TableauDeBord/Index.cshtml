@@ -1,0 +1,105 @@
+@model AdminDashboardViewModel
+@{
+    var s = Model.Stats;
+    var maxTentatives = s.AttemptsPerDay.Count == 0 ? 1 : Math.Max(1, s.AttemptsPerDay.Max(p => p.Value));
+    var maxMembres = s.NewMembersPerMonth.Count == 0 ? 1 : Math.Max(1, s.NewMembersPerMonth.Max(p => p.Value));
+}
+<h1>Tableau de bord</h1>
+
+<div class="stats">
+    <div class="stat"><span class="stat__valeur">@s.ActiveMembers</span><span class="stat__libelle">Membres actifs</span></div>
+    <div class="stat @(s.PendingApplications > 0 ? "stat--alerte" : "")">
+        <span class="stat__valeur">@s.PendingApplications</span><span class="stat__libelle">Demandes à instruire</span>
+    </div>
+    <div class="stat @(s.ExpiringMemberships > 0 ? "stat--alerte" : "")">
+        <span class="stat__valeur">@s.ExpiringMemberships</span><span class="stat__libelle">Adhésions à échéance</span>
+    </div>
+    <div class="stat stat--info"><span class="stat__valeur">@s.PublishedExercises</span><span class="stat__libelle">Exercices publiés</span></div>
+    <div class="stat stat--succes"><span class="stat__valeur">@s.AttemptsThisMonth</span><span class="stat__libelle">Tentatives ce mois</span></div>
+    <div class="stat"><span class="stat__valeur">@s.RunningTournaments</span><span class="stat__libelle">Tournois en cours</span></div>
+    <div class="stat @(s.PendingComments > 0 ? "stat--alerte" : "")">
+        <span class="stat__valeur">@s.PendingComments</span><span class="stat__libelle">Commentaires à modérer</span>
+    </div>
+    <div class="stat @(s.NewContactMessages > 0 ? "stat--alerte" : "")">
+        <span class="stat__valeur">@s.NewContactMessages</span><span class="stat__libelle">Messages non traités</span>
+    </div>
+    <div class="stat stat--succes">
+        <span class="stat__valeur">@s.RevenueThisYear.ToString("N0")</span>
+        <span class="stat__libelle">Recettes @s.Currency (année)</span>
+    </div>
+</div>
+
+<div class="grille grille--2">
+    <div class="panneau">
+        <h2 class="panneau__titre"><span>Tentatives d'exercices — 14 derniers jours</span></h2>
+        <div class="graphique">
+            @foreach (var point in s.AttemptsPerDay)
+            {
+                <div class="graphique__colonne">
+                    <div class="graphique__barre"
+                         style="height:@(Math.Max(2, point.Value * 130 / maxTentatives))px;"
+                         title="@point.Label : @point.Value tentative(s)"></div>
+                    <span class="graphique__etiquette">@point.Label</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="panneau">
+        <h2 class="panneau__titre"><span>Nouvelles adhésions — 12 derniers mois</span></h2>
+        <div class="graphique">
+            @foreach (var point in s.NewMembersPerMonth)
+            {
+                <div class="graphique__colonne">
+                    <div class="graphique__barre"
+                         style="height:@(Math.Max(2, point.Value * 130 / maxMembres))px;"
+                         title="@point.Label : @point.Value adhésion(s)"></div>
+                    <span class="graphique__etiquette">@point.Label</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="panneau">
+    <h2 class="panneau__titre">
+        <span>Demandes d'adhésion en attente</span>
+        <a class="bouton bouton--contour bouton--petit" asp-controller="Adhesions" asp-action="Index">Tout voir</a>
+    </h2>
+
+    @if (Model.PendingApplications.Count == 0)
+    {
+        <p>Aucune demande en attente. Rien ne traîne.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau tableau--compact">
+                <thead>
+                <tr>
+                    <th scope="col">Candidat</th>
+                    <th scope="col">Formule</th>
+                    <th scope="col">Déposée le</th>
+                    <th scope="col" class="nombre">Elo déclaré</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var demande in Model.PendingApplications)
+                {
+                    <tr>
+                        <td>@demande.ApplicantName<br /><span class="carte__meta">@demande.Email</span></td>
+                        <td>@demande.MembershipTypeName</td>
+                        <td>@(demande.SubmittedAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td class="nombre">@demande.DeclaredElo</td>
+                        <td>
+                            <a class="bouton bouton--primaire bouton--petit"
+                               asp-controller="Adhesions" asp-action="Details" asp-route-id="@demande.Id">Instruire</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

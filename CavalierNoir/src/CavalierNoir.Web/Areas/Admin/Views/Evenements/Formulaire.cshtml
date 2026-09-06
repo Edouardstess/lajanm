@@ -1,0 +1,74 @@
+@model EventFormViewModel
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Modifier l'événement" : "Nouvel événement";
+}
+<p class="fil"><a asp-action="Index">Événements</a> › @ViewData["Title"]</p>
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" asp-action="Enregistrer">
+    <div asp-validation-summary="All" class="resume-erreurs"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <div class="panneau">
+        <div class="champ">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" required />
+            <span asp-validation-for="Title" class="erreur-champ"></span>
+        </div>
+
+        <div class="champ">
+            <label asp-for="Description"></label>
+            <textarea asp-for="Description" maxlength="4000"></textarea>
+        </div>
+
+        <div class="formulaire-grille">
+            <div class="champ">
+                <label asp-for="Type"></label>
+                <select asp-for="Type" asp-items="Html.GetEnumSelectList<EventType>()"></select>
+            </div>
+            <div class="champ">
+                <label asp-for="StartDate"></label>
+                <input asp-for="StartDate" type="datetime-local" required />
+                <span asp-validation-for="StartDate" class="erreur-champ"></span>
+            </div>
+            <div class="champ">
+                <label asp-for="EndDate"></label>
+                <input asp-for="EndDate" type="datetime-local" required />
+                <span asp-validation-for="EndDate" class="erreur-champ"></span>
+            </div>
+        </div>
+
+        <div class="formulaire-grille">
+            <div class="champ">
+                <label asp-for="Location"></label>
+                <input asp-for="Location" />
+            </div>
+            <div class="champ">
+                <label asp-for="MaxParticipants"></label>
+                <input asp-for="MaxParticipants" type="number" min="1" max="1000" />
+            </div>
+            <div class="champ">
+                <label asp-for="EntryFee"></label>
+                <input asp-for="EntryFee" type="number" min="0" step="0.01" />
+            </div>
+        </div>
+
+        <div class="champ champ--case">
+            <input asp-for="IsRegistrationOpen" type="checkbox" />
+            <label asp-for="IsRegistrationOpen"></label>
+        </div>
+        <div class="champ champ--case">
+            <input asp-for="MembersOnly" type="checkbox" />
+            <label asp-for="MembersOnly"></label>
+        </div>
+        <div class="champ champ--case">
+            <input asp-for="IsPublished" type="checkbox" />
+            <label asp-for="IsPublished"></label>
+        </div>
+    </div>
+
+    <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton--primaire">Enregistrer</button>
+        <a class="bouton bouton--contour" asp-action="Index">Annuler</a>
+    </div>
+</form>

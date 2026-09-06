@@ -1,0 +1,63 @@
+@model PagedList<MembershipApplicationSummary>
+@{
+    var statut = ViewData["Statut"] as ApplicationStatus?;
+}
+<h1>Demandes d'adhésion</h1>
+
+<p>
+    <a class="etiq @(statut is null ? "etiq--or" : "etiq--neutre")" asp-action="Index">Toutes</a>
+    @foreach (var valeur in Enum.GetValues<ApplicationStatus>())
+    {
+        <a class="etiq @(statut == valeur ? "etiq--or" : "etiq--neutre")"
+           asp-action="Index" asp-route-statut="@valeur">@valeur</a>
+    }
+</p>
+
+<div class="panneau">
+    @if (Model.Items.Count == 0)
+    {
+        <p>Aucune demande pour ce filtre.</p>
+    }
+    else
+    {
+        <div class="tableau-defilant">
+            <table class="tableau">
+                <thead>
+                <tr>
+                    <th scope="col">Candidat</th>
+                    <th scope="col">Formule</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Déposée le</th>
+                    <th scope="col" class="nombre">Elo</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var demande in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            @demande.ApplicantName
+                            @if (demande.ParentalConsent)
+                            {
+                                <span class="etiq etiq--neutre">Mineur</span>
+                            }
+                            <br /><span class="carte__meta">@demande.Email</span>
+                        </td>
+                        <td>@demande.MembershipTypeName</td>
+                        <td><span class="etiq etiq--neutre">@demande.Status</span></td>
+                        <td>@(demande.SubmittedAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td class="nombre">@(demande.AssessedElo ?? demande.DeclaredElo)</td>
+                        <td>
+                            <a class="bouton bouton--contour bouton--petit"
+                               asp-action="Details" asp-route-id="@demande.Id">Ouvrir</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+    }
+</div>

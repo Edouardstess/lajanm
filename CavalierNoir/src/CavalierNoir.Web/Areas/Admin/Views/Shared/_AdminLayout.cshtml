@@ -1,0 +1,91 @@
+@functions {
+    /// <summary>Classe CSS du lien de menu, mise en évidence pour la rubrique courante.</summary>
+    private string Actif(string controleurCible, string? actionCible = null)
+    {
+        var controleur = ViewContext.RouteData.Values["controller"] as string;
+        var action = ViewContext.RouteData.Values["action"] as string;
+
+        var correspond = controleur == controleurCible
+                         && (actionCible is null || action == actionCible);
+
+        return correspond ? "admin__lien admin__lien--actif" : "admin__lien";
+    }
+}
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    var controleur = ViewContext.RouteData.Values["controller"] as string;
+    var action = ViewContext.RouteData.Values["action"] as string;
+}
+
+<div class="admin">
+    <nav class="admin__lateral" aria-label="Navigation d'administration">
+        <p class="admin__groupe">Pilotage</p>
+        <a class="@Actif("TableauDeBord")" asp-area="Admin" asp-controller="TableauDeBord" asp-action="Index">
+            <span aria-hidden="true">▦</span> Tableau de bord
+        </a>
+
+        <p class="admin__groupe">Vie associative</p>
+        <a class="@Actif("Adhesions")" asp-area="Admin" asp-controller="Adhesions" asp-action="Index">
+            <span aria-hidden="true">✍</span> Demandes d'adhésion
+        </a>
+        <a class="@Actif("Adhesions", "Membres")"
+           asp-area="Admin" asp-controller="Adhesions" asp-action="Membres">
+            <span aria-hidden="true">👥</span> Adhésions
+        </a>
+        <a class="@Actif("Utilisateurs")" asp-area="Admin" asp-controller="Utilisateurs" asp-action="Index">
+            <span aria-hidden="true">🔑</span> Utilisateurs et rôles
+        </a>
+        <a class="@Actif("Messages")" asp-area="Admin" asp-controller="Messages" asp-action="Index">
+            <span aria-hidden="true">✉</span> Messages reçus
+        </a>
+
+        <p class="admin__groupe">Pédagogie</p>
+        <a class="@(controleur == "Exercices" && action != "Planning" ? "admin__lien admin__lien--actif" : "admin__lien")"
+           asp-area="Admin" asp-controller="Exercices" asp-action="Index">
+            <span aria-hidden="true">♟</span> Exercices
+        </a>
+        <a class="@Actif("Exercices", "Planning")"
+           asp-area="Admin" asp-controller="Exercices" asp-action="Planning">
+            <span aria-hidden="true">📅</span> Exercice du jour
+        </a>
+
+        <p class="admin__groupe">Compétitions</p>
+        <a class="@Actif("Tournois")" asp-area="Admin" asp-controller="Tournois" asp-action="Index">
+            <span aria-hidden="true">🏆</span> Tournois
+        </a>
+        <a class="@Actif("Evenements")" asp-area="Admin" asp-controller="Evenements" asp-action="Index">
+            <span aria-hidden="true">📌</span> Événements
+        </a>
+
+        <p class="admin__groupe">Contenus</p>
+        <a class="@Actif("Blog")" asp-area="Admin" asp-controller="Blog" asp-action="Index">
+            <span aria-hidden="true">📰</span> Articles
+        </a>
+        <a class="@Actif("Moderation")" asp-area="Admin" asp-controller="Moderation" asp-action="Index">
+            <span aria-hidden="true">🛡</span> Modération
+        </a>
+        <a class="@Actif("Newsletter")" asp-area="Admin" asp-controller="Newsletter" asp-action="Index">
+            <span aria-hidden="true">📧</span> Lettre d'information
+        </a>
+        <a class="@Actif("Documents")" asp-area="Admin" asp-controller="Documents" asp-action="Index">
+            <span aria-hidden="true">📄</span> Documents
+        </a>
+
+        <p class="admin__groupe">Finances</p>
+        <a class="@Actif("Finances")" asp-area="Admin" asp-controller="Finances" asp-action="Index">
+            <span aria-hidden="true">💰</span> Encaissements
+        </a>
+
+        <p class="admin__groupe">Système</p>
+        <a class="@Actif("Parametres")" asp-area="Admin" asp-controller="Parametres" asp-action="Index">
+            <span aria-hidden="true">⚙</span> Paramètres
+        </a>
+        <a class="@Actif("Audit")" asp-area="Admin" asp-controller="Audit" asp-action="Index">
+            <span aria-hidden="true">🗂</span> Journal d'audit
+        </a>
+    </nav>
+
+    <div class="admin__contenu">
+        @RenderBody()
+    </div>
+</div>

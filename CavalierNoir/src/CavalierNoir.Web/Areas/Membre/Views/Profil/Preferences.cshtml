@@ -1,0 +1,70 @@
+@model PreferencesViewModel
+<section class="section">
+    <div class="conteneur conteneur-etroit">
+        <h1>Mes préférences</h1>
+
+        <nav class="fil">
+            <a asp-action="Index">Profil</a> ·
+            <a asp-action="Preferences">Préférences</a> ·
+            <a asp-action="MotDePasse">Mot de passe</a> ·
+            <a asp-action="Donnees">Mes données</a>
+        </nav>
+
+        <div class="panneau">
+            <form method="post">
+                <div class="formulaire-grille">
+                    <div class="champ">
+                        <label asp-for="Language"></label>
+                        <select asp-for="Language">
+                            <option value="fr">Français</option>
+                            <option value="ht">Kreyòl ayisyen</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="champ">
+                        <label asp-for="Theme"></label>
+                        <select asp-for="Theme">
+                            <option value="systeme">Suivre le système</option>
+                            <option value="clair">Clair</option>
+                            <option value="sombre">Sombre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h2>Courriels</h2>
+                <div class="champ champ--case">
+                    <input asp-for="ReceiveDailyExercise" type="checkbox" />
+                    <label asp-for="ReceiveDailyExercise"></label>
+                </div>
+                <div class="champ champ--case">
+                    <input asp-for="ReceiveNewsletter" type="checkbox" />
+                    <label asp-for="ReceiveNewsletter"></label>
+                </div>
+                <div class="champ champ--case">
+                    <input asp-for="ReceiveMembershipReminders" type="checkbox" />
+                    <label asp-for="ReceiveMembershipReminders"></label>
+                </div>
+
+                <h2>Notifications</h2>
+                <div class="champ champ--case">
+                    <input asp-for="ReceiveTournamentAlerts" type="checkbox" />
+                    <label asp-for="ReceiveTournamentAlerts"></label>
+                </div>
+                <div class="champ champ--case">
+                    <input asp-for="ReceiveForumReplies" type="checkbox" />
+                    <label asp-for="ReceiveForumReplies"></label>
+                </div>
+
+                <h2>Confidentialité</h2>
+                <div class="champ champ--case">
+                    <input asp-for="ShowInPublicRanking" type="checkbox" />
+                    <label asp-for="ShowInPublicRanking"></label>
+                </div>
+
+                <div class="actions-formulaire">
+                    <button type="submit" class="bouton bouton--primaire">Enregistrer mes préférences</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

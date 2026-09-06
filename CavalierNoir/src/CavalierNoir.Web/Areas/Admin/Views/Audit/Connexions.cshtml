@@ -1,0 +1,48 @@
+@model PagedList<CavalierNoir.Domain.Identity.LoginHistory>
+@{
+    var echecs = ViewData["Echecs"] as bool?;
+}
+<div class="section__entete">
+    <h1>Historique des connexions</h1>
+    <a class="bouton bouton--contour" asp-action="Index">Journal d'audit</a>
+</div>
+
+<p>
+    <a class="etiq @(echecs is null ? "etiq--or" : "etiq--neutre")" asp-action="Connexions">Toutes</a>
+    <a class="etiq @(echecs == true ? "etiq--or" : "etiq--neutre")"
+       asp-action="Connexions" asp-route-echecs="true">Échecs uniquement</a>
+</p>
+
+<div class="panneau">
+    <div class="tableau-defilant">
+        <table class="tableau tableau--compact">
+            <thead>
+            <tr>
+                <th scope="col">Horodatage</th>
+                <th scope="col">Identifiant saisi</th>
+                <th scope="col">Résultat</th>
+                <th scope="col">IP</th>
+                <th scope="col">Navigateur</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var connexion in Model.Items)
+            {
+                <tr>
+                    <td>@connexion.OccurredAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td>
+                    <td>@connexion.AttemptedIdentifier</td>
+                    <td>
+                        <span class="etiq @(connexion.IsSuccessful ? "etiq--vert" : "etiq--rouge")">
+                            @(connexion.IsSuccessful ? "Réussie" : connexion.FailureReason ?? "Échec")
+                        </span>
+                    </td>
+                    <td><code>@connexion.IpAddress</code></td>
+                    <td><span class="carte__meta">@connexion.UserAgent</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pagination" model="PaginationModel.From(Model, Context.Request)" />
+</div>

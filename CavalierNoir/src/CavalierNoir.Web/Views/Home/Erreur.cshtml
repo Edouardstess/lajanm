@@ -1,0 +1,24 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+<section class="section">
+    <div class="conteneur conteneur-etroit" style="text-align:center;">
+        <p style="font-family:var(--serif);font-size:4rem;color:var(--or);margin:0;">@Model.StatusCode</p>
+        <h1>@Model.Title</h1>
+        <p>@Model.Message</p>
+
+        <div class="hero__actions" style="justify-content:center;">
+            <a class="bouton bouton--primaire" asp-controller="Home" asp-action="Index">Retour à l'accueil</a>
+            <a class="bouton bouton--contour" asp-controller="Contact" asp-action="Index">Signaler le problème</a>
+        </div>
+
+        @if (Model.ShowRequestId)
+        {
+            <p class="aide" style="margin-top:2rem;">
+                Référence de l'incident : <code>@Model.RequestId</code><br />
+                Communiquez-la au secrétariat si vous nous écrivez à ce sujet.
+            </p>
+        }
+    </div>
+</section>

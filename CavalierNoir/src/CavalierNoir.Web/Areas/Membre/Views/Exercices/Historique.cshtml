@@ -1,0 +1,134 @@
+@model TrainingHistoryViewModel
+<section class="section">
+    <div class="conteneur">
+        <h1>Mon entraînement</h1>
+
+        <div class="stats">
+            <div class="stat">
+                <span class="stat__valeur">@Model.Progress.TotalAttempts</span>
+                <span class="stat__libelle">Tentatives</span>
+            </div>
+            <div class="stat stat--succes">
+                <span class="stat__valeur">@Model.Progress.CorrectAttempts</span>
+                <span class="stat__libelle">Réussites</span>
+            </div>
+            <div class="stat stat--info">
+                <span class="stat__valeur">@Model.Progress.SuccessRate %</span>
+                <span class="stat__libelle">Taux de réussite</span>
+            </div>
+            <div class="stat">
+                <span class="stat__valeur">@Model.Progress.AverageTimeSeconds s</span>
+                <span class="stat__libelle">Temps moyen</span>
+            </div>
+            <div class="stat">
+                <span class="stat__valeur">@Model.Progress.CurrentStreak</span>
+                <span class="stat__libelle">Série en cours</span>
+            </div>
+        </div>
+
+        <div class="grille grille--2">
+            <div>
+                @if (Model.ByTheme.Count > 0)
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre"><span>Réussite par thème</span></h2>
+                        <div class="tableau-defilant">
+                            <table class="tableau tableau--compact">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Thème</th>
+                                    <th scope="col" class="nombre">Tentatives</th>
+                                    <th scope="col">Réussite</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var theme in Model.ByTheme)
+                                {
+                                    <tr>
+                                        <td>@theme.Theme</td>
+                                        <td class="nombre">@theme.Attempts</td>
+                                        <td>
+                                            <div class="progression" title="@theme.SuccessRate %">
+                                                <div class="progression__valeur" style="width:@(theme.SuccessRate)%;"></div>
+                                            </div>
+                                            <span class="carte__meta">@theme.SuccessRate %</span>
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.Badges.Count > 0)
+                {
+                    <div class="panneau">
+                        <h2 class="panneau__titre"><span>Mes badges</span></h2>
+                        <ul class="liste-nue">
+                            @foreach (var badge in Model.Badges)
+                            {
+                                <li style="padding:.5rem 0;border-bottom:1px solid var(--bordure);">
+                                    <strong>🏅 @badge.Badge.Name</strong><br />
+                                    <span class="carte__meta">
+                                        @badge.Badge.Description — obtenu le @badge.EarnedAt.ToLocalTime().ToString("d MMMM yyyy")
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+
+            <div>
+                <div class="panneau">
+                    <h2 class="panneau__titre"><span>Dernières tentatives</span></h2>
+
+                    @if (Model.Attempts.Items.Count == 0)
+                    {
+                        <p>Vous n'avez pas encore tenté d'exercice.</p>
+                        <a class="bouton bouton--primaire" asp-area="" asp-controller="Exercices" asp-action="Index">
+                            Commencer maintenant
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="tableau-defilant">
+                            <table class="tableau tableau--compact">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Exercice</th>
+                                    <th scope="col">Résultat</th>
+                                    <th scope="col" class="nombre">Temps</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var tentative in Model.Attempts.Items)
+                                {
+                                    <tr>
+                                        <td>@tentative.AttemptedAt.ToLocalTime().ToString("dd/MM HH\\hmm")</td>
+                                        <td>
+                                            <a asp-area="" asp-controller="Exercices" asp-action="Details" asp-route-id="@tentative.ExerciseId">
+                                                @tentative.Exercise.Title
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="etiq @(tentative.IsCorrect ? "etiq--vert" : "etiq--rouge")">
+                                                @(tentative.IsCorrect ? "Réussie" : "Échouée")
+                                            </span>
+                                        </td>
+                                        <td class="nombre">@tentative.TimeSpentSeconds s</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <partial name="_Pagination" model="PaginationModel.From(Model.Attempts, Context.Request)" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
