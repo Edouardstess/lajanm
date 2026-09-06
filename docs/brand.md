@@ -78,29 +78,43 @@ corps.
 bleu, « M » en or, la signature entre deux filets dorés — police et
 couleurs de la charte, donc pas une approximation.
 
-**Ce qui manque encore**, et qui demande les fichiers sources :
+### Les visuels générés
 
-1. **Le monogramme graphique** (le LM avec la flèche et les pièces). Il
-   n'est pas redessiné : le reproduire de mémoire donnerait une
-   contrefaçon. Pour l'ajouter, déposer `apps/mobile/assets/logo-mark.png`
-   (ou `.svg`) et l'insérer au-dessus du logotype dans `Logo.tsx`.
+`apps/mobile/scripts/generate-brand-assets.mjs` produit les six fichiers
+d'`assets/` à partir du même dessin, avec la vraie Montserrat :
 
-2. **Les icônes d'application.** Les fichiers de `apps/mobile/assets/`
-   sont encore ceux du gabarit Expo :
+```bash
+node apps/mobile/scripts/generate-brand-assets.mjs
+```
 
-   | Fichier | Usage | Format attendu |
-   |---|---|---|
-   | `icon.png` | icône iOS | 1024×1024, sans transparence |
-   | `android-icon-foreground.png` | icône adaptative Android | 1024×1024, sujet dans les 66 % centraux |
-   | `android-icon-background.png` | fond de l'icône adaptative | 1024×1024, aplat `#0B2D5B` |
-   | `android-icon-monochrome.png` | thème Material You | 1024×1024, silhouette unie |
-   | `splash-icon.png` | écran de démarrage | 1024×1024 |
-   | `favicon.png` | web | 48×48 |
+| Fichier | Contenu | Pourquoi |
+|---|---|---|
+| `splash-icon.png` | monogramme, transparent | Android 12+ masque cette image dans un **cercle** ; un logotype large y serait rogné |
+| `icon.png` | monogramme sur bleu plein | iOS refuse la transparence |
+| `android-icon-foreground.png` | monogramme, transparent | plan avant de l'icône adaptative |
+| `android-icon-background.png` | aplat `#0B2D5B` | plan arrière |
+| `android-icon-monochrome.png` | monogramme blanc uni | Material You recolore la silhouette |
+| `favicon.png` | monogramme, 96×96 | web |
 
-   Les couleurs de fond sont déjà réglées sur la charte dans
-   `app.config.ts` ; seuls les visuels restent à remplacer. **À faire avant
-   toute publication sur les stores.**
+### Le monogramme est provisoire
 
-3. **L'écran de démarrage** relève depuis le SDK 54 du plugin
-   `expo-splash-screen`, qui n'est pas installé. À ajouter en même temps
-   que les vraies icônes.
+Les icônes utilisent **« LM » composé en Montserrat**, pas le monogramme
+illustré de la charte (le LM avec la flèche et les pièces). Ce dernier
+demande son fichier source : le redessiner de mémoire donnerait une
+contrefaçon, pas votre logo.
+
+Pour le remplacer : déposer `apps/mobile/assets/logo-mark.png` (ou `.svg`,
+1024×1024, fond transparent) et remplacer les appels à `monogram()` par
+cette image dans le script, puis régénérer.
+
+### L'écran de lancement
+
+Configuré par le plugin `expo-splash-screen` dans `app.config.ts` : fond
+`#0B2D5B` sur les deux thèmes, monogramme centré à 180 px.
+
+`App.tsx` retient l'écran de lancement (`preventAutoHideAsync`) jusqu'à ce
+que Montserrat soit chargée, et ne le retire qu'à la **pose** de la vue
+racine — pas dans un effet, qui s'exécute avant que la première image ne
+soit dessinée et laisserait apparaître une frame vide. C'est cette
+continuité, plus que le dessin, qui fait la différence entre un lancement
+soigné et un lancement bricolé.

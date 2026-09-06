@@ -222,11 +222,41 @@ Aucun compte Expo, aucun jeton, aucun compte Apple.
 Actions → *APK Android* → Run workflow → l'APK se télécharge dans la
 section « Artifacts » du run.
 
-Par défaut il est signé avec une clé **éphémère**, régénérée à chaque run :
-parfait pour installer et tester, inutilisable pour le Play Store, car
-Android refuse de mettre à jour une application dont la signature a changé.
-Pour une clé stable, ajoutez les secrets `ANDROID_KEYSTORE_BASE64`,
-`ANDROID_KEYSTORE_PASSWORD` et `ANDROID_KEY_ALIAS`.
+### La clé de signature
+
+Une build `release` **s'arrête** si aucun keystore n'est configuré. C'est
+volontaire : sans clé stable, chaque run produit une signature différente
+et Android refuse d'installer la nouvelle version par-dessus la précédente.
+Le message d'erreur du run rappelle la marche à suivre.
+
+Configuration, une seule fois, **sur votre machine** :
+
+```bash
+bash apps/mobile/scripts/create-android-keystore.sh
+```
+
+Le script crée la clé, tire un mot de passe au hasard, et affiche les trois
+valeurs à créer dans *Settings → Secrets and variables → Actions* :
+`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`.
+
+> **Cette clé ne doit jamais transiter par une conversation, un ticket, un
+> e-mail, ni le dépôt Git.** Qui la détient peut publier une version que
+> les téléphones de vos clients installeront comme authentique. Elle est
+> aussi irremplaçable : perdue, plus aucune mise à jour n'est possible et
+> il faut republier sous un nouvel identifiant, en perdant installations
+> et avis. Sauvegardez le fichier ET le mot de passe hors de la machine.
+
+Pour un APK de test immédiat sans clé, relancer le workflow en cochant
+**« Autoriser une clé jetable »** — l'APK s'installe, mais il faudra
+désinstaller la version précédente à chaque fois.
+
+### Play App Signing
+
+Pour une publication sur le Play Store, Google recommande que **lui**
+détienne la clé finale de signature ; vous ne gardez qu'une *clé de
+téléversement*, révocable si elle fuite. C'est le réglage à privilégier
+au moment de créer la fiche de l'application. La clé produite par le
+script ci-dessus tient alors le rôle de clé de téléversement.
 
 ### Installer l'APK sur un téléphone Android
 
@@ -248,10 +278,12 @@ Deux limites à connaître avant de le diffuser autour de vous :
 - Tant qu'aucune API n'est déployée, l'application **s'installe et affiche
   l'interface, mais aucune connexion ni consultation de solde ne
   fonctionne**. C'est une démonstration visuelle, pas le produit.
-- Signé par une clé éphémère, il **ne peut pas être mis à jour** par un
-  build ultérieur : Android refuse d'installer par-dessus une application
-  dont la signature a changé. Il faut désinstaller puis réinstaller. Pour
-  éviter cela, configurez un keystore stable (secrets `ANDROID_KEYSTORE_*`).
+- **Si** la build a été lancée avec « Autoriser une clé jetable », l'APK
+  ne peut pas être mis à jour par un build ultérieur : Android refuse
+  d'installer par-dessus une application dont la signature a changé, il
+  faut désinstaller puis réinstaller. Avec le keystore configuré (voir
+  « La clé de signature » ci-dessus), les mises à jour s'installent
+  normalement.
 
 En local, la même chose demande le SDK Android (≈ 3 Go) :
 

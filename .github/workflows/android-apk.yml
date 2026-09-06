@@ -22,6 +22,10 @@ on:
         type: choice
         default: release
         options: [release, debug]
+      allow_throwaway_key:
+        description: "Autoriser une clé jetable si aucun keystore n'est configuré (APK non actualisable)"
+        type: boolean
+        default: false
 
 jobs:
   apk:
@@ -29,6 +33,48 @@ jobs:
     timeout-minutes: 45
 
     steps:
+      # Ce contrôle passe EN PREMIER, avant la compilation : découvrir
+      # après treize minutes de Gradle qu'on vient de produire un APK
+      # qu'aucun téléphone ne pourra mettre à jour est une perte de temps
+      # évitable.
+      - name: Vérifier la clé de signature
+        if: inputs.variant == 'release'
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "Keystore du dépôt trouvé : l'APK sera signé avec la clé du projet."
+            exit 0
+          fi
+          if [ "${{ inputs.allow_throwaway_key }}" = "true" ]; then
+            echo "::warning::Clé jetable demandée. L'APK s'installera, mais Android REFUSERA de l'installer par-dessus une version précédente : il faudra désinstaller l'ancienne. À ne jamais publier."
+            exit 0
+          fi
+          echo "::error::Aucun keystore configuré."
+          cat >> "$GITHUB_STEP_SUMMARY" <<'MSG'
+          ## Build arrêtée : aucune clé de signature
+
+          Sans clé stable, chaque build produit une signature différente et
+          Android refuse d'installer la nouvelle version par-dessus
+          l'ancienne.
+
+          **Pour configurer la clé** (une seule fois, sur votre machine) :
+
+          ```bash
+          bash apps/mobile/scripts/create-android-keystore.sh
+          ```
+
+          Le script affiche les trois valeurs à créer dans
+          *Settings → Secrets and variables → Actions* :
+          `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
+          `ANDROID_KEY_ALIAS`.
+
+          **Pour un APK de test tout de suite**, relancez en cochant
+          « Autoriser une clé jetable ». L'APK sera installable, mais il
+          faudra désinstaller la version précédente.
+          MSG
+          exit 1
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -90,7 +136,9 @@ jobs:
             echo "KEY_ALIAS_RESOLVED=$KEY_ALIAS"      >> "$GITHUB_ENV"
             echo "Keystore du dépôt utilisé."
           else
-            echo "::warning::Aucun keystore configuré — clé éphémère générée. APK utilisable pour tester, jamais pour publier sur le Play Store."
+            # L'étape « Vérifier la clé de signature » a déjà validé que ce
+            # cas est explicitement autorisé ; on ne le redécouvre pas ici.
+            echo "::warning::Clé jetable — APK utilisable pour tester, jamais pour publier."
             keytool -genkeypair -v -keystore release.keystore -alias lajanm \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -storepass lajanm-ephemere -keypass lajanm-ephemere \

@@ -47,16 +47,12 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'light',
 
   // Fond dessiné par l'OS derrière l'application, et fond de l'icône
-  // adaptative Android : aux couleurs de la charte plutôt qu'au blanc
-  // générique du gabarit.
+  // adaptative Android, aux couleurs de la charte.
   //
-  // L'écran de démarrage lui-même n'est pas configuré ici : depuis le SDK
-  // 54 il relève du plugin `expo-splash-screen`, qui n'est pas installé.
-  // L'ajouter est un choix à faire en même temps que les vraies icônes.
-  //
-  // ATTENTION : les fichiers sous assets/ sont encore ceux du gabarit
-  // Expo. Ils doivent porter le logo Lajan'm avant toute publication sur
-  // les stores — voir docs/brand.md.
+  // Les visuels sous assets/ sont générés depuis le logotype par
+  // scripts/generate-brand-assets.mjs. Le monogramme des icônes est une
+  // marque de remplacement dérivée de la charte, pas le monogramme
+  // illustré d'origine — voir docs/brand.md.
   backgroundColor: '#F8F9FA',
   ios: {
     supportsTablet: true,
@@ -109,6 +105,30 @@ const config: ExpoConfig = {
     favicon: './assets/favicon.png',
   },
   plugins: [
+    // L'écran de lancement, dessiné par le système avant que la moindre
+    // ligne de JavaScript ne s'exécute. Sans lui, le lancement montre un
+    // écran blanc générique puis bascule d'un coup sur l'application :
+    // c'est ce saut qui fait « pas fini ».
+    //
+    // Le fond est le bleu de la charte, sur les deux thèmes : l'écran de
+    // lancement d'une application financière ne doit pas changer de
+    // couleur selon les réglages du téléphone.
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/splash-icon.png',
+        backgroundColor: '#0B2D5B',
+        // 180 px : Android 12+ réserve un disque d'environ 192 dp à
+        // l'icône de lancement et rogne ce qui déborde. Rester en deçà
+        // garantit que le monogramme n'est jamais coupé.
+        imageWidth: 180,
+        resizeMode: 'contain',
+        dark: {
+          image: './assets/splash-icon.png',
+          backgroundColor: '#0B2D5B',
+        },
+      },
+    ],
     'expo-secure-store',
     [
       'expo-image-picker',
