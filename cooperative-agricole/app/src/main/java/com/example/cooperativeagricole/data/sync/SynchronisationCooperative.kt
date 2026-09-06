@@ -87,7 +87,7 @@ class SynchronisationCooperative(
                 planteurDao.supprimerTout()
             } else {
                 planteurDao.supprimerHors(planteurs.map { it.code })
-                planteurDao.insererOuRemplacer(planteurs)
+                planteurDao.enregistrerDepuisDistant(planteurs)
             }
 
             if (peseesValides.isEmpty()) {
@@ -99,7 +99,7 @@ class SynchronisationCooperative(
                 val aEcrire = peseesValides.map { pesee ->
                     pesee.copy(id = peseeDao.idLocalPour(pesee.cleDistante) ?: 0L)
                 }
-                peseeDao.insererOuRemplacer(aEcrire)
+                peseeDao.enregistrerDepuisDistant(aEcrire)
             }
         }
     }

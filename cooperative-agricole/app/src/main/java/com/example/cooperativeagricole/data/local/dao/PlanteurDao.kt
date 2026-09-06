@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.example.cooperativeagricole.data.local.entity.Planteur
 import kotlinx.coroutines.flow.Flow
 
@@ -74,13 +75,18 @@ interface PlanteurDao {
 
     // --- Réservé à la synchronisation avec la base distante ---
     //
-    // Ces trois opérations ne sont jamais appelées par l'interface : elles
-    // servent à recopier localement l'état du dépôt distant. `REPLACE` est ici
-    // volontaire — l'inverse d'`ABORT` utilisé à la saisie : un planteur déjà
-    // connu doit être mis à jour, pas refusé.
+    // Ces opérations ne sont jamais appelées par l'interface : elles servent à
+    // recopier localement l'état du dépôt distant. Contrairement à la saisie,
+    // qui refuse un code déjà pris (`ABORT`), la synchronisation doit mettre à
+    // jour ce qu'elle connaît déjà.
+    //
+    // `@Upsert` et non `@Insert(REPLACE)` : ce dernier SUPPRIME la ligne avant
+    // de la réinsérer, ce qui déclencherait la cascade de la clé étrangère et
+    // effacerait toutes les pesées du planteur à chaque synchronisation.
+    // `@Upsert` met à jour la ligne existante, sans la détruire.
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insererOuRemplacer(planteurs: List<Planteur>)
+    @Upsert
+    suspend fun enregistrerDepuisDistant(planteurs: List<Planteur>)
 
     @Query("DELETE FROM planteurs WHERE code NOT IN (:codesConserves)")
     suspend fun supprimerHors(codesConserves: List<String>)

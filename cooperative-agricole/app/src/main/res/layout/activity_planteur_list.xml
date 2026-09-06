@@ -85,8 +85,7 @@
                     android:layout_marginTop="6dp"
                     android:gravity="center"
                     android:text="@string/planteurs_vide_message"
-                    android:textAppearance="@style/Texte.Secondaire"
-                    android:textColor="@color/texte_secondaire" />
+                    android:textAppearance="@style/Texte.Secondaire" />
             </LinearLayout>
         </FrameLayout>
     </LinearLayout>

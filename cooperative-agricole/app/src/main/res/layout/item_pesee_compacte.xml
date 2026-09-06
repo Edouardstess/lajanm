@@ -42,7 +42,6 @@
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:textAppearance="@style/Texte.Detail"
-                android:textColor="@color/texte_secondaire"
                 android:visibility="gone"
                 tools:text="Café en parche"
                 tools:visibility="visible" />

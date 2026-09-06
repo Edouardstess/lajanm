@@ -74,7 +74,6 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:textAppearance="@style/Texte.Secondaire"
-                            android:textColor="@color/texte_secondaire"
                             tools:text="Féminin · Kenscoff" />
                     </LinearLayout>
                 </LinearLayout>
@@ -152,15 +151,14 @@
                                 android:id="@+id/valeur_nombre_pesees"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textAppearance="@style/Texte.Titre"
+                                android:textAppearance="@style/Texte.Chiffre"
                                 tools:text="3" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/detail_nombre_pesees"
-                                android:textAppearance="@style/Texte.Detail"
-                                android:textColor="@color/texte_secondaire" />
+                                android:textAppearance="@style/Texte.Detail" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -181,15 +179,14 @@
                                 android:id="@+id/valeur_poids_total"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textAppearance="@style/Texte.Titre"
+                                android:textAppearance="@style/Texte.Chiffre"
                                 tools:text="131,75 kg" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/detail_poids_total"
-                                android:textAppearance="@style/Texte.Detail"
-                                android:textColor="@color/texte_secondaire" />
+                                android:textAppearance="@style/Texte.Detail" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
@@ -220,8 +217,7 @@
                             android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:text="@string/detail_derniere_pesee"
-                            android:textAppearance="@style/Texte.Secondaire"
-                            android:textColor="@color/texte_secondaire" />
+                            android:textAppearance="@style/Texte.Secondaire" />
 
                         <TextView
                             android:id="@+id/valeur_derniere_pesee"
@@ -256,7 +252,6 @@
                     android:layout_marginTop="12dp"
                     android:text="@string/detail_aucune_pesee"
                     android:textAppearance="@style/Texte.Secondaire"
-                    android:textColor="@color/texte_secondaire"
                     android:visibility="gone" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

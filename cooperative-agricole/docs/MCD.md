@@ -43,6 +43,11 @@ par **un et un seul** planteur.
   ne demanderait que de supprimer le champ de l'entité, de la migration et du
   formulaire.
 - **Pas d'attribut « produit »** : le sujet ne décrit qu'un poids par pesée.
+- **`cleDistante` n'appartient pas au MCD.** C'est une colonne technique, ajoutée
+  par l'intégration Firebase : l'`id` d'une pesée étant auto-incrémenté par
+  SQLite, deux téléphones attribueraient le même à deux pesées différentes.
+  Cette clé, tirée au hasard à la création, identifie la pesée d'un appareil à
+  l'autre. L'identifiant du MCD reste `id`. Voir `firebase.md`.
 - **La version du schéma est `1`.** Toute modification ultérieure d'une entité
   impose d'incrémenter `version` dans `@Database` et d'écrire une migration ;
   les schémas exportés dans `app/schemas` servent de trace.

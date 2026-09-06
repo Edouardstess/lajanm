@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         observerPendantAffichage {
-            launch { viewModel.etat.collect(::afficher) }
+            launch { viewModel.etat.collect { etat -> afficher(etat) } }
         }
     }
 

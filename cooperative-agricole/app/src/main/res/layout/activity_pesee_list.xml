@@ -51,8 +51,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/accueil_nombre_pesees"
-                        android:textAppearance="@style/Texte.Detail"
-                        android:textColor="@color/texte_secondaire" />
+                        android:textAppearance="@style/Texte.Detail" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -72,8 +71,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/accueil_poids_total"
-                        android:textAppearance="@style/Texte.Detail"
-                        android:textColor="@color/texte_secondaire" />
+                        android:textAppearance="@style/Texte.Detail" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -120,8 +118,7 @@
                     android:layout_marginTop="6dp"
                     android:gravity="center"
                     android:text="@string/pesees_vide_message"
-                    android:textAppearance="@style/Texte.Secondaire"
-                    android:textColor="@color/texte_secondaire" />
+                    android:textAppearance="@style/Texte.Secondaire" />
             </LinearLayout>
         </FrameLayout>
     </LinearLayout>

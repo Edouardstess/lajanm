@@ -60,8 +60,11 @@ class SourceDistante(private val firestore: FirebaseFirestore) {
                 // Les métadonnées de l'instantané disent d'où il vient : c'est
                 // la façon la plus fiable de connaître l'état réel de la
                 // liaison, plus que d'interroger la connectivité du système.
+                // `hasPendingWrites()` s'écrit avec ses parenthèses : côté Java
+                // ce n'est pas un accesseur `getX()`, Kotlin n'en fait donc pas
+                // une propriété — contrairement à `isFromCache`.
                 _etat.value = when {
-                    instantane.metadata.hasPendingWrites -> EtatSynchronisation.ENVOI_EN_ATTENTE
+                    instantane.metadata.hasPendingWrites() -> EtatSynchronisation.ENVOI_EN_ATTENTE
                     instantane.metadata.isFromCache -> EtatSynchronisation.HORS_LIGNE
                     else -> EtatSynchronisation.SYNCHRONISEE
                 }

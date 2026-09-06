@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.example.cooperativeagricole.data.local.entity.Pesee
 import com.example.cooperativeagricole.data.local.entity.PeseeAvecPlanteur
 import kotlinx.coroutines.flow.Flow
@@ -80,8 +81,8 @@ interface PeseeDao {
     // l'`id` déjà attribué ici à une pesée distante, afin de la mettre à jour
     // au lieu d'en créer un doublon.
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insererOuRemplacer(pesees: List<Pesee>)
+    @Upsert
+    suspend fun enregistrerDepuisDistant(pesees: List<Pesee>)
 
     @Query("SELECT id FROM pesees WHERE cleDistante = :cleDistante")
     suspend fun idLocalPour(cleDistante: String): Long?
