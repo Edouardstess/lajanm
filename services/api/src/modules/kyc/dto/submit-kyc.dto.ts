@@ -1,18 +1,19 @@
-import { IsString, MinLength } from 'class-validator';
+import { IsUUID } from 'class-validator';
 
 /**
- * idDocumentUrl/selfieUrl are meant to be object-storage URLs, but no
- * upload service exists yet in this MVP (see docs/architecture.md — object
- * storage is a separate infra task). Until then this accepts any non-empty
- * string reference rather than pretending uploads are already wired with a
- * strict URL format the client can't actually produce.
+ * Les deux pièces sont désignées par l'identifiant renvoyé par
+ * POST /uploads/kyc.
+ *
+ * La version précédente acceptait n'importe quelle chaîne non vide, et
+ * l'application y mettait l'URI local du téléphone (« file:///… ») — une
+ * valeur qui ne désigne rien côté serveur. Aucun fichier n'était donc
+ * réellement transmis, et rien n'était contrôlé. Exiger un UUID force le
+ * passage par l'endpoint qui, lui, inspecte le contenu.
  */
 export class SubmitKycDto {
-  @IsString()
-  @MinLength(1)
-  idDocumentUrl: string;
+  @IsUUID()
+  idDocumentFileId: string;
 
-  @IsString()
-  @MinLength(1)
-  selfieUrl: string;
+  @IsUUID()
+  selfieFileId: string;
 }

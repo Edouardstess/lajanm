@@ -2,9 +2,11 @@ import * as Crypto from 'expo-crypto';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { ApiError } from '../api/client';
-import { transfer } from '../api/wallet';
+import { lookupRecipient, RecipientLookup, transfer } from '../api/wallet';
 import { AmountField } from '../components/AmountField';
 import { Field } from '../components/Field';
+import { InfoNote } from '../components/InfoNote';
+import { RecipientCard } from '../components/RecipientCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { Recap } from '../components/Recap';
 import { SafetyNote } from '../components/SafetyNote';
@@ -27,10 +29,40 @@ export function TransferScreen() {
   const [state, setState] = useState<ScreenState>('form');
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [recipient, setRecipient] = useState<RecipientLookup | null>(null);
+  const [checking, setChecking] = useState(false);
   const otp = useOtpStep('transfer');
 
   const amountHTG = parseInt(amount, 10);
-  const ready = Number.isFinite(amountHTG) && amountHTG >= 1 && recipientPhone.trim().length > 0;
+  const amountOk = Number.isFinite(amountHTG) && amountHTG >= 1;
+  // On n'envoie que vers un compte confirmé. Un numéro non résolu est
+  // très probablement une faute de frappe, et un transfert ne se
+  // rattrape pas.
+  const ready = amountOk && recipient?.exists === true;
+
+  /**
+   * Résout le numéro dès que l'utilisateur quitte le champ, pas à chaque
+   * frappe : sur EDGE, une requête par caractère sature le lien et fait
+   * clignoter le résultat.
+   */
+  const checkRecipient = async () => {
+    const phone = recipientPhone.trim();
+    if (phone.length === 0) {
+      setRecipient(null);
+      return;
+    }
+    setChecking(true);
+    try {
+      setRecipient(await lookupRecipient(phone));
+    } catch {
+      // Numéro mal formé, limite atteinte, ou réseau absent. On ne bloque
+      // pas l'envoi pour autant : l'utilisateur voit qu'on n'a pas pu
+      // confirmer, et décide.
+      setRecipient(null);
+    } finally {
+      setChecking(false);
+    }
+  };
 
   const onSubmit = async () => {
     if (!ready) return;
@@ -102,11 +134,28 @@ export function TransferScreen() {
     <Screen scroll footer={footer}>
       <Field
         label={t('wallet.recipient_label')}
+        hint={t('wallet.recipient_hint')}
         value={recipientPhone}
-        onChangeText={setRecipientPhone}
+        onChangeText={(next) => {
+          setRecipientPhone(next);
+          // Le résultat précédent ne vaut plus rien dès que le numéro
+          // change : le garder afficherait le nom du mauvais destinataire.
+          setRecipient(null);
+        }}
+        onBlur={checkRecipient}
         keyboardType="phone-pad"
-        placeholder="+509..."
+        placeholder="+509 34 12 34 56"
         editable={!otp.needsOtp}
+      />
+
+      <RecipientCard
+        state={checking ? 'checking' : recipient === null ? 'idle' : recipient.exists ? 'found' : 'unknown'}
+        displayName={recipient?.displayName ?? null}
+        phone={recipient?.phone ?? recipientPhone}
+        checkingLabel={t('wallet.recipient_checking')}
+        unknownLabel={t('wallet.recipient_unknown')}
+        foundLabel={t('wallet.recipient_found')}
+        unnamedLabel={t('wallet.recipient_unnamed')}
       />
 
       <AmountField

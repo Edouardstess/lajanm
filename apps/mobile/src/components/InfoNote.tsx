@@ -28,7 +28,9 @@ export function InfoNote({ children, tone = 'neutral', icon }: Props) {
   const palette = TONES[tone];
   return (
     <View style={[styles.note, { backgroundColor: palette.bg, borderColor: palette.border }]}>
-      <Icon name={icon ?? palette.defaultIcon} size={17} color={palette.icon} style={styles.icon} />
+      <View style={styles.icon}>
+        <Icon name={icon ?? palette.defaultIcon} size={17} color={palette.icon} />
+      </View>
       <Text style={styles.text}>{children}</Text>
     </View>
   );

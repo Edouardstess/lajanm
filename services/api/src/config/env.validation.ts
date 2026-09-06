@@ -78,6 +78,19 @@ class EnvironmentVariables {
   @IsString()
   CORS_ORIGINS?: string;
 
+  // Répertoire où sont écrites les pièces d'identité déposées pour la
+  // vérification KYC. Doit se trouver HORS de toute racine servie en
+  // statique : ces fichiers ne sont jamais rendus par URL, ils sont lus
+  // par le back-office à travers un contrôle d'accès.
+  //
+  // Non défini = ./var/uploads, relatif au répertoire de travail du
+  // processus. Sur un hébergement au disque éphémère (Render en plan
+  // gratuit), ces fichiers disparaissent au redéploiement : c'est
+  // acceptable en test, jamais en production — voir docs/release.md.
+  @IsOptional()
+  @IsString()
+  UPLOAD_DIR?: string;
+
   // Tier-based daily/monthly caps, layered on top of the per-transaction
   // payout cap. Each is independently configurable and defaults to a
   // conservative value — see SecurityService.getTierLimits.

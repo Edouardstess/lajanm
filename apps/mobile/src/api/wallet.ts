@@ -44,3 +44,24 @@ export function getHistory(filters: { type?: OperationType; limit?: number } = {
     authenticated: true,
   });
 }
+
+export interface RecipientLookup {
+  exists: boolean;
+  /** Nom masqué (« Mirlande P. »), ou null si le compte n'en a pas. */
+  displayName: string | null;
+  /** Numéro sous sa forme canonique, tel que le serveur l'a compris. */
+  phone: string;
+}
+
+/**
+ * Dit à qui appartient un numéro, avant l'envoi.
+ *
+ * Un transfert ne se rattrape pas : sans cette étape, un chiffre de trop
+ * envoie l'argent chez un inconnu et on l'apprend après.
+ */
+export function lookupRecipient(phone: string) {
+  return apiRequest<RecipientLookup>(
+    `/wallet/recipients/lookup?phone=${encodeURIComponent(phone)}`,
+    { authenticated: true },
+  );
+}

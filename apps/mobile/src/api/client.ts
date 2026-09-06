@@ -57,6 +57,30 @@ interface RequestOptions {
 }
 
 /**
+ * Extensions et types acceptés par POST /uploads/kyc.
+ *
+ * Ce contrôle côté client N'EST PAS une mesure de sécurité — il est
+ * trivial de le contourner. Il évite simplement de faire monter huit
+ * mégaoctets sur un réseau EDGE pour se faire refuser à l'arrivée. Le
+ * vrai contrôle est côté serveur, sur les octets du fichier.
+ */
+const UPLOAD_TYPES: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+};
+
+/** Une minute : une photo sur EDGE est bien plus lente qu'un appel JSON. */
+const UPLOAD_TIMEOUT_MS = 60_000;
+
+export class UnsupportedFileError extends Error {
+  constructor(public readonly extension: string) {
+    super(`Unsupported file type: ${extension}`);
+  }
+}
+
+/**
  * Thin fetch wrapper: attaches the bearer token when requested, and turns
  * any non-2xx response into an ApiError carrying the server's message —
  * screens show that message (or a translated generic fallback) rather than
@@ -110,4 +134,63 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   return data as T;
+}
+
+/**
+ * Envoie une photo prise par l'appareil vers POST /uploads/kyc.
+ *
+ * Le `Content-Type` de la requête n'est PAS fixé à la main : passer un
+ * FormData à fetch laisse la plateforme écrire l'en-tête avec la
+ * frontière multipart qu'elle a générée. Le renseigner soi-même produit
+ * une frontière fausse, et le serveur ne voit aucun fichier.
+ */
+export async function uploadKycPhoto(localUri: string): Promise<{ fileId: string }> {
+  const extension = (localUri.split('.').pop() ?? '').toLowerCase().split('?')[0];
+  const mimeType = UPLOAD_TYPES[extension];
+  if (!mimeType) {
+    throw new UnsupportedFileError(extension);
+  }
+
+  const form = new FormData();
+  form.append('file', {
+    uri: localUri,
+    name: `photo.${extension}`,
+    type: mimeType,
+  } as unknown as Blob);
+
+  const headers: Record<string, string> = {};
+  const token = await getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/uploads/kyc`, {
+      method: 'POST',
+      headers,
+      body: form,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    throw new NetworkError((error as Error)?.name === 'AbortError');
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const text = await response.text();
+  let data: { fileId?: string; message?: string | string[] } | undefined;
+  try {
+    data = text ? JSON.parse(text) : undefined;
+  } catch {
+    throw new ApiError(response.status, `Request failed with status ${response.status}`);
+  }
+
+  if (!response.ok || !data?.fileId) {
+    const message = data?.message ?? `Request failed with status ${response.status}`;
+    throw new ApiError(response.status, Array.isArray(message) ? message.join(', ') : message);
+  }
+
+  return { fileId: data.fileId };
 }

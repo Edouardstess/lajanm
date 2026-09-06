@@ -7,6 +7,7 @@ import { FraudService } from '../fraud/fraud.service';
 import { Account, AccountOwnerType } from '../ledger/entities/account.entity';
 import { LedgerService } from '../ledger/ledger.service';
 import { AccountsService } from '../ledger/services/accounts.service';
+import { RateLimitService } from '../../common/rate-limit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SecurityService } from '../security/security.service';
 import { FakeLedgerDataSource } from '../../testing/fake-ledger-data-source';
@@ -32,7 +33,9 @@ const recipientAccount: Account = {
   createdAt: new Date(),
 };
 
-function buildService(options: { securityService?: Partial<SecurityService> } = {}) {
+function buildService(
+  options: { securityService?: Partial<SecurityService>; rateLimitService?: Partial<RateLimitService> } = {},
+) {
   const fakeLedgerDataSource = new FakeLedgerDataSource();
   const ledgerService = new LedgerService(fakeLedgerDataSource as unknown as DataSource);
 
@@ -57,6 +60,10 @@ function buildService(options: { securityService?: Partial<SecurityService> } = 
     ...options.securityService,
   } as unknown as SecurityService;
   const fraudService = { evaluate: jest.fn().mockResolvedValue(undefined) } as unknown as FraudService;
+  const rateLimitService = {
+    consume: jest.fn().mockResolvedValue(undefined),
+    ...options.rateLimitService,
+  } as unknown as RateLimitService;
 
   const service = new WalletService(
     users as unknown as never,
@@ -66,9 +73,10 @@ function buildService(options: { securityService?: Partial<SecurityService> } = 
     notificationsService,
     securityService,
     fraudService,
+    rateLimitService,
   );
 
-  return { service, ledgerService, securityService, fraudService, notificationsService };
+  return { service, ledgerService, securityService, fraudService, notificationsService, rateLimitService, users };
 }
 
 const fundingSourceAccountId = 'system-funding-source';
@@ -85,6 +93,74 @@ async function fund(ledgerService: LedgerService, accountId: string, amountMinor
 }
 
 describe('WalletService.transfer', () => {
+  // --- Numéros de téléphone -------------------------------------------
+  //
+  // Le défaut corrigé : le destinataire était cherché sur la chaîne
+  // exacte saisie. « 39000001 » ne trouvait donc pas le compte enregistré
+  // sous « +50939000001 », et l'expéditeur recevait « ce numéro n'a pas
+  // de compte Lajan'm » alors que le compte existait.
+  it('trouve le destinataire quelle que soit l’écriture du numéro', async () => {
+    const { service, ledgerService, users } = buildService();
+    await fund(ledgerService, senderAccount.id, 100_000n);
+
+    for (const written of ['+50900000002', '50900000002', '00 509 00000002', '+509 00-00-00-02']) {
+      await expect(
+        service.transfer(sender.id, {
+          recipientPhone: written,
+          amountHTG: 1,
+          clientRequestId: randomUUID(),
+        }),
+      ).resolves.toMatchObject({ idempotent: false });
+    }
+
+    // Chaque recherche a bien porté sur la forme canonique, une seule.
+    const queried = users.findOneBy.mock.calls.map((c: [{ phone: string }]) => c[0].phone);
+    expect(new Set(queried)).toEqual(new Set(['+50900000002']));
+  });
+
+  // --- Confirmation du destinataire ------------------------------------
+  it('renvoie un nom masqué, jamais l’identité complète', async () => {
+    const { service, users } = buildService();
+    users.findOneBy.mockResolvedValueOnce({
+      ...recipient,
+      fullName: 'Mirlande Pierre',
+      email: 'mirlande@example.com',
+    });
+
+    const result = await service.lookupRecipient(sender.id, { phone: '00000002' });
+
+    expect(result).toEqual({ exists: true, displayName: 'Mirlande P.', phone: '+50900000002' });
+    expect(JSON.stringify(result)).not.toContain('Pierre');
+    expect(JSON.stringify(result)).not.toContain('example.com');
+  });
+
+  it('traite son propre numéro comme inconnu', async () => {
+    const { service } = buildService();
+    await expect(service.lookupRecipient(sender.id, { phone: sender.phone })).resolves.toEqual({
+      exists: false,
+      displayName: null,
+      phone: sender.phone,
+    });
+  });
+
+  it('compte la recherche avant de toucher la base', async () => {
+    const { service, rateLimitService, users } = buildService({
+      rateLimitService: { consume: jest.fn().mockRejectedValue(new Error('trop de requêtes')) },
+    });
+
+    await expect(service.lookupRecipient(sender.id, { phone: '00000002' })).rejects.toThrow(
+      'trop de requêtes',
+    );
+    // La limite doit être atteinte SANS avoir interrogé l'annuaire :
+    // sinon elle ne protège de rien.
+    expect(users.findOneBy).not.toHaveBeenCalled();
+    expect(rateLimitService.consume).toHaveBeenCalledWith(
+      `wallet:lookup:${sender.id}`,
+      expect.any(Number),
+      expect.any(Number),
+    );
+  });
+
   it('rejects a transfer to an unknown phone number', async () => {
     const { service } = buildService();
     await expect(

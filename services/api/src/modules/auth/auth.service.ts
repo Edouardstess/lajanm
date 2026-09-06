@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { Repository } from 'typeorm';
 import { PaginationQueryDto, toFindPaging } from '../../common/dto/pagination-query.dto';
+import { normalizePhone } from '../../common/phone';
 import { AuditService } from '../audit/audit.service';
 import { ChangePinDto } from './dto/change-pin.dto';
 import { LoginDto } from './dto/login.dto';
@@ -27,14 +28,19 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<Pick<User, 'id' | 'phone' | 'tier'>> {
-    const existing = await this.users.findOneBy({ phone: dto.phone });
+    // Un numéro est stocké sous une seule forme, quelle que soit la
+    // saisie : sans cela « +50939000001 » et « 39000001 » créaient deux
+    // comptes distincts pour la même personne, et un seul recevait
+    // l'argent qu'on lui envoyait.
+    const phone = normalizePhone(dto.phone);
+    const existing = await this.users.findOneBy({ phone });
     if (existing) {
       throw new ConflictException('A user with this phone number already exists');
     }
 
     const pinHash = await argon2.hash(dto.pin);
     const user = await this.users.save(
-      this.users.create({ phone: dto.phone, pinHash, tier: UserTier.BASIC }),
+      this.users.create({ phone, pinHash, tier: UserTier.BASIC }),
     );
 
     await this.auditService.record({
@@ -48,7 +54,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<AuthResult> {
-    const user = await this.users.findOneBy({ phone: dto.phone });
+    const user = await this.users.findOneBy({ phone: normalizePhone(dto.phone) });
     // Same error for "no such user" and "wrong PIN" — never let an
     // attacker use this endpoint to enumerate registered phone numbers.
     if (!user || !(await argon2.verify(user.pinHash, dto.pin))) {

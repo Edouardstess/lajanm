@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { validate } from './config/env.validation';
+import { RateLimitModule } from './common/rate-limit.module';
 import { DatabaseModule } from './database/database.module';
 import { AppController } from './app.controller';
 import { AdminModule } from './modules/admin/admin.module';
@@ -11,6 +12,7 @@ import { KycModule } from './modules/kyc/kyc.module';
 import { LedgerModule } from './modules/ledger/ledger.module';
 import { TopupModule } from './modules/topup/topup.module';
 import { PayoutModule } from './modules/payout/payout.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { SecurityModule } from './modules/security/security.module';
 import { FraudModule } from './modules/fraud/fraud.module';
@@ -35,11 +37,13 @@ import { SupportModule } from './modules/support/support.module';
         connection: { url: config.get<string>('REDIS_URL') },
       }),
     }),
+    RateLimitModule,
     DatabaseModule,
     AuditModule,
     AuthModule,
     AdminModule,
     KycModule,
+    UploadsModule,
     LedgerModule,
     TopupModule,
     PayoutModule,

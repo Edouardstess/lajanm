@@ -7,10 +7,12 @@ export enum KycStatus {
 }
 
 /**
- * One identity-verification attempt. idDocumentUrl/selfieUrl point at
- * already-uploaded files (object storage integration is an infra concern
- * outside this module's scope) — this module owns the review workflow and
- * status, not the upload itself.
+ * Une tentative de vérification d'identité.
+ *
+ * Les deux photos sont désignées par l'identifiant du fichier déposé via
+ * POST /uploads/kyc, qui les a inspectées (extension, type annoncé et
+ * surtout octets réels) avant de les écrire. Ce module possède le
+ * circuit de revue et son statut, pas le stockage.
  */
 @Entity('kyc_submissions')
 export class KycSubmission {
@@ -21,11 +23,16 @@ export class KycSubmission {
   @Column({ type: 'uuid' })
   userId: string;
 
-  @Column({ type: 'varchar', length: 512 })
-  idDocumentUrl: string;
+  /**
+   * Références vers `uploaded_files`. Nullables uniquement à cause des
+   * demandes créées avant l'existence d'un vrai dépôt de fichiers ; toute
+   * nouvelle demande les renseigne (voir SubmitKycDto).
+   */
+  @Column({ type: 'uuid', nullable: true })
+  idDocumentFileId: string | null;
 
-  @Column({ type: 'varchar', length: 512 })
-  selfieUrl: string;
+  @Column({ type: 'uuid', nullable: true })
+  selfieFileId: string | null;
 
   @Column({ type: 'enum', enum: KycStatus, default: KycStatus.PENDING })
   status: KycStatus;

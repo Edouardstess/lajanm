@@ -9,11 +9,15 @@ export interface KycSubmission {
   createdAt: string;
 }
 
-export function submitKyc(idDocumentUrl: string, selfieUrl: string) {
+/**
+ * Les deux identifiants viennent de `uploadKycPhoto` : le serveur n'accepte
+ * plus de chaîne libre, seulement des fichiers qu'il a lui-même inspectés.
+ */
+export function submitKyc(idDocumentFileId: string, selfieFileId: string) {
   return apiRequest<KycSubmission>('/kyc/submissions', {
     method: 'POST',
     authenticated: true,
-    body: { idDocumentUrl, selfieUrl },
+    body: { idDocumentFileId, selfieFileId },
   });
 }
 

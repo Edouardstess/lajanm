@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaginationQueryDto, toFindPaging } from '../../common/dto/pagination-query.dto';
 import { AuditService } from '../audit/audit.service';
+import { UploadsService } from '../uploads/uploads.service';
 import { User, UserTier } from '../auth/entities/user.entity';
 import { DecideKycDto, KycDecision } from './dto/decide-kyc.dto';
 import { SubmitKycDto } from './dto/submit-kyc.dto';
@@ -14,6 +15,7 @@ export class KycService {
     @InjectRepository(KycSubmission) private readonly submissions: Repository<KycSubmission>,
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly auditService: AuditService,
+    private readonly uploadsService: UploadsService,
   ) {}
 
   async submit(userId: string, dto: SubmitKycDto): Promise<KycSubmission> {
@@ -22,11 +24,20 @@ export class KycService {
       throw new BadRequestException('A KYC submission is already pending review');
     }
 
+    // Les deux fichiers doivent exister ET appartenir à l'auteur de la
+    // demande. Sans ce contrôle, deviner un identifiant suffirait à
+    // joindre la pièce d'identité de quelqu'un d'autre à son dossier.
+    await this.uploadsService.assertOwnedBy(userId, [dto.idDocumentFileId, dto.selfieFileId]);
+
+    if (dto.idDocumentFileId === dto.selfieFileId) {
+      throw new BadRequestException('The ID document and the selfie must be two different photos');
+    }
+
     const submission = await this.submissions.save(
       this.submissions.create({
         userId,
-        idDocumentUrl: dto.idDocumentUrl,
-        selfieUrl: dto.selfieUrl,
+        idDocumentFileId: dto.idDocumentFileId,
+        selfieFileId: dto.selfieFileId,
         status: KycStatus.PENDING,
       }),
     );

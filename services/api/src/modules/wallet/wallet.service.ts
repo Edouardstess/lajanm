@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { normalizePhone } from '../../common/phone';
+import { RateLimitService } from '../../common/rate-limit.service';
 import { AuditService } from '../audit/audit.service';
 import { User } from '../auth/entities/user.entity';
 import { FraudService } from '../fraud/fraud.service';
@@ -12,7 +14,25 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { OtpPurpose } from '../security/entities/otp-code.entity';
 import { SecurityService } from '../security/security.service';
 import { HistoryQueryDto } from './dto/history-query.dto';
+import { LookupRecipientDto } from './dto/lookup-recipient.dto';
 import { TransferDto } from './dto/transfer.dto';
+
+// 30 recherches par heure : largement au-dessus d'un usage normal
+// (on envoie de l'argent à quelques personnes), largement en dessous de
+// ce qu'il faut pour balayer un annuaire.
+const LOOKUP_LIMIT = 30;
+const LOOKUP_WINDOW_SECONDS = 3600;
+
+/**
+ * « Mirlande Pierre » -> « Mirlande P. ». Assez pour reconnaître
+ * quelqu'un qu'on connaît, trop peu pour identifier un inconnu.
+ */
+function maskName(fullName: string | null): string | null {
+  const parts = (fullName ?? '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return null;
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.`;
+}
 
 export interface BalanceSnapshot {
   balanceMinor: string;
@@ -34,6 +54,7 @@ export class WalletService {
     private readonly notificationsService: NotificationsService,
     private readonly securityService: SecurityService,
     private readonly fraudService: FraudService,
+    private readonly rateLimitService: RateLimitService,
   ) {}
 
   async getBalance(userId: string): Promise<BalanceSnapshot> {
@@ -44,7 +65,7 @@ export class WalletService {
 
   async transfer(senderId: string, dto: TransferDto): Promise<{ operationId: string; idempotent: boolean }> {
     const sender = await this.users.findOneByOrFail({ id: senderId });
-    const recipient = await this.users.findOneBy({ phone: dto.recipientPhone });
+    const recipient = await this.users.findOneBy({ phone: normalizePhone(dto.recipientPhone) });
     if (!recipient) {
       throw new NotFoundException('No Lajan’m account found for this phone number');
     }
@@ -113,6 +134,46 @@ export class WalletService {
     }
 
     return { operationId: result.operation.id, idempotent: result.idempotent };
+  }
+
+  /**
+   * Dit à qui un numéro appartient, avant l'envoi.
+   *
+   * Un transfert est irréversible : sans cette étape, un chiffre de trop
+   * envoie l'argent chez un inconnu, et l'expéditeur ne l'apprend
+   * qu'après. C'est la raison d'être de cet endpoint.
+   *
+   * Il a une contrepartie qu'il faut nommer : il révèle qu'un numéro a un
+   * compte Lajan'm, donc il permet de tester un annuaire. Trois garde-fous,
+   * et ils ne suppriment pas le risque, ils le bornent :
+   *   - authentification obligatoire (pas d'accès anonyme) ;
+   *   - 30 recherches par heure et par compte, comptées dans Redis ;
+   *   - le nom renvoyé est masqué (« Mirlande P. »), jamais l'identité
+   *     complète, jamais l'e-mail, jamais le niveau de compte.
+   *
+   * Le nom masqué suffit à reconnaître son destinataire quand on le
+   * connaît, et n'apprend presque rien à qui ne le connaît pas.
+   */
+  async lookupRecipient(
+    senderId: string,
+    dto: LookupRecipientDto,
+  ): Promise<{ exists: boolean; displayName: string | null; phone: string }> {
+    // La limite est comptée AVANT la normalisation : sinon quatre
+    // écritures du même numéro compteraient pour quatre recherches
+    // différentes tout en interrogeant la même ligne.
+    await this.rateLimitService.consume(`wallet:lookup:${senderId}`, LOOKUP_LIMIT, LOOKUP_WINDOW_SECONDS);
+
+    const phone = normalizePhone(dto.phone);
+    const recipient = await this.users.findOneBy({ phone });
+
+    if (!recipient || recipient.id === senderId) {
+      // Son propre numéro est traité comme inexistant : l'envoi à soi-même
+      // est refusé plus loin de toute façon, et confirmer « c'est vous »
+      // n'apporte rien.
+      return { exists: false, displayName: null, phone };
+    }
+
+    return { exists: true, displayName: maskName(recipient.fullName), phone };
   }
 
   async history(userId: string, query: HistoryQueryDto) {
