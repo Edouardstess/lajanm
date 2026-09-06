@@ -10,10 +10,6 @@ import com.example.cooperativeagricole.data.local.dao.PeseeDao
 import com.example.cooperativeagricole.data.local.dao.PlanteurDao
 import com.example.cooperativeagricole.data.local.entity.Pesee
 import com.example.cooperativeagricole.data.local.entity.Planteur
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 
 /**
  * Base de données Room de l'application.
@@ -61,18 +57,18 @@ abstract class CooperativeDatabase : RoomDatabase() {
                 .build()
 
         /**
-         * Insère les données de démonstration juste après la création des
-         * tables. `onCreate` s'exécute sur le thread qui ouvre la base : le
-         * remplissage part donc dans une coroutine d'entrées/sorties pour ne
-         * pas retarder le premier écran.
+         * Insère les données de démonstration au moment même où les tables
+         * viennent d'être créées, dans la transaction de création.
+         *
+         * Le remplissage est volontairement **synchrone** : le confier à une
+         * coroutine laisserait la base vide pendant quelques instants, et la
+         * synchronisation distante, qui démarre au lancement, prendrait ce vide
+         * pour l'état réel de l'appareil.
          */
         private class RappelDeCreation : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                val base = instance ?: return
-                CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-                    DonneesDemo.remplir(base.planteurDao(), base.peseeDao())
-                }
+                DonneesDemo.remplir(db)
             }
         }
     }

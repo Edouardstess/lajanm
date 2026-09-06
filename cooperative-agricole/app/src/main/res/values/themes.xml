@@ -56,6 +56,13 @@
         <item name="android:letterSpacing">-0.01</item>
     </style>
 
+    <!-- Titre de barre d'outils : assez présent pour ancrer l'écran, assez
+         mesuré pour qu'un titre long tienne à côté de la flèche de retour. -->
+    <style name="Texte.TitreBarre" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textColor">@color/texte</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="Texte.Section" parent="TextAppearance.Material3.TitleMedium">
         <item name="android:textColor">@color/texte</item>
     </style>
@@ -100,7 +107,7 @@
 
     <style name="BarreOutils" parent="Widget.Material3.Toolbar">
         <item name="android:background">@android:color/transparent</item>
-        <item name="titleTextAppearance">@style/Texte.Titre</item>
+        <item name="titleTextAppearance">@style/Texte.TitreBarre</item>
         <item name="titleTextColor">@color/texte</item>
         <item name="subtitleTextAppearance">@style/Texte.Secondaire</item>
         <item name="navigationIconTint">@color/texte</item>

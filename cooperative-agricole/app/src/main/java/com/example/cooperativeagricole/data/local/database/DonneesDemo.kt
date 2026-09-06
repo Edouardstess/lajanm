@@ -1,17 +1,25 @@
 package com.example.cooperativeagricole.data.local.database
 
-import com.example.cooperativeagricole.data.local.dao.PeseeDao
-import com.example.cooperativeagricole.data.local.dao.PlanteurDao
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.cooperativeagricole.data.local.entity.Pesee
 import com.example.cooperativeagricole.data.local.entity.Planteur
 import com.example.cooperativeagricole.data.local.entity.Sexe
 import com.example.cooperativeagricole.util.Dates
 
 /**
- * Jeu de données de démonstration inséré à la première ouverture de
- * l'application : 10 planteurs et une trentaine de pesées, en quantité
- * suffisante pour montrer les listes, la recherche, les agrégats (nombre de
- * pesées, poids total) et le cas d'un planteur sans aucune pesée.
+ * Jeu de données de démonstration inséré à la création de la base : 10
+ * planteurs et 23 pesées, en quantité suffisante pour montrer les listes, la
+ * recherche, les agrégats (nombre de pesées, poids total) et le cas d'un
+ * planteur sans aucune pesée.
+ *
+ * L'insertion passe par du SQL direct, et non par les DAO, pour une raison
+ * précise : elle s'exécute **dans la transaction qui crée la base**, avant que
+ * quiconque puisse lire ou écrire. Une insertion différée dans une coroutine
+ * laisserait une fenêtre pendant laquelle la synchronisation distante verrait
+ * une base vide — et croirait devoir l'effacer.
+ *
+ * Les valeurs sont passées en paramètres liés (`?`) : aucune concaténation de
+ * chaînes, donc aucune question d'échappement.
  */
 object DonneesDemo {
 
@@ -55,10 +63,36 @@ object DonneesDemo {
         Pesee(planteurCode = "PL-009", datePesee = Dates.ilYAJours(24), poidsKg = 68.0, observation = null),
     )
 
-    suspend fun remplir(planteurDao: PlanteurDao, peseeDao: PeseeDao) {
-        PLANTEURS.forEach { planteurDao.inserer(it) }
-        // Les pesées sont insérées après les planteurs : la clé étrangère
-        // exige que le planteur référencé existe déjà.
-        PESEES.forEach { peseeDao.inserer(it) }
+    fun remplir(base: SupportSQLiteDatabase) {
+        PLANTEURS.forEach { planteur ->
+            base.execSQL(
+                "INSERT INTO planteurs (code, nom, prenom, sexe, dateNaissance, localite) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                arrayOf<Any?>(
+                    planteur.code,
+                    planteur.nom,
+                    planteur.prenom,
+                    planteur.sexe.code,
+                    planteur.dateNaissance,
+                    planteur.localite,
+                ),
+            )
+        }
+
+        // Les pesées viennent après les planteurs : la clé étrangère exige que
+        // le planteur référencé existe déjà.
+        PESEES.forEach { pesee ->
+            base.execSQL(
+                "INSERT INTO pesees (planteurCode, datePesee, poidsKg, observation, cleDistante) " +
+                    "VALUES (?, ?, ?, ?, ?)",
+                arrayOf<Any?>(
+                    pesee.planteurCode,
+                    pesee.datePesee,
+                    pesee.poidsKg,
+                    pesee.observation,
+                    pesee.cleDistante,
+                ),
+            )
+        }
     }
 }

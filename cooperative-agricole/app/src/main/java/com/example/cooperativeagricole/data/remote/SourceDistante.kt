@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
 
 /**
  * Base distante : le miroir Firestore des tables locales.
@@ -44,6 +45,10 @@ class SourceDistante(private val firestore: FirebaseFirestore) {
      * Transforme l'écoute d'une collection Firestore, qui fonctionne par
      * rappels, en `Flow`. `awaitClose` détache l'écoute quand plus personne ne
      * collecte : sans cela, l'écoute survivrait à l'écran qui l'a demandée.
+     *
+     * `conflate` parce que chaque instantané décrit la collection entière et
+     * non une différence : si plusieurs arrivent pendant qu'on traite le
+     * précédent, seul le dernier a un sens, les intermédiaires peuvent tomber.
      */
     private fun <T> observerCollection(
         collection: String,
@@ -71,7 +76,7 @@ class SourceDistante(private val firestore: FirebaseFirestore) {
                 trySend(instantane.documents.mapNotNull(conversion))
             }
         awaitClose { ecoute.remove() }
-    }
+    }.conflate()
 
     // --- Écritures ---
 

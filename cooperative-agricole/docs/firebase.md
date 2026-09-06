@@ -90,6 +90,13 @@ instantané, si le distant est vide, l'application **téléverse** ce qu'elle a 
 lieu d'effacer. C'est ce qui permet d'installer l'application sur un premier
 téléphone sans perdre le jeu de démonstration.
 
+Ce mécanisme suppose que les données locales existent déjà quand le premier
+instantané arrive. C'est la raison pour laquelle le jeu de démonstration est
+inséré **de façon synchrone**, dans la transaction qui crée la base
+(`DonneesDemo`), et non dans une coroutine lancée après coup : la
+synchronisation démarre au lancement de l'application, et aurait pris ce vide
+passager pour l'état réel de l'appareil.
+
 ## Règles de sécurité
 
 Le mode test ouvre la base à tous pendant 30 jours : c'est acceptable pour une
