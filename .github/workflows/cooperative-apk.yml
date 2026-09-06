@@ -36,6 +36,12 @@ jobs:
       - name: Tests unitaires
         run: ./gradlew testDebugUnitTest --no-daemon
 
+      # Les tests des DAO demandent un appareil pour s'exécuter, mais rien
+      # n'empêche de les compiler : un fichier livré qui ne compile pas est un
+      # défaut, même s'il n'est jamais lancé ici.
+      - name: Compiler les tests instrumentés
+        run: ./gradlew compileDebugAndroidTestKotlin --no-daemon
+
       - name: Compiler l'APK de debug
         run: ./gradlew assembleDebug --no-daemon
 
