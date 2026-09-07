@@ -13,10 +13,10 @@ import com.example.cooperativeagricole.util.Dates
  * planteur sans aucune pesée.
  *
  * L'insertion passe par du SQL direct, et non par les DAO, pour une raison
- * précise : elle s'exécute **dans la transaction qui crée la base**, avant que
- * quiconque puisse lire ou écrire. Une insertion différée dans une coroutine
- * laisserait une fenêtre pendant laquelle la synchronisation distante verrait
- * une base vide — et croirait devoir l'effacer.
+ * précise : elle s'exécute **dans la transaction qui crée la base**, donc avant
+ * que le premier écran puisse la lire. Une insertion différée dans une
+ * coroutine laisserait l'accueil afficher « 0 planteur » pendant un instant,
+ * juste après l'installation.
  *
  * Les valeurs sont passées en paramètres liés (`?`) : aucune concaténation de
  * chaînes, donc aucune question d'échappement.
@@ -83,14 +83,13 @@ object DonneesDemo {
         // le planteur référencé existe déjà.
         PESEES.forEach { pesee ->
             base.execSQL(
-                "INSERT INTO pesees (planteurCode, datePesee, poidsKg, observation, cleDistante) " +
-                    "VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO pesees (planteurCode, datePesee, poidsKg, observation) " +
+                    "VALUES (?, ?, ?, ?)",
                 arrayOf<Any?>(
                     pesee.planteurCode,
                     pesee.datePesee,
                     pesee.poidsKg,
                     pesee.observation,
-                    pesee.cleDistante,
                 ),
             )
         }

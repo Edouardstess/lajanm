@@ -63,34 +63,6 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- État de la liaison avec la base distante. Toujours visible : c'est
-             la seule chose que l'utilisateur ne peut pas déduire de l'écran. -->
-        <LinearLayout
-            android:id="@+id/etiquette_etat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/fond_etiquette"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="7dp">
-
-            <View
-                android:id="@+id/point_etat"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@drawable/point_statut" />
-
-            <TextView
-                android:id="@+id/texte_etat"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:textAppearance="@style/Texte.Detail"
-                tools:text="Synchronisé" />
-        </LinearLayout>
-
         <!-- ===== Mesure ===== -->
 
         <TextView

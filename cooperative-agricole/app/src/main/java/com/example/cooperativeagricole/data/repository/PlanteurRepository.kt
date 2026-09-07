@@ -2,7 +2,6 @@ package com.example.cooperativeagricole.data.repository
 
 import com.example.cooperativeagricole.data.local.dao.PlanteurDao
 import com.example.cooperativeagricole.data.local.entity.Planteur
-import com.example.cooperativeagricole.data.remote.SourceDistante
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -13,22 +12,11 @@ import kotlinx.coroutines.flow.Flow
  *  - parler au DAO, et à lui seul ;
  *  - fournir aux ViewModels une interface qui ne dépend pas de Room.
  *
- * Concrètement, le ViewModel ignore d'où viennent les données — c'est ce qui a
- * permis d'ajouter la base distante Firestore sans toucher une seule ligne des
- * ViewModels ni des écrans : seules les écritures de ce fichier ont changé.
- *
- * Sens de circulation :
- *  - **lectures** : toujours depuis Room, y compris quand Firebase est actif.
- *    L'application reste ainsi utilisable hors réseau, et l'interface n'attend
- *    jamais le serveur ;
- *  - **écritures** : d'abord Room, puis la base distante. Si [sourceDistante]
- *    est `null` (aucune configuration Firebase), l'application travaille en
- *    local seul, exactement comme avant.
+ * Concrètement, le ViewModel ignore d'où viennent les données. Si demain la
+ * coopérative ajoutait un serveur, seul ce fichier changerait : ni les
+ * ViewModels ni les écrans n'auraient à être touchés.
  */
-class PlanteurRepository(
-    private val planteurDao: PlanteurDao,
-    private val sourceDistante: SourceDistante? = null,
-) {
+class PlanteurRepository(private val planteurDao: PlanteurDao) {
 
     val tous: Flow<List<Planteur>> = planteurDao.listerTous()
 
@@ -45,20 +33,10 @@ class PlanteurRepository(
 
     suspend fun compterMaintenant(): Int = planteurDao.compterMaintenant()
 
-    suspend fun inserer(planteur: Planteur) {
-        planteurDao.inserer(planteur)
-        sourceDistante?.enregistrer(planteur)
-    }
+    suspend fun inserer(planteur: Planteur) = planteurDao.inserer(planteur)
 
-    suspend fun modifier(planteur: Planteur) {
-        planteurDao.modifier(planteur)
-        sourceDistante?.enregistrer(planteur)
-    }
+    suspend fun modifier(planteur: Planteur) = planteurDao.modifier(planteur)
 
-    suspend fun supprimer(planteur: Planteur) {
-        planteurDao.supprimer(planteur)
-        // Localement, SQLite supprime les pesées par cascade ; côté distant,
-        // SourceDistante s'en charge explicitement.
-        sourceDistante?.supprimerPlanteur(planteur.code)
-    }
+    /** Les pesées du planteur suivent, par cascade de la clé étrangère. */
+    suspend fun supprimer(planteur: Planteur) = planteurDao.supprimer(planteur)
 }

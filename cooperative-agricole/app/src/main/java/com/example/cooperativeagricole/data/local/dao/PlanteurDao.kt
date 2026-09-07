@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import androidx.room.Upsert
 import com.example.cooperativeagricole.data.local.entity.Planteur
 import kotlinx.coroutines.flow.Flow
 
@@ -72,28 +71,4 @@ interface PlanteurDao {
     /** Compte ponctuel, quand un écran doit décider immédiatement. */
     @Query("SELECT COUNT(*) FROM planteurs")
     suspend fun compterMaintenant(): Int
-
-    // --- Réservé à la synchronisation avec la base distante ---
-    //
-    // Ces opérations ne sont jamais appelées par l'interface : elles servent à
-    // recopier localement l'état du dépôt distant. Contrairement à la saisie,
-    // qui refuse un code déjà pris (`ABORT`), la synchronisation doit mettre à
-    // jour ce qu'elle connaît déjà.
-    //
-    // `@Upsert` et non `@Insert(REPLACE)` : ce dernier SUPPRIME la ligne avant
-    // de la réinsérer, ce qui déclencherait la cascade de la clé étrangère et
-    // effacerait toutes les pesées du planteur à chaque synchronisation.
-    // `@Upsert` met à jour la ligne existante, sans la détruire.
-
-    @Upsert
-    suspend fun enregistrerDepuisDistant(planteurs: List<Planteur>)
-
-    @Query("DELETE FROM planteurs WHERE code NOT IN (:codesConserves)")
-    suspend fun supprimerHors(codesConserves: List<String>)
-
-    @Query("DELETE FROM planteurs")
-    suspend fun supprimerTout()
-
-    @Query("SELECT * FROM planteurs")
-    suspend fun listerToutMaintenant(): List<Planteur>
 }

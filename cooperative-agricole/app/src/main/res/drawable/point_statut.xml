@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Point de couleur de l'étiquette d'état ; la teinte est posée par le code
-     selon l'état réel de la liaison. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="@color/neutre" />
-    <size android:width="8dp" android:height="8dp" />
-</shape>

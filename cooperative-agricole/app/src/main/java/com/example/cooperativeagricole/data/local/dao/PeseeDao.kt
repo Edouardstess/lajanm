@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import androidx.room.Upsert
 import com.example.cooperativeagricole.data.local.entity.Pesee
 import com.example.cooperativeagricole.data.local.entity.PeseeAvecPlanteur
 import kotlinx.coroutines.flow.Flow
@@ -73,26 +72,4 @@ interface PeseeDao {
 
     @Query("SELECT SUM(poidsKg) FROM pesees")
     fun poidsTotal(): Flow<Double?>
-
-    // --- Réservé à la synchronisation avec la base distante ---
-    //
-    // Les pesées venues du réseau sont reconnues par leur `cleDistante`, pas
-    // par leur `id` : celui-ci est propre à l'appareil. `idLocalPour` donne
-    // l'`id` déjà attribué ici à une pesée distante, afin de la mettre à jour
-    // au lieu d'en créer un doublon.
-
-    @Upsert
-    suspend fun enregistrerDepuisDistant(pesees: List<Pesee>)
-
-    @Query("SELECT id FROM pesees WHERE cleDistante = :cleDistante")
-    suspend fun idLocalPour(cleDistante: String): Long?
-
-    @Query("DELETE FROM pesees WHERE cleDistante NOT IN (:clesConservees)")
-    suspend fun supprimerHors(clesConservees: List<String>)
-
-    @Query("DELETE FROM pesees")
-    suspend fun supprimerTout()
-
-    @Query("SELECT * FROM pesees")
-    suspend fun listerToutMaintenant(): List<Pesee>
 }

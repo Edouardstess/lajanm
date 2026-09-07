@@ -1,8 +1,7 @@
 # Coopérative Agricole — Gestion des planteurs et des pesées
 
 Application Android native (Kotlin) de gestion d'une coopérative agricole,
-construite selon l'architecture **MVVM**, la persistance locale **Room** et une
-base distante **Firebase Firestore** optionnelle.
+construite selon l'architecture **MVVM** et la persistance locale **Room**.
 
 Projet d'évaluation finale — UNITECH, *Projet Intra Android*, niveaux 3 et 4
 Sciences Informatiques.
@@ -17,11 +16,8 @@ remplace le cahier de pesée papier : elle enregistre les planteurs, consigne
 chaque pesée en la rattachant à son planteur, et calcule automatiquement les
 totaux par planteur et pour la coopérative entière.
 
-Tout fonctionne **hors ligne** : les données vivent dans une base SQLite locale
-gérée par Room. Si un projet Firebase est configuré, ces données sont en plus
-**synchronisées entre les appareils** via Firestore — sans que l'application
-cesse de fonctionner quand le réseau manque, puisque les écrans continuent de
-lire la base locale.
+Tout fonctionne **hors ligne** : les données vivent dans une base SQLite
+locale gérée par Room, sans serveur ni connexion Internet.
 
 ## 2. Objectifs
 
@@ -33,8 +29,6 @@ lire la base locale.
 - Consulter la fiche d'un planteur avec l'historique et la synthèse de ses
   pesées (nombre, poids total, dernière pesée).
 - Empêcher la saisie de données incohérentes et confirmer les suppressions.
-- Partager les données entre plusieurs téléphones, sans jamais dépendre du
-  réseau pour saisir.
 
 **Objectifs techniques**
 
@@ -43,8 +37,6 @@ lire la base locale.
   l'interface se mette à jour d'elle-même après chaque écriture.
 - N'écrire aucune requête SQL ailleurs que dans les DAO.
 - Garder les règles métier testables sans émulateur.
-- Ajouter la base distante sans toucher aux ViewModels ni aux écrans — c'est le
-  test qui prouve que la couche Repository joue bien son rôle.
 
 ## 3. Fonctionnalités développées
 
@@ -56,10 +48,6 @@ lire la base locale.
 | **Fiche du planteur** | Informations complètes (code, nom complet, localité, sexe, date de naissance et âge), synthèse (nombre de pesées, poids total, dernière pesée), historique des pesées, actions modifier / supprimer, ajout direct d'une pesée pour ce planteur |
 | **Liste des pesées** | Toutes les pesées, les plus récentes en tête, avec le planteur, la date, le poids et l'observation ; totaux en en-tête ; menu modifier / supprimer par ligne |
 | **Formulaire pesée** | Création et modification ; sélection du planteur dans une liste déroulante alimentée par la base ; sélecteur de date ; poids décimal ; observation facultative |
-
-L'accueil affiche en permanence l'état de la liaison distante : « Base locale »
-(aucun Firebase configuré), « Synchronisé », « Envoi en cours… », « Hors
-ligne » ou « Synchronisation indisponible ».
 
 **Contraintes fonctionnelles tenues**
 
@@ -94,17 +82,9 @@ ligne » ou « Synchronisation indisponible ».
 └──────────────┬───────────────┘
                │
 ┌──────────────▼───────────────┐
-│ ROOM / SQLite                │  la base locale — source de vérité
-└──────────────▲───────────────┘
-               │ recopie les instantanés distants
-┌──────────────┴───────────────┐
-│ SYNCHRONISATION → FIRESTORE  │  base distante (optionnelle)
+│ ROOM / SQLite                │  la base locale
 └──────────────────────────────┘
 ```
-
-Les écrans ne lisent **que** Room. La base distante alimente Room par en
-dessous ; les écritures, elles, partent du Repository vers les deux. Voir
-`docs/firebase.md`.
 
 **View** (`MainActivity`, `*ListActivity`, `*FormActivity`,
 `PlanteurDetailActivity`) — ne contient aucune règle métier ni aucun accès aux
@@ -161,12 +141,6 @@ com.example.cooperativeagricole
 │   │       ├── Planteur.kt              entité + énumération Sexe
 │   │       ├── Pesee.kt                 entité + clé étrangère
 │   │       └── PeseeAvecPlanteur.kt     résultat de jointure
-│   ├── remote
-│   │   ├── ConnexionFirebase.kt         détection de la configuration
-│   │   ├── SourceDistante.kt            collections Firestore
-│   │   └── EtatSynchronisation.kt
-│   ├── sync
-│   │   └── SynchronisationCooperative.kt  distant → local
 │   └── repository
 │       ├── PlanteurRepository.kt
 │       └── PeseeRepository.kt
@@ -179,7 +153,7 @@ com.example.cooperativeagricole
 │
 ├── ui
 │   ├── accueil
-│   │   └── AccueilViewModel.kt    compteurs + état de synchronisation
+│   │   └── AccueilViewModel.kt    les compteurs de l'écran d'accueil
 │   ├── planteur
 │   │   ├── PlanteurViewModel.kt   + sa fabrique
 │   │   ├── PlanteurAdapter.kt
@@ -224,7 +198,6 @@ com.example.cooperativeagricole
 | `datePesee` | `Long` | Date de la pesée |
 | `poidsKg` | `Double` | Poids pesé, en kilogrammes |
 | `observation` | `String?` | Remarque facultative |
-| `cleDistante` | `String` | Identité de la pesée dans la base distante (colonne technique, hors MCD) |
 
 ### Relation
 
@@ -252,7 +225,6 @@ d'une par ligne affichée.
 - **Kotlin** 2.0.21
 - **Android SDK** — `compileSdk` 36, `minSdk` 24, `targetSdk` 36
 - **Room** 2.6.1 (Entity, DAO, Database, TypeConverter), génération par **KSP**
-- **Firebase Firestore** (BOM 33.5.1) — base distante, activable et facultative
 - **ViewModel** et **StateFlow** (coroutines Kotlin) pour l'observabilité
 - **RecyclerView** avec `ListAdapter` et `DiffUtil`
 - **Material Design 3** (thème clair et sombre)
@@ -287,12 +259,6 @@ En ligne de commande :
 ./gradlew connectedAndroidTest   # tests des DAO (appareil ou émulateur requis)
 ```
 
-### Activer la base distante (facultatif)
-
-L'application se compile et s'exécute sans aucune configuration Firebase. Pour
-synchroniser plusieurs appareils, suivre `docs/firebase.md` : il suffit de
-déposer un `google-services.json` dans `app/`.
-
 Au premier lancement, la base est créée et le jeu de démonstration inséré.
 Pour repartir d'une base vide : *Paramètres ▸ Applications ▸ Coopérative
 Agricole ▸ Stockage ▸ Effacer les données*, ou désinstaller l'application.
@@ -319,9 +285,3 @@ Agricole ▸ Stockage ▸ Effacer les données*, ou désinstaller l'application.
   lignes réellement modifiées.
 - **Le code du planteur n'est pas modifiable** en modification : c'est la clé
   primaire et la cible des clés étrangères des pesées.
-- **Pourquoi Room reste la source de vérité** alors qu'une base distante
-  existe : parce qu'une pesée se fait sur une parcelle, pas devant une antenne.
-  Lire Firestore directement rendrait chaque liste dépendante du réseau.
-- **Ce que l'ajout de Firebase a coûté** : deux paramètres dans les Repository.
-  Ni les ViewModels, ni les Activity, ni les layouts n'ont changé — la
-  démonstration la plus concrète de ce que la séparation des couches apporte.

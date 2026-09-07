@@ -14,14 +14,6 @@
     <string name="accueil_nombre_pesees">Pesées</string>
     <string name="accueil_poids_total">Poids total</string>
 
-    <!-- État de la base distante -->
-    <string name="etat_locale">Base locale</string>
-    <string name="etat_connexion">Connexion…</string>
-    <string name="etat_synchronise">Synchronisé</string>
-    <string name="etat_envoi">Envoi en cours…</string>
-    <string name="etat_hors_ligne">Hors ligne</string>
-    <string name="etat_erreur">Synchronisation indisponible</string>
-
     <!-- Planteurs -->
     <string name="planteurs_titre">Planteurs</string>
     <string name="planteurs_recherche">Rechercher un planteur</string>

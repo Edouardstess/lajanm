@@ -61,9 +61,8 @@ abstract class CooperativeDatabase : RoomDatabase() {
          * viennent d'être créées, dans la transaction de création.
          *
          * Le remplissage est volontairement **synchrone** : le confier à une
-         * coroutine laisserait la base vide pendant quelques instants, et la
-         * synchronisation distante, qui démarre au lancement, prendrait ce vide
-         * pour l'état réel de l'appareil.
+         * coroutine laisserait la base vide pendant quelques instants, et
+         * l'accueil afficherait « 0 planteur » juste après l'installation.
          */
         private class RappelDeCreation : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {

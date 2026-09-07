@@ -8,6 +8,3 @@
 .externalNativeBuild
 .cxx
 local.properties
-
-# Configuration Firebase : propre à chaque projet, jamais versionnée.
-app/google-services.json

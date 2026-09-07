@@ -117,12 +117,9 @@ class PeseeViewModel(
 
             _etatFormulaire.value = EtatFormulairePesee(enCours = true)
 
-            // En modification, la pesée existante est recopiée : `copy` conserve
-            // sa `cleDistante`, l'identité de la pesée dans la base distante.
-            // La reconstruire de zéro en tirerait une nouvelle et laisserait un
-            // document orphelin chez Firestore.
-            val existante = _peseeAModifier.value
-            val pesee = (existante ?: Pesee(planteurCode = "", datePesee = 0L, poidsKg = 0.0)).copy(
+            // `id` à 0 en création : SQLite en attribuera un. En modification,
+            // c'est l'identifiant existant, sur lequel porte la mise à jour.
+            val pesee = Pesee(
                 id = identifiant ?: 0L,
                 planteurCode = requireNotNull(saisie.planteurCode),
                 datePesee = requireNotNull(saisie.date),
