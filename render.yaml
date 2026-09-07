@@ -101,6 +101,33 @@ services:
       - key: PAYOUT_MAX_AMOUNT_HTG
         value: 100000
 
+  # ----------------------------------------- Orientation scolaire (IA2)
+  # Service indépendant du portefeuille : il expose le modèle de
+  # classification du projet UNITECH (projet_orientation/) sous forme
+  # d'API HTTP + page web. Aucune base, aucun secret, aucun lien avec
+  # l'API Lajan'm — il peut être supprimé sans rien casser.
+  #
+  # Le contexte de build est projet_orientation/ car l'image a besoin du
+  # modèle sérialisé ET des modules config.py / preprocessing.py : le
+  # pipeline sauvegardé référence la classe NettoyeurValeurs, sans
+  # laquelle joblib.load échoue.
+  #
+  # Rappel : l'énoncé du projet exige que l'application PyQt fonctionne
+  # localement, sans API. C'est le cas — ce service est un ajout, et
+  # application.py ne l'appelle jamais.
+  - type: web
+    name: orientation-ns
+    runtime: docker
+    region: virginia
+    plan: free
+    dockerfilePath: ./projet_orientation/web/Dockerfile
+    dockerContext: ./projet_orientation
+    # /health répond 503 tant que le modèle n'est pas chargé : Render ne
+    # bascule donc pas le trafic sur une instance incapable de prédire.
+    healthCheckPath: /health
+    # Aucune commande ici : le CMD du Dockerfile démarre uvicorn en
+    # substituant $PORT, fourni par Render.
+
   # -------------------------------------------------------------- Redis
   - type: redis
     name: lajanm-redis

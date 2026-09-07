@@ -1,0 +1,19 @@
+# Dépendances du service web déployé.
+#
+# Volontairement plus légères que celles du projet complet : ni matplotlib,
+# ni PyQt, ni openpyxl ne sont nécessaires pour servir des prédictions.
+#
+# Les versions de scikit-learn, pandas, numpy et joblib sont ÉPINGLÉES sur
+# celles ayant servi à l'entraînement (voir model/metadonnees_modele.json).
+# Un fichier .joblib rechargé avec une version différente déclenche un
+# avertissement d'incompatibilité, et rien ne garantit un comportement
+# identique. Si vous relancez train.py avec d'autres versions, reportez
+# ici celles indiquées dans les métadonnées.
+
+scikit-learn==1.9.0
+pandas==3.0.5
+numpy==2.4.6
+joblib==1.6.0
+
+fastapi>=0.115
+uvicorn[standard]>=0.30

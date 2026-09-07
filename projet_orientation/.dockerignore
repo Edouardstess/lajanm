@@ -1,0 +1,15 @@
+# Réduit le contexte de build : rien de tout cela n'est utile au service web.
+data/
+reports/
+__pycache__/
+*.py[cod]
+.venv/
+model/historique_orientations.sqlite
+*.md
+*.pdf
+application.py
+qt_compat.py
+database.py
+exploration.py
+train.py
+evaluation.py

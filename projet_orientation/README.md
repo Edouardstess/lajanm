@@ -99,7 +99,25 @@ supprimer, exporter en CSV ou vider l'historique.
 Algorithme retenu, métriques, comparaison des cinq modèles, variables les
 plus influentes et toutes les figures produites par l'analyse.
 
-## 5. Analyse exploratoire
+## 5. Déploiement web (optionnel)
+
+En plus de l'application PyQt, le modèle peut être exposé sous forme d'API
+HTTP avec une page web de saisie :
+
+```bash
+pip install -r web/requirements.txt
+python web/serveur.py          # http://127.0.0.1:8000
+```
+
+Le service est conteneurisé (`web/Dockerfile`) et déclaré dans le
+`render.yaml` du dépôt sous le nom `orientation-ns`. Voir
+[`web/README.md`](web/README.md) pour le détail.
+
+**Ce déploiement est un ajout, pas un remplacement.** L'énoncé exige que
+l'application PyQt fonctionne localement, sans API ni connexion Internet :
+c'est le cas, `application.py` n'appelle jamais ce service.
+
+## 6. Analyse exploratoire
 
 ```bash
 python exploration.py
@@ -107,7 +125,7 @@ python exploration.py
 
 Produit `reports/exploration.txt` et les figures `reports/01…05_*.png`.
 
-## 6. Réévaluer un modèle déjà entraîné
+## 7. Réévaluer un modèle déjà entraîné
 
 ```bash
 python evaluation.py
@@ -117,7 +135,7 @@ Recharge le fichier `.joblib` et réaffiche ses métriques sur le même jeu de
 test qu'à l'entraînement (découpage reproduit à l'identique via la graine
 aléatoire).
 
-## 7. Organisation du projet
+## 8. Organisation du projet
 
 ```
 projet_orientation/
@@ -134,6 +152,13 @@ projet_orientation/
 │
 ├── reports/                                # figures + rapport d'exploration
 │
+├── web/                                    # déploiement (optionnel)
+│   ├── serveur.py                          # API FastAPI + page web
+│   ├── page.html
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── README.md
+│
 ├── config.py          # chemins, colonnes, bornes, constantes partagées
 ├── preprocessing.py   # chargement, nettoyage, encodages, pipeline
 ├── exploration.py     # Partie A — analyse exploratoire
@@ -147,7 +172,7 @@ projet_orientation/
 └── RAPPORT.md         # rapport détaillé du projet
 ```
 
-## 8. Résultats obtenus
+## 9. Résultats obtenus
 
 Cinq algorithmes comparés sur le même découpage (2 400 élèves d'entraînement,
 600 de test, stratifié, graine 42) :
@@ -166,7 +191,7 @@ comptent à poids égal). Le modèle retenu est la **régression logistique**.
 Le détail — analyse des données, choix de prétraitement, justification du
 modèle et limites du système — figure dans [`RAPPORT.md`](RAPPORT.md).
 
-## 9. Résolution de problèmes
+## 10. Résolution de problèmes
 
 | Symptôme | Cause probable et solution |
 | --- | --- |
