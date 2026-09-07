@@ -1,0 +1,113 @@
+{
+  "modele_retenu": "Logistic Regression",
+  "hyperparametres_recherche": {
+    "C": 1.0
+  },
+  "date_entrainement": "2026-09-07T16:59:32",
+  "classes": [
+    "LLA",
+    "SES",
+    "SMP",
+    "SVT"
+  ],
+  "colonnes_attendues": [
+    "math",
+    "physique",
+    "svt",
+    "francais",
+    "histoire",
+    "moyenne_generale",
+    "aptitude_logique",
+    "niveau_motivation",
+    "interesse_par_informatique",
+    "centre_interet"
+  ],
+  "taille_entrainement": 2400,
+  "taille_test": 600,
+  "graine_aleatoire": 42,
+  "metriques_test": {
+    "accuracy": 0.9617,
+    "precision_macro": 0.9627,
+    "recall_macro": 0.9626,
+    "f1_macro": 0.9623,
+    "precision_ponderee": 0.962,
+    "recall_pondere": 0.9617,
+    "f1_pondere": 0.9615
+  },
+  "validation_croisee_f1_macro": {
+    "moyenne": 0.9663,
+    "ecart_type": 0.0051,
+    "nb_plis": 5
+  },
+  "comparaison": {
+    "Logistic Regression": {
+      "accuracy": 0.9617,
+      "precision_macro": 0.9627,
+      "recall_macro": 0.9626,
+      "f1_macro": 0.9623,
+      "precision_ponderee": 0.962,
+      "recall_pondere": 0.9617,
+      "f1_pondere": 0.9615
+    },
+    "Decision Tree": {
+      "accuracy": 0.94,
+      "precision_macro": 0.9418,
+      "recall_macro": 0.9414,
+      "f1_macro": 0.941,
+      "precision_ponderee": 0.9409,
+      "recall_pondere": 0.94,
+      "f1_pondere": 0.9399
+    },
+    "Random Forest": {
+      "accuracy": 0.9533,
+      "precision_macro": 0.9547,
+      "recall_macro": 0.9545,
+      "f1_macro": 0.954,
+      "precision_ponderee": 0.9538,
+      "recall_pondere": 0.9533,
+      "f1_pondere": 0.953
+    },
+    "K-Nearest Neighbors": {
+      "accuracy": 0.9367,
+      "precision_macro": 0.9384,
+      "recall_macro": 0.9371,
+      "f1_macro": 0.937,
+      "precision_ponderee": 0.9378,
+      "recall_pondere": 0.9367,
+      "f1_pondere": 0.9365
+    },
+    "Support Vector Machine": {
+      "accuracy": 0.96,
+      "precision_macro": 0.9611,
+      "recall_macro": 0.961,
+      "f1_macro": 0.9606,
+      "precision_ponderee": 0.9604,
+      "recall_pondere": 0.96,
+      "f1_pondere": 0.9598
+    }
+  },
+  "importances_principales": {
+    "centre_interet_Économie et société": 1.88639,
+    "centre_interet_Santé et environnement": 1.73717,
+    "centre_interet_Sciences et technologie": 1.44969,
+    "centre_interet_Lettres et langues": 1.27197,
+    "centre_interet_Arts et culture": 1.20504,
+    "francais": 1.14074,
+    "histoire": 1.12964,
+    "centre_interet_Informatique": 1.12659,
+    "svt": 1.03692,
+    "physique": 0.78932,
+    "moyenne_generale": 0.70908,
+    "aptitude_logique": 0.5748,
+    "math": 0.51277,
+    "interesse_par_informatique_Non": 0.35144,
+    "centre_interet_Inconnu": 0.29847
+  },
+  "versions": {
+    "python": "3.11.15",
+    "scikit_learn": "1.9.0",
+    "pandas": "3.0.5",
+    "numpy": "2.4.6",
+    "joblib": "1.6.0"
+  }
+}

@@ -1,0 +1,7 @@
+# Base créée à la première prédiction dans l'application
+model/historique_orientations.sqlite
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/

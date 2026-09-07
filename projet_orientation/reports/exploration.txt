@@ -1,0 +1,239 @@
+
+==============================================================================
+                       PARTIE A — ANALYSE EXPLORATOIRE                        
+==============================================================================
+
+--- Dimensions ---------------------------------------------------------------
+3000 lignes x 12 colonnes
+
+--- Cinq premières lignes ----------------------------------------------------
+  id_eleve serie_cible  math  physique        svt  francais  histoire  aptitude_logique niveau_motivation           centre_interet interesse_par_informatique  moyenne_generale
+0  NS11801         SMP  85.0  78.00000  53.000000      68.0  55.00000               3.0            Élevée  Sciences et technologie                        Oui              67.8
+1  NS11190         SVT  86.0  62.00000  87.397425      62.0  53.64498               4.0            Élevée   Santé et environnement                        Non              70.2
+2  NS11817         LLA  71.0  21.11933  64.000000      97.0  70.99566               2.0       Très élevée          Arts et culture                        Non              64.8
+3  NS10251         SMP  75.0  74.00000  80.000000      66.0  61.00000               4.0            Élevée             Informatique                        Oui              71.2
+4  NS12505         SES  80.0  60.00000  60.000000      78.0  85.00000               2.0       Très élevée      Économie et société                        Non              72.6
+
+--- Cinq dernières lignes ----------------------------------------------------
+     id_eleve serie_cible   math  physique   svt  francais  histoire  aptitude_logique niveau_motivation          centre_interet interesse_par_informatique  moyenne_generale
+2995  NS11638         SMP  100.0      68.0  81.0      62.0      73.0               4.0            Élevée            Informatique                        Oui              76.8
+2996  NS11095         SVT   62.0      70.0  92.0      79.0      63.0               4.0       Très élevée  Santé et environnement                        Non              73.2
+2997  NS11130         LLA   73.0      58.0  60.0      98.0      86.0               3.0            Élevée      Lettres et langues                        Non              75.0
+2998  NS11294         SES   58.0      54.0  64.0      63.0      80.0               2.0            Élevée     Économie et société                        Oui              63.8
+2999  NS10860         SES    NaN      60.0  54.0      77.0      89.0               3.0       Très élevée     Économie et société                        Non              69.0
+
+--- Types de données ---------------------------------------------------------
+                               type  valeurs_uniques
+id_eleve                        str             3000
+serie_cible                     str                4
+math                        float64              165
+physique                    float64              169
+svt                         float64              174
+francais                    float64              143
+histoire                    float64              163
+aptitude_logique            float64                5
+niveau_motivation               str                4
+centre_interet                  str                6
+interesse_par_informatique      str                2
+moyenne_generale            float64              202
+
+--- Doublons -----------------------------------------------------------------
+lignes entièrement dupliquées : 0
+identifiants dupliqués : 0 (3000 identifiants pour 3000 lignes)
+
+--- Statistiques descriptives — variables numériques -------------------------
+                   count   mean    std   min   25%   50%   75%    max
+math              2925.0  69.58  12.84 -10.0  61.0  69.0  79.0  115.0
+physique          2895.0  64.50  14.70 -10.0  54.0  64.0  75.0  115.0
+svt               2910.0  67.58  13.78 -10.0  58.0  66.0  77.0  115.0
+francais          2925.0  74.01  11.50  38.0  66.0  74.0  82.0  100.0
+histoire          2880.0  70.36  11.94  34.0  62.0  70.0  79.0  100.0
+aptitude_logique  2880.0   3.37   0.95   1.0   3.0   3.0   4.0    5.0
+moyenne_generale  3000.0  69.24   4.67  52.8  66.2  69.2  72.4   83.4
+
+--- Statistiques descriptives — variables textuelles -------------------------
+                           count unique                      top  freq
+id_eleve                    3000   3000                  NS11801     1
+serie_cible                 3000      4                      SMP   786
+niveau_motivation           2895      4              Très élevée  1345
+centre_interet              2880      6  Sciences et technologie   996
+interesse_par_informatique  2910      2                      Non  1462
+
+--- Valeurs manquantes -------------------------------------------------------
+                            manquants  pourcentage
+histoire                          120          4.0
+centre_interet                    120          4.0
+aptitude_logique                  120          4.0
+niveau_motivation                 105          3.5
+physique                          105          3.5
+interesse_par_informatique         90          3.0
+svt                                90          3.0
+math                               75          2.5
+francais                           75          2.5
+
+Total de cellules manquantes : 900
+Lignes complètes : 2222 / 3000 (74.1 %)
+
+--- Valeurs aberrantes — hors bornes physiques -------------------------------
+         colonne   min   max sous_0 sur_100  total
+            math -10.0 115.0      1       4      5
+        physique -10.0 115.0      2       3      5
+             svt -10.0 115.0      3       4      7
+        francais  38.0 100.0      0       0      0
+        histoire  34.0 100.0      0       0      0
+moyenne_generale  52.8  83.4      0       0      0
+aptitude_logique   1.0   5.0      -       -      0
+
+Lignes concernées par au moins une note impossible : 17
+     id_eleve   math  physique    svt  francais  histoire  moyenne_generale serie_cible
+184   NS10124   61.0     105.0   96.0      75.0      69.0              72.4         SVT
+252   NS10175  -10.0      88.0   80.0      70.0      65.0              78.2         SMP
+313   NS12236   70.0      70.0  105.0      64.0      72.0              68.8         SMP
+1009  NS10299   68.0     115.0   63.0      75.0      79.0              71.8         SES
+1427  NS11486   77.0     -10.0   41.0      67.0      49.0              63.4         SMP
+1489  NS11933  105.0      51.0   72.0      84.0      86.0              70.2         SES
+1687  NS10072   41.0      45.0  -10.0      94.0      78.0              63.6         LLA
+1824  NS10081  115.0      63.0   54.0      62.0      76.0              65.2         SES
+2109  NS11908   71.0      71.0  115.0      65.0      65.0              68.8         SVT
+2136  NS10319   81.0     105.0   56.0      80.0       NaN              70.8         SMP
+2171  NS11160   62.0     -10.0   93.0      89.0      67.0              74.6         SVT
+2352  NS12597   81.0      62.0  -10.0      69.0      91.0              75.0         SES
+2381  NS10470   75.0      82.0  -10.0      62.0       NaN              71.2         SVT
+2382  NS11396  105.0      65.0   68.0      83.0      43.0              66.4         SMP
+2456  NS11156   93.0      97.0  115.0      57.0      74.0              77.8         SMP
+2792  NS11759   74.0      73.0  115.0      73.0      66.0              75.8         SVT
+2963  NS12734  115.0      52.0   63.0      83.0       NaN              61.4         LLA
+
+--- Valeurs extrêmes — méthode de l'écart interquartile ----------------------
+         colonne   Q1   Q3  borne_basse  borne_haute  nb_extremes
+            math 61.0 79.0         34.0        106.0           10
+        physique 54.0 75.0         22.5        106.5            7
+             svt 58.0 77.0         29.5        105.5            7
+        francais 66.0 82.0         42.0        106.0            2
+        histoire 62.0 79.0         36.5        104.5            2
+moyenne_generale 66.2 72.4         56.9         81.7           20
+aptitude_logique  3.0  4.0          1.5          5.5           45
+
+--- Cohérence de la moyenne générale -----------------------------------------
+Lignes sans note manquante : 2562
+Moyenne recalculée identique à la colonne fournie : 2544 / 2562 (99.3 %)
+Écart maximal observé : 19.60 point
+
+Lecture : moyenne_generale est la moyenne arithmétique des cinq notes,
+calculée AVANT l'injection des anomalies. Les seules lignes incohérentes
+sont précisément celles dont une note a été corrompue. La colonne n'a donc
+aucune valeur manquante et sert de témoin pour détecter les notes fausses.
+
+Lignes incohérentes : 18
+
+--- Répartition des quatre séries --------------------------------------------
+             effectif  pourcentage                              libellé
+serie_cible                                                            
+SMP               786        26.20  Sciences, Mathématiques et Physique
+SVT               764        25.47    Sciences de la Vie et de la Terre
+SES               740        24.67     Sciences Économiques et Sociales
+LLA               710        23.67             Lettres, Langues et Arts
+
+Rapport effectif max / min = 1.11 → classes équilibrées.
+Référence à battre (classe majoritaire) : 26.2 % d'exactitude.
+
+--- Note moyenne par série ---------------------------------------------------
+              math  physique    svt  francais  histoire  aptitude_logique  moyenne_generale
+serie_cible                                                                                
+LLA          57.60     50.99  57.90     85.46     76.96              2.54             65.78
+SES          67.26     57.39  60.74     75.77     79.59              3.19             68.16
+SMP          81.78     80.04  67.01     66.01     61.03              4.23             71.23
+SVT          70.39     68.04  83.66     69.90     65.09              3.40             71.46
+
+--- Centre d'intérêt croisé avec la série ------------------------------------
+serie_cible              LLA  SES  SMP  SVT
+centre_interet                             
+Arts et culture          320    0    0    0
+Informatique               0    0  241    0
+Lettres et langues       368    0    0    0
+Santé et environnement     0    0    0  499
+Sciences et technologie    0  254  517  225
+Économie et société        0  456    0    0
+
+Part de la série dominante pour chaque centre d'intérêt (%) :
+centre_interet
+Arts et culture            100.0
+Informatique               100.0
+Lettres et langues         100.0
+Santé et environnement     100.0
+Sciences et technologie     51.9
+Économie et société        100.0
+
+5 modalités sur 6 déterminent la série à elles
+seules. C'est l'observation la plus importante du jeu de données : le
+centre d'intérêt est de très loin le prédicteur le plus fort, et seule la
+modalité « Sciences et technologie » reste réellement ambiguë.
+
+--- Intérêt pour l'informatique croisé avec la série -------------------------
+serie_cible                 LLA  SES  SMP  SVT
+interesse_par_informatique                    
+Non                         459  417  195  391
+Oui                         225  305  567  351
+
+--- Niveau de motivation croisé avec la série --------------------------------
+serie_cible        LLA  SES  SMP  SVT
+niveau_motivation                    
+Faible               0    3    7    4
+Moyenne             43   56  122   72
+Élevée             237  284  386  336
+Très élevée        401  378  240  326
+
+La modalité « Faible » ne compte qu'une poignée d'élèves : la variable est
+très déséquilibrée et apportera peu d'information.
+
+--- Corrélations entre variables numériques ----------------------------------
+                  math  physique   svt  francais  histoire  moyenne_generale  aptitude_logique
+math              1.00      0.49  0.18     -0.40     -0.35              0.56              0.43
+physique          0.49      1.00  0.27     -0.46     -0.47              0.57              0.47
+svt               0.18      0.27  1.00     -0.27     -0.32              0.55              0.16
+francais         -0.40     -0.46 -0.27      1.00      0.34             -0.00             -0.38
+histoire         -0.35     -0.47 -0.32      0.34      1.00              0.01             -0.36
+moyenne_generale  0.56      0.57  0.55     -0.00      0.01              1.00              0.26
+aptitude_logique  0.43      0.47  0.16     -0.38     -0.36              0.26              1.00
+
+==============================================================================
+                           OBSERVATIONS PRINCIPALES                           
+==============================================================================
+1. Le jeu de données compte 3 000 élèves et 12 colonnes, sans doublon, avec un
+   identifiant unique par élève. Cet identifiant est écarté de la modélisation.
+
+2. Les quatre séries sont presque équilibrées (710 à 786 élèves). Un modèle qui
+   prédirait toujours la classe majoritaire n'atteindrait que ~26 % : c'est la
+   référence minimale à dépasser.
+
+3. Neuf colonnes sur douze contiennent des valeurs manquantes : 900 cellules sur
+   30 000, soit 3 %. Mais elles sont dispersées, si bien que seules 2 222 lignes
+   sur 3 000 sont complètes : supprimer les lignes incomplètes coûterait 25,9 %
+   de l'échantillon. D'où le choix de l'imputation.
+
+4. Dix-sept notes sont physiquement impossibles (-10 ou 115). Elles sont converties
+   en valeurs manquantes puis imputées, ce qui évite de jeter le reste de la ligne.
+
+5. moyenne_generale est la moyenne exacte des cinq notes et ne comporte aucun trou :
+   elle a été calculée avant l'injection des anomalies. Elle est donc légèrement
+   plus informative que les notes elles-mêmes et sert de contrôle de cohérence.
+
+6. Chaque série possède un profil de notes net : SMP domine en maths et physique,
+   SVT en SVT, LLA en français et histoire, SES en histoire avec un français
+   solide. L'aptitude logique croît de LLA (2,5) à SMP (4,2).
+
+7. Le centre d'intérêt est un prédicteur presque déterministe : cinq de ses six
+   modalités correspondent à une seule série. Seule « Sciences et technologie »
+   se répartit entre SMP, SES et SVT. Une exactitude élevée est donc attendue,
+   mais elle mesure surtout la construction du jeu de données simulé.
+
+8. Le niveau de motivation est très déséquilibré (14 élèves seulement en « Faible »)
+   et se répartit de façon comparable entre les séries : son apport sera faible.
+
+
+--- Figures produites --------------------------------------------------------
+  reports/01_repartition_series.png
+  reports/02_distribution_notes.png
+  reports/03_notes_par_serie.png
+  reports/04_valeurs_manquantes.png
+  reports/05_centre_interet_serie.png

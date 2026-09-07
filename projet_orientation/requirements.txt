@@ -1,0 +1,14 @@
+# Dépendances du projet d'orientation scolaire
+# Installation :  pip install -r requirements.txt
+
+pandas>=2.0
+numpy>=1.24
+scikit-learn>=1.3
+joblib>=1.3
+matplotlib>=3.7        # figures de l'analyse exploratoire et de l'évaluation
+openpyxl>=3.1          # lecture du dataset au format .xlsx
+
+# Interface graphique : une seule des deux lignes suffit.
+# L'application détecte automatiquement la version installée.
+PyQt5>=5.15
+# PyQt6>=6.4
