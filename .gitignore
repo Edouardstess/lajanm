@@ -47,3 +47,8 @@ infra/docker/data/
 # des scripts Python, sans rapport avec le code livré. Réinstallation :
 #   npx ui-ux-pro-max-cli init --ai claude
 .claude/skills/
+
+# Archives générées pour remise du projet IA2 : ce sont des instantanés du
+# contenu déjà versionné dans projet_orientation/, régénérables à volonté.
+# Les versionner dupliquerait plusieurs Mo de binaire à chaque remise.
+projet_orientation_*.zip
