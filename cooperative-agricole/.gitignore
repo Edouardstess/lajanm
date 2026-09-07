@@ -1,7 +1,13 @@
 *.iml
 .gradle
 /local.properties
-/.idea
+# Le .gitignore racine du dépôt exclut tout .idea/. On le rouvre ici, puis on
+# n'y garde que le profil d'inspection : il décrit le projet (correcteur
+# orthographique anglais désactivé sur du code français), pas la machine, et
+# doit donc voyager avec les sources. Le reste de .idea reste ignoré.
+!.idea/
+/.idea/*
+!/.idea/inspectionProfiles/
 .DS_Store
 /build
 /captures

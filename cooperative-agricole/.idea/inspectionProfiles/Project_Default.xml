@@ -1,0 +1,22 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <!--
+      Le correcteur orthographique d'Android Studio travaille avec un
+      dictionnaire anglais. Or ce projet est écrit en français : noms de
+      classes, de variables, commentaires et chaînes de caractères. Il
+      signalait donc « l'écran », « planteurs », « compteurs » comme des
+      fautes — plusieurs dizaines d'avertissements qui noient les vrais
+      problèmes dans la liste.
+
+      L'inspection est désactivée pour ce projet plutôt que les mots ajoutés
+      un à un au dictionnaire : il y en aurait des centaines, et la liste
+      grandirait à chaque commentaire écrit.
+    -->
+    <inspection_tool class="SpellCheckingInspection" enabled="false" level="TYPO" enabled_by_default="false">
+      <option name="processCode" value="true" />
+      <option name="processLiterals" value="true" />
+      <option name="processComments" value="true" />
+    </inspection_tool>
+  </profile>
+</component>
