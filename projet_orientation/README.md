@@ -109,6 +109,13 @@ pip install -r web/requirements.txt
 python web/serveur.py          # http://127.0.0.1:8000
 ```
 
+La page d'accueil est un **assistant conversationnel** : il pose les questions
+une par une en langage naturel, comprend « j'ai eu 85 en maths » ou « 15/20 »,
+accepte les corrections, explique sa recommandation et simule des hypothèses
+(« et si j'avais 90 en maths ? »). C'est un automate à états à base de règles,
+**pas un modèle de langage** : aucun appel réseau, aucune clé d'API. Le
+formulaire classique reste disponible sur `/formulaire`.
+
 Le service est conteneurisé (`web/Dockerfile`) et déclaré dans le
 `render.yaml` du dépôt sous le nom `orientation-ns`. Voir
 [`web/README.md`](web/README.md) pour le détail.
@@ -153,14 +160,17 @@ projet_orientation/
 ├── reports/                                # figures + rapport d'exploration
 │
 ├── web/                                    # déploiement (optionnel)
-│   ├── serveur.py                          # API FastAPI + page web
-│   ├── page.html
+│   ├── serveur.py                          # API FastAPI
+│   ├── dialogue.py                         # moteur de l'assistant conversationnel
+│   ├── chat.html                           # interface de chat
+│   ├── page.html                           # formulaire classique
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   └── README.md
 │
 ├── config.py          # chemins, colonnes, bornes, constantes partagées
 ├── preprocessing.py   # chargement, nettoyage, encodages, pipeline
+├── explication.py     # « pourquoi cette série ? », partagé par les interfaces
 ├── exploration.py     # Partie A — analyse exploratoire
 ├── train.py           # Parties B, C, E — entraînement, sélection, sauvegarde
 ├── evaluation.py      # Partie D — métriques, matrices, figures

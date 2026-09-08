@@ -29,16 +29,21 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
-# Le service vit dans web/ mais réutilise les modules du projet.
-RACINE_PROJET = Path(__file__).resolve().parent.parent
-if str(RACINE_PROJET) not in sys.path:
-    sys.path.insert(0, str(RACINE_PROJET))
+# Le service vit dans web/ mais réutilise les modules du projet. Les deux
+# dossiers sont ajoutés au chemin de recherche : la racine pour config et
+# preprocessing, web/ pour dialogue. Sans cette seconde ligne, « uvicorn
+# web.serveur:app » importe le module sous le nom « web.serveur » et ne
+# trouve plus son voisin « dialogue ».
+DOSSIER_WEB = Path(__file__).resolve().parent
+RACINE_PROJET = DOSSIER_WEB.parent
+for dossier in (RACINE_PROJET, DOSSIER_WEB):
+    if str(dossier) not in sys.path:
+        sys.path.insert(0, str(dossier))
 
 import config  # noqa: E402
+import dialogue  # noqa: E402
 from preprocessing import calculer_moyenne, construire_dataframe_eleve  # noqa: E402
 
-
-DOSSIER_WEB = Path(__file__).resolve().parent
 
 # ==========================================================================
 # Chargement du modèle
@@ -176,8 +181,14 @@ def sante():
 
 
 @app.get("/", include_in_schema=False)
-def page_accueil():
-    """Sert la page de saisie."""
+def page_assistant():
+    """Sert l'assistant conversationnel — page d'entrée par défaut."""
+    return FileResponse(DOSSIER_WEB / "chat.html")
+
+
+@app.get("/formulaire", include_in_schema=False)
+def page_formulaire():
+    """Sert la saisie classique, pour qui préfère un formulaire."""
     return FileResponse(DOSSIER_WEB / "page.html")
 
 
@@ -270,6 +281,50 @@ def construire_avertissements(profil: dict) -> list[str]:
         )
 
     return avertissements
+
+
+class TourDeConversation(BaseModel):
+    """Un tour de dialogue.
+
+    Le moteur est sans état : le client renvoie à chaque fois l'état reçu au
+    tour précédent. Le service n'a donc aucune session à conserver, ce qui le
+    rend indifférent au nombre d'instances déployées.
+    """
+
+    message: str | None = Field(
+        None,
+        max_length=1000,
+        description="Message de l'élève. Laisser vide pour ouvrir la conversation.",
+    )
+    etat: dict | None = Field(
+        None, description="État renvoyé par l'appel précédent."
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {"message": "j'ai eu 85 en maths", "etat": None}
+        }
+    }
+
+
+@app.post("/api/chat", summary="Un tour de dialogue avec l'assistant")
+def converser(tour: TourDeConversation):
+    if MODELE is None:
+        raise HTTPException(status_code=503, detail=ERREUR_CHARGEMENT)
+
+    try:
+        reponse = dialogue.repondre(tour.message, tour.etat, MODELE)
+    except Exception as erreur:  # pragma: no cover
+        raise HTTPException(
+            status_code=500, detail=f"Erreur du moteur de dialogue : {erreur}"
+        )
+
+    return {
+        "messages": reponse["messages"],
+        "etat": reponse["etat"],
+        "suggestions": reponse["suggestions"],
+        "modele": nom_modele(),
+    }
 
 
 # ==========================================================================

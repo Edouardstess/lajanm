@@ -25,6 +25,7 @@ import joblib
 import numpy as np
 
 import config
+import explication
 from database import HistoriqueOrientations
 from preprocessing import calculer_moyenne, construire_dataframe_eleve
 from qt_compat import QAction, Qt, QtCore, QtGui, QtWidgets, VERSION_QT, executer
@@ -39,21 +40,10 @@ COULEURS_SERIES = {
     "LLA": "#B279A2",
 }
 
-LIBELLES_MATIERES = {
-    "math": "Mathématiques",
-    "physique": "Physique",
-    "svt": "SVT",
-    "francais": "Français",
-    "histoire": "Histoire",
-}
-
-DESCRIPTION_APTITUDE = {
-    1: "très faible",
-    2: "faible",
-    3: "moyenne",
-    4: "bonne",
-    5: "très bonne",
-}
+# Libellés et descriptions viennent du module partagé : l'application PyQt
+# et l'assistant web disent exactement la même chose des mêmes variables.
+LIBELLES_MATIERES = explication.LIBELLES_MATIERES
+DESCRIPTION_APTITUDE = explication.DESCRIPTION_APTITUDE
 
 FEUILLE_DE_STYLE = """
 QWidget            { font-size: 13px; }
@@ -728,29 +718,25 @@ class FenetreOrientation(QtWidgets.QMainWindow):
     # Explication (bonus)
     # ------------------------------------------------------------------
     def _construire_explication(self, profil: dict, serie: str, probabilites: dict) -> str:
+        """Met en forme, en HTML, l'explication produite par le module partagé."""
         parties = []
 
-        if probabilites:
-            classement = sorted(probabilites.items(), key=lambda x: x[1], reverse=True)
-            premiere, seconde = classement[0], classement[1]
-            ecart = premiere[1] - seconde[1]
-            if ecart > 0.35:
-                confiance = "La recommandation est <b>nette</b>"
-            elif ecart > 0.15:
-                confiance = "La recommandation est <b>assez nette</b>"
-            else:
-                confiance = "La recommandation est <b>peu tranchée</b>"
+        confiance = explication.analyser_confiance(probabilites)
+        if confiance:
             parties.append(
-                f"{confiance} : {premiere[0]} obtient {premiere[1] * 100:.1f} %, "
-                f"devant {seconde[0]} à {seconde[1] * 100:.1f} % "
-                f"(écart de {ecart * 100:.1f} points)."
+                f"La recommandation est <b>{confiance['adjectif']}</b> : "
+                f"{confiance['premiere']} obtient "
+                f"{confiance['probabilite_premiere'] * 100:.1f} %, devant "
+                f"{confiance['seconde']} à "
+                f"{confiance['probabilite_seconde'] * 100:.1f} % "
+                f"(écart de {confiance['ecart'] * 100:.1f} points)."
             )
-            if ecart <= 0.15:
+            if confiance["hesitation"]:
                 parties.append(
                     "Les deux séries méritent d'être examinées avec l'élève."
                 )
 
-        contributions = self._contributions_locales(profil, serie)
+        contributions = explication.contributions_locales(self.modele, profil, serie)
         if contributions:
             elements = "".join(
                 f"<li>{libelle} <span style='color:#5A6672'>"
@@ -762,7 +748,7 @@ class FenetreOrientation(QtWidgets.QMainWindow):
                 f"<b>{serie}</b> :<ul>{elements}</ul>"
             )
         else:
-            parties.append(self._explication_de_repli(profil, serie))
+            parties.append(explication.explication_de_repli(profil, serie))
 
         parties.append(
             "<i>Le modèle a appris sur un jeu de données simulé de 3 000 élèves. "
@@ -770,108 +756,6 @@ class FenetreOrientation(QtWidgets.QMainWindow):
             "pédagogique.</i>"
         )
         return "<br><br>".join(parties)
-
-    def _contributions_locales(self, profil: dict, serie: str) -> list[tuple[str, float]]:
-        """Décompose la décision d'un modèle linéaire pour ce profil précis.
-
-        Pour une régression logistique, le score d'une série est une somme
-        ``coefficient × valeur encodée``. On peut donc dire, pour cet élève,
-        quels éléments ont réellement pesé — et pas seulement quelles
-        variables comptent en moyenne.
-        """
-        try:
-            classifieur = self.modele.named_steps["classifieur"]
-            if not hasattr(classifieur, "coef_"):
-                return []
-
-            preparation = self.modele.named_steps["preparation"]
-            nettoyage = self.modele.named_steps["nettoyage"]
-
-            donnees = construire_dataframe_eleve(profil)
-            encode = preparation.transform(nettoyage.transform(donnees))[0]
-            noms = list(preparation.get_feature_names_out())
-
-            classes = [str(classe) for classe in classifieur.classes_]
-            if serie not in classes:
-                return []
-            coefficients = classifieur.coef_[classes.index(serie)]
-
-            contributions = coefficients * encode
-            ordre = np.argsort(contributions)[::-1]
-
-            resultat = []
-            for index in ordre:
-                if contributions[index] <= 0.05:
-                    break
-                resultat.append((
-                    self._libelle_variable(noms[index], profil, encode[index]),
-                    float(contributions[index]),
-                ))
-                if len(resultat) == 5:
-                    break
-            return resultat
-        except Exception:  # pragma: no cover - l'explication reste facultative
-            return []
-
-    @staticmethod
-    def _libelle_variable(nom: str, profil: dict, valeur_encodee: float = 0.0) -> str:
-        """Traduit un nom de colonne encodée en phrase lisible.
-
-        ``valeur_encodee`` est la valeur standardisée : son signe indique si
-        l'élève est au-dessus ou en dessous de la moyenne des 3 000 élèves.
-        Sans cette nuance, « note de français 58/100 » pousserait vers SMP
-        sans qu'on comprenne que c'est justement parce qu'elle est basse.
-        """
-        def situer(seuil=0.35):
-            if valeur_encodee > seuil:
-                return "élevée"
-            if valeur_encodee < -seuil:
-                return "basse"
-            return "dans la moyenne"
-
-        if nom in LIBELLES_MATIERES:
-            matiere = LIBELLES_MATIERES[nom].lower()
-            article = "d'" if matiere[0] in "aeiouyh" else "de "
-            return f"note {article}{matiere} {situer()} ({profil[nom]:.0f}/100)"
-        if nom == "moyenne_generale":
-            return f"moyenne générale {situer()} ({profil['moyenne_generale']:.1f}/100)"
-        if nom == config.COLONNE_APTITUDE:
-            valeur = int(profil[config.COLONNE_APTITUDE])
-            return f"aptitude logique {valeur}/5 ({DESCRIPTION_APTITUDE.get(valeur, '')})"
-        if nom == config.COLONNE_MOTIVATION:
-            return f"niveau de motivation « {profil[config.COLONNE_MOTIVATION]} »"
-        if nom.startswith(config.COLONNE_CATEGORIELLE + "_"):
-            return f"centre d'intérêt « {nom.split('_', 2)[-1]} »"
-        if nom.startswith(config.COLONNE_BINAIRE + "_"):
-            reponse = nom.split("_")[-1]
-            return (
-                "intérêt déclaré pour l'informatique" if reponse == "Oui"
-                else f"intérêt pour l'informatique : {reponse.lower()}"
-            )
-        return nom
-
-    def _explication_de_repli(self, profil: dict, serie: str) -> str:
-        """Explication descriptive quand le modèle n'est pas linéaire."""
-        notes = {m: profil[m] for m in config.COLONNES_NOTES}
-        meilleures = sorted(notes, key=notes.get, reverse=True)[:2]
-        elements = [
-            "points forts : "
-            + " et ".join(
-                f"{LIBELLES_MATIERES[m].lower()} ({notes[m]:.0f})" for m in meilleures
-            )
-        ]
-        if profil.get(config.COLONNE_CATEGORIELLE):
-            elements.append(
-                f"centre d'intérêt « {profil[config.COLONNE_CATEGORIELLE]} »"
-            )
-        valeur = int(profil[config.COLONNE_APTITUDE])
-        elements.append(
-            f"aptitude logique {valeur}/5 ({DESCRIPTION_APTITUDE.get(valeur, '')})"
-        )
-        return (
-            f"Profil rapproché de la série <b>{serie}</b> — "
-            + " ; ".join(elements) + "."
-        )
 
     # ------------------------------------------------------------------
     # Historique

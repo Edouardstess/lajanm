@@ -23,14 +23,16 @@ WORKDIR /app
 COPY web/requirements.txt web/requirements.txt
 RUN pip install --no-cache-dir -r web/requirements.txt
 
-# Modules partagés avec le projet, indispensables au rechargement du modèle.
-COPY config.py preprocessing.py ./
+# Modules partagés avec le projet. config.py et preprocessing.py sont
+# indispensables au rechargement du modèle (le pipeline sérialisé référence
+# NettoyeurValeurs) ; explication.py sert les réponses « pourquoi ? ».
+COPY config.py preprocessing.py explication.py ./
 
 # Le modèle entraîné et ses métadonnées.
 COPY model/modele_orientation.joblib model/metadonnees_modele.json model/
 
-# Le service lui-même.
-COPY web/serveur.py web/page.html web/
+# Le service lui-même : API, moteur de dialogue et les deux pages.
+COPY web/serveur.py web/dialogue.py web/chat.html web/page.html web/
 
 # Utilisateur non privilégié : le service n'a besoin d'aucun droit d'écriture.
 RUN useradd --create-home --uid 10001 service && chown -R service:service /app

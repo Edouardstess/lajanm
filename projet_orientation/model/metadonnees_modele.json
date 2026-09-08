@@ -3,7 +3,7 @@
   "hyperparametres_recherche": {
     "C": 1.0
   },
-  "date_entrainement": "2026-09-07T16:59:32",
+  "date_entrainement": "2026-09-08T06:10:16",
   "classes": [
     "LLA",
     "SES",

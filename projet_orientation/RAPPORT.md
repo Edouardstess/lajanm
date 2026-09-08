@@ -15,7 +15,7 @@ Séries du Nouveau Secondaire : SMP, SVT, SES, LLA
 6. [Modèles testés](#6-modèles-testés)
 7. [Métriques obtenues et comparaison](#7-métriques-obtenues-et-comparaison)
 8. [Modèle retenu et justification](#8-modèle-retenu-et-justification)
-9. [Application PyQt](#9-application-pyqt)
+9. [Application PyQt et assistant web](#9-application-pyqt)
 10. [Limites du système](#10-limites-du-système)
 11. [Réponse à la question centrale](#11-réponse-à-la-question-centrale)
 12. [Conclusion](#12-conclusion)
@@ -517,7 +517,7 @@ Cinq raisons motivent ce choix.
 
 ---
 
-## 9. Application PyQt
+## 9. Application PyQt et assistant web
 
 ### Architecture
 
@@ -572,6 +572,39 @@ Métriques du modèle chargé, tableau comparatif des cinq modèles, variables l
 plus influentes, et visualisation de toutes les figures produites par
 l'analyse.
 
+### Assistant conversationnel (déploiement web)
+
+Le même modèle est également exposé par un service web (`web/`), dont la page
+d'accueil est un **assistant conversationnel** : il pose les questions une par
+une en langage naturel plutôt que d'imposer un formulaire.
+
+![Assistant conversationnel](reports/13_capture_chat.png)
+
+Il s'agit d'un **automate à états doublé d'une analyse de texte à base de
+règles** (`web/dialogue.py`), et non d'un modèle de langage. Il extrait une
+note d'une phrase libre (« j'ai eu 85 en maths », « 15/20 » converti sur 100),
+reconnaît une modalité écrite librement (« info » → Informatique), accepte
+« je ne sais pas », encaisse une correction (« en fait maths c'est 90 ») et
+comprend quelques intentions : **pourquoi** (décomposition de la
+recommandation), **et si** (simulation sans modifier le profil) et
+**recommencer**.
+
+Ce choix est contraint : l'énoncé impose un fonctionnement local sans API ni
+connexion Internet, ce qui exclut d'appeler un modèle de langage distant.
+L'assistant ne sait donc parler que d'orientation scolaire, et le dit
+explicitement à l'utilisateur.
+
+Deux points de conception méritent d'être signalés :
+
+1. **Le moteur est sans état.** La conversation voyage dans la requête et
+   revient mise à jour ; le serveur ne conserve aucune session. Le service est
+   ainsi indifférent au nombre d'instances déployées, et aucune conversation
+   d'élève n'est stockée.
+2. **L'explication est mutualisée.** Le module `explication.py` calcule les
+   contributions locales (`coefficient × valeur encodée`) et sert à la fois
+   l'application PyQt et l'assistant : la même prédiction reçoit partout la
+   même justification, sans code dupliqué.
+
 ### Fonctionnalités bonus implémentées
 
 | Bonus demandé | Réalisation |
@@ -585,6 +618,8 @@ l'analyse.
 | Comparaison visuelle des performances | tableau + figures dans l'onglet « Modèle » |
 | Explication de la recommandation | contributions locales `coefficient × valeur` |
 | Ergonomie | onglets, feuille de style, menus, barre d'état, profils d'exemple |
+| _(hors sujet)_ Assistant conversationnel | `web/dialogue.py` + `web/chat.html` |
+| _(hors sujet)_ Déploiement web | API FastAPI conteneurisée, `render.yaml` |
 
 ---
 
